@@ -19,7 +19,8 @@ export const NETWORKS = {
     name: "mainnet",
     color: "#ff8b9e",
     chainId: 1,
-    rpcUrl: `https://mainnet.infura.io/v3/${INFURA_ID}`,
+    // rpcUrl: `https://mainnet.infura.io/v3/${INFURA_ID}`,
+    rpcUrl: "https://eth-mainnet.alchemyapi.io/v2/qCdzfF9UqXcJYIle-Ff-BN0MII8LjLQs",
     blockExplorer: "https://etherscan.io/",
   },
   kovan: {

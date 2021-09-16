@@ -2319,10 +2319,10 @@
     mkdirp "^1.0.4"
     rimraf "^3.0.2"
 
-"@openzeppelin/contracts@^3.2.0":
-  version "3.4.1"
-  resolved "https://registry.yarnpkg.com/@openzeppelin/contracts/-/contracts-3.4.1.tgz#03c891fec7f93be0ae44ed74e57a122a38732ce7"
-  integrity sha512-cUriqMauq1ylzP2TxePNdPqkwI7Le3Annh4K9rrpvKfSBB/bdW+Iu1ihBaTIABTAAJ85LmKL5SSPPL9ry8d1gQ==
+"@openzeppelin/contracts@^4.3.1":
+  version "4.3.2"
+  resolved "https://registry.yarnpkg.com/@openzeppelin/contracts/-/contracts-4.3.2.tgz#ff80affd6d352dbe1bbc5b4e1833c41afd6283b6"
+  integrity sha512-AybF1cesONZStg5kWf6ao9OlqTZuPqddvprc0ky7lrUVOjXeKpmQ2Y9FK+6ygxasb+4aic4O5pneFBfwVsRRRg==
 
 "@pmmmwh/react-refresh-webpack-plugin@0.4.2":
   version "0.4.2"
@@ -8503,10 +8503,10 @@ eth-ens-namehash@2.0.8, eth-ens-namehash@^2.0.8:
     idna-uts46-hx "^2.3.1"
     js-sha3 "^0.5.7"
 
-eth-hooks@2.3.0-beta07:
-  version "2.3.0-beta07"
-  resolved "https://registry.yarnpkg.com/eth-hooks/-/eth-hooks-2.3.0-beta07.tgz#ed0d63bf3a0b878b3bc1184524ca30d173b8d145"
-  integrity sha512-ekfF6u9VR+NqKFvNrAfdnymoEexsi0NsF9mtq34dApCAnmwyoroIvWncVusRDbsCO6dnlWK9zRR3mQq2OQjOhw==
+eth-hooks@2.3.2:
+  version "2.3.2"
+  resolved "https://registry.yarnpkg.com/eth-hooks/-/eth-hooks-2.3.2.tgz#a274f96b1cb6629d409293d0c011a3074089aa33"
+  integrity sha512-b54iBk0yGEdyNbH2VzNk3bleh1A6Ak6jDpXZWUfV94yu2Ez4uMl+x9LYBrnysCkrULOz53JwocMvtqcGoaPtDQ==
   dependencies:
     "@ethersproject/address" "^5.4.0"
     "@ethersproject/bignumber" "^5.4.0"
@@ -16738,6 +16738,11 @@ pretty-hrtime@^1.0.0:
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/pretty-hrtime/-/pretty-hrtime-1.0.3.tgz#b7e3ea42435a4c9b2759d99e0f201eb195802ee1"
   integrity sha1-t+PqQkNaTJsnWdmeDyAesZWALuE=
+
+pretty-time@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/pretty-time/-/pretty-time-1.1.0.tgz#ffb7429afabb8535c346a34e41873adf3d74dd0e"
+  integrity sha512-28iF6xPQrP8Oa6uxE6a1biz+lWeTOAPKggvjB8HAs6nVMKZwf5bG++632Dx614hIWgUPkgivRfG+a8uAXGTIbA==
 
 printj@~1.1.0:
   version "1.1.2"

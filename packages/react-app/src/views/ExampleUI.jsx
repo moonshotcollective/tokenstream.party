@@ -1,151 +1,207 @@
-import { SyncOutlined } from "@ant-design/icons";
-import { utils } from "ethers";
-import { Button, Card, DatePicker, Divider, Input, List, Progress, Slider, Spin, Switch } from "antd";
-import React, { useState } from "react";
-import { Address, Balance } from "../components";
+import React, { useState, useEffect } from "react";
+import {
+  message,
+  Row,
+  Col,
+  Button,
+  List,
+  Divider,
+  Input,
+  Card,
+  DatePicker,
+  Slider,
+  Switch,
+  Progress,
+  Spin,
+} from "antd";
+import { ConsoleSqlOutlined, SyncOutlined } from "@ant-design/icons";
+import { parseEther, formatEther } from "@ethersproject/units";
+import { ethers } from "ethers";
+import axios from "axios";
+import pretty from "pretty-time";
+import { QRPunkBlockie, QRBlockie, EtherInput, Address, Balance, PayButton } from "../components";
+import { DAIABI } from "../contracts/external_ABI";
+import { useContractReader } from "eth-hooks";
 
 export default function ExampleUI({
-  purpose,
-  setPurposeEvents,
+  SimpleStream,
+  streamToAddress,
+  streamfrequency,
+  totalStreamBalance,
+  streamCap,
+  depositEvents,
+  withdrawEvents,
+  streamBalance,
   address,
+  stream,
   mainnetProvider,
   localProvider,
-  yourLocalBalance,
   price,
   tx,
   readContracts,
   writeContracts,
 }) {
-  const [newPurpose, setNewPurpose] = useState("loading...");
+  const [amount, setAmount] = useState();
+  const [reason, setReason] = useState();
+
+  const [depositAmount, setDepositAmount] = useState();
+  const [depositReason, setDepositReason] = useState();
+
+  console.log("streamCap", streamCap);
+  console.log("streamBalance", streamBalance);
+  const percent = streamCap && streamBalance && streamBalance.mul(100).div(streamCap).toNumber();
+
+  const myMainnetGTCBalance = useContractReader(readContracts, "GTC", "balanceOf", [stream]);
+
+  if (myMainnetGTCBalance) console.log("my mainnet gtc balance", formatEther(myMainnetGTCBalance));
+
+  const streamNetPercentSeconds = myMainnetGTCBalance && streamCap && myMainnetGTCBalance.mul(100).div(streamCap);
+
+  console.log(
+    "streamNetPercentSeconds",
+    streamNetPercentSeconds,
+    streamNetPercentSeconds && streamNetPercentSeconds.toNumber(),
+  );
+
+  const totalSeconds = streamNetPercentSeconds && streamfrequency && streamNetPercentSeconds.mul(streamfrequency);
+  console.log("totalSeconds", totalSeconds);
+
+  console.log("numberOfTimesFull", streamNetPercentSeconds);
+  const numberOfTimesFull = streamNetPercentSeconds && Math.floor(streamNetPercentSeconds.div(100));
+
+  const streamNetPercent = streamNetPercentSeconds && streamNetPercentSeconds.mod(100);
+  console.log("streamNetPercent", streamNetPercent, streamNetPercent && streamNetPercent.toNumber());
+
+  const remainder = streamNetPercent && streamNetPercent.mod(1);
+  console.log("remainder", remainder, remainder && remainder.toNumber());
+
+  const [quoteRate, setQuoteRate] = useState(0);
+
+  useEffect(() => {
+    axios.get("https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=gitcoin").then(response => {
+      if (response && response.data[0] && response.data[0].current_price) {
+        setQuoteRate(response.data[0].current_price);
+        console.log("quoteRate price", response.data[0].current_price, price);
+      }
+    });
+  }, []);
+
+  // console.log("WWUOTE", formatEther(streamBalance).toString())
+  // const quote = quoteRate * formatEther(streamBalance)
+  // const unclaimedPercent = totalStreamBalance && totalUnclaimable && totalUnclaimable.mul(100).div(totalStreamBalance)
+  // console.log("unclaimedPercent",unclaimedPercent,unclaimedPercent&&unclaimedPercent.toNumber())
+
+  const WIDTH = "calc(min(77vw,620px))";
+  const totalProgress = [];
+  const widthOfStacks = numberOfTimesFull > 6 ? 32 : 64;
+
+  for (let c = 0; c < numberOfTimesFull; c++) {
+    totalProgress.push(<Progress percent={100} showInfo={false} style={{ width: widthOfStacks, padding: 4 }} />);
+  }
+  if (streamNetPercent && streamNetPercent.toNumber() > 0) {
+    totalProgress.push(
+      <Progress
+        percent={streamNetPercent && streamNetPercent.toNumber()}
+        showInfo={false}
+        status="active"
+        style={{ width: widthOfStacks, padding: 4 }}
+      />,
+    );
+  }
+
+  const tokenPayHandler = async tokenInfo => {
+    // deposit amount and reason to stream after transfer confirmations
+    // console.log(tokenInfo);
+    const formattedAmount = ethers.utils.parseUnits(depositAmount, tokenInfo.decimals);
+    const deposit = tx(await SimpleStream.streamDeposit(depositReason, formattedAmount));
+
+    setDepositReason();
+    setDepositAmount();
+  };
 
   return (
     <div>
       {/*
         ⚙️ Here is an example UI that displays and sets the purpose in your smart contract:
+          //<QRBlockie scale={0.6} withQr={true} address={readContracts && readContracts.SimpleStream.address} />
       */}
-      <div style={{ border: "1px solid #cccccc", padding: 16, width: 400, margin: "auto", marginTop: 64 }}>
-        <h2>Example UI:</h2>
-        <h4>purpose: {purpose}</h4>
+
+      <div style={{ padding: 16, width: WIDTH, margin: "auto" }}>
+        <div style={{ padding: 32 }}>
+          <div style={{ padding: 32 }}>
+            <Balance value={myMainnetGTCBalance} price={quoteRate} />
+            <span style={{ opacity: 0.5 }}>
+              {" "}
+              @ <Balance value={streamCap} price={quoteRate} /> /{" "}
+              {streamfrequency && pretty(streamfrequency.toNumber() * 1000000000)}
+            </span>
+          </div>
+          <div>
+            {totalProgress} ({totalSeconds && pretty(totalSeconds.toNumber() * 10000000)})
+          </div>
+        </div>
+      </div>
+
+      <div style={{ marginTop: -32 }}>
+        <Address value={stream} />
+      </div>
+
+      <div style={{ width: 400, margin: "auto", marginTop: 32, position: "relative" }}>
+        <div style={{ padding: 16, marginBottom: 64 }}>
+          <span style={{ opacity: 0.5 }}>Streaming To:</span>
+        </div>
+        <div style={{ position: "absolute", top: -50 }}>
+          <QRPunkBlockie withQr={false} address={streamToAddress} scale={0.7} />
+        </div>
+        <Address value={streamToAddress} ensProvider={mainnetProvider} />
+      </div>
+
+      <div style={{ border: "1px solid #cccccc", padding: 16, width: WIDTH, margin: "auto", marginTop: 64 }}>
+        {/* <h4>stream balance: {streamBalance && formatEther(streamBalance)}</h4> */}
+
+        <Progress
+          strokeLinecap="square"
+          type="dashboard"
+          percent={percent}
+          format={() => {
+            return <Balance price={quoteRate} value={streamBalance} size={18} />;
+          }}
+        />
+
         <Divider />
+
         <div style={{ margin: 8 }}>
           <Input
+            style={{ marginBottom: 8 }}
+            value={reason}
+            placeholder="reason / work / link"
             onChange={e => {
-              setNewPurpose(e.target.value);
+              setReason(e.target.value);
+            }}
+          />
+          <EtherInput
+            mode="USD"
+            autofocus
+            price={quoteRate}
+            value={amount}
+            placeholder="Withdraw amount"
+            onChange={value => {
+              setAmount(value);
             }}
           />
           <Button
             style={{ marginTop: 8 }}
-            onClick={async () => {
-              /* look how you call setPurpose on your contract: */
-              /* notice how you pass a call back for tx updates too */
-              const result = tx(writeContracts.YourContract.setPurpose(newPurpose), update => {
-                console.log("📡 Transaction Update:", update);
-                if (update && (update.status === "confirmed" || update.status === 1)) {
-                  console.log(" 🍾 Transaction " + update.hash + " finished!");
-                  console.log(
-                    " ⛽️ " +
-                      update.gasUsed +
-                      "/" +
-                      (update.gasLimit || update.gas) +
-                      " @ " +
-                      parseFloat(update.gasPrice) / 1000000000 +
-                      " gwei",
-                  );
-                }
-              });
-              console.log("awaiting metamask/web3 confirm result...", result);
-              console.log(await result);
-            }}
-          >
-            Set Purpose!
-          </Button>
-        </div>
-        <Divider />
-        Your Address:
-        <Address address={address} ensProvider={mainnetProvider} fontSize={16} />
-        <Divider />
-        ENS Address Example:
-        <Address
-          address="0x34aA3F359A9D614239015126635CE7732c18fDF3" /* this will show as austingriffith.eth */
-          ensProvider={mainnetProvider}
-          fontSize={16}
-        />
-        <Divider />
-        {/* use utils.formatEther to display a BigNumber: */}
-        <h2>Your Balance: {yourLocalBalance ? utils.formatEther(yourLocalBalance) : "..."}</h2>
-        <div>OR</div>
-        <Balance address={address} provider={localProvider} price={price} />
-        <Divider />
-        <div>🐳 Example Whale Balance:</div>
-        <Balance balance={utils.parseEther("1000")} provider={localProvider} price={price} />
-        <Divider />
-        {/* use utils.formatEther to display a BigNumber: */}
-        <h2>Your Balance: {yourLocalBalance ? utils.formatEther(yourLocalBalance) : "..."}</h2>
-        <Divider />
-        Your Contract Address:
-        <Address
-          address={readContracts && readContracts.YourContract ? readContracts.YourContract.address : null}
-          ensProvider={mainnetProvider}
-          fontSize={16}
-        />
-        <Divider />
-        <div style={{ margin: 8 }}>
-          <Button
             onClick={() => {
-              /* look how you call setPurpose on your contract: */
-              tx(writeContracts.YourContract.setPurpose("🍻 Cheers"));
+              if (!reason || reason.length < 6) {
+                message.error("Please provide a longer reason / work / length");
+              } else {
+                tx(SimpleStream.streamWithdraw(parseEther("" + amount), reason));
+                setReason();
+                setAmount();
+              }
             }}
           >
-            Set Purpose to &quot;🍻 Cheers&quot;
-          </Button>
-        </div>
-        <div style={{ margin: 8 }}>
-          <Button
-            onClick={() => {
-              /*
-              you can also just craft a transaction and send it to the tx() transactor
-              here we are sending value straight to the contract's address:
-            */
-              tx({
-                to: writeContracts.YourContract.address,
-                value: utils.parseEther("0.001"),
-              });
-              /* this should throw an error about "no fallback nor receive function" until you add it */
-            }}
-          >
-            Send Value
-          </Button>
-        </div>
-        <div style={{ margin: 8 }}>
-          <Button
-            onClick={() => {
-              /* look how we call setPurpose AND send some value along */
-              tx(
-                writeContracts.YourContract.setPurpose("💵 Paying for this one!", {
-                  value: utils.parseEther("0.001"),
-                }),
-              );
-              /* this will fail until you make the setPurpose function payable */
-            }}
-          >
-            Set Purpose With Value
-          </Button>
-        </div>
-        <div style={{ margin: 8 }}>
-          <Button
-            onClick={() => {
-              /* you can also just craft a transaction and send it to the tx() transactor */
-              tx({
-                to: writeContracts.YourContract.address,
-                value: utils.parseEther("0.001"),
-                data: writeContracts.YourContract.interface.encodeFunctionData("setPurpose(string)", [
-                  "🤓 Whoa so 1337!",
-                ]),
-              });
-              /* this should throw an error about "no fallback nor receive function" until you add it */
-            }}
-          >
-            Another Example
+            Withdraw
           </Button>
         </div>
       </div>
@@ -154,75 +210,79 @@ export default function ExampleUI({
         📑 Maybe display a list of events?
           (uncomment the event and emit line in YourContract.sol! )
       */}
-      <div style={{ width: 600, margin: "auto", marginTop: 32, paddingBottom: 32 }}>
-        <h2>Events:</h2>
+      <div style={{ width: WIDTH, margin: "auto", marginTop: 32, paddingBottom: 32 }}>
+        <h2>Work log:</h2>
         <List
           bordered
-          dataSource={setPurposeEvents}
+          dataSource={withdrawEvents}
           renderItem={item => {
             return (
-              <List.Item key={item.blockNumber + "_" + item.sender + "_" + item.purpose}>
-                <Address address={item[0]} ensProvider={mainnetProvider} fontSize={16} />
-                {item[1]}
+              <List.Item key={item.blockNumber + "_" + item.to}>
+                <Balance value={item.amount} price={quoteRate} />
+                <span style={{ fontSize: 14 }}>
+                  <span style={{ padding: 4 }}>{item.reason}</span>
+                  <Address minimized address={item.to} />
+                </span>
               </List.Item>
             );
           }}
         />
       </div>
 
-      <div style={{ width: 600, margin: "auto", marginTop: 32, paddingBottom: 256 }}>
-        <Card>
-          Check out all the{" "}
-          <a
-            href="https://github.com/austintgriffith/scaffold-eth/tree/master/packages/react-app/src/components"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            📦 components
-          </a>
-        </Card>
+      <div style={{ width: WIDTH, margin: "auto", marginTop: 32 }}>
+        <h2>Deposits:</h2>
+        <List
+          bordered
+          dataSource={depositEvents}
+          renderItem={item => {
+            return (
+              <List.Item key={item.blockNumber + "_" + item.from}>
+                <Balance value={item.amount} price={quoteRate} />
+                <span style={{ fontSize: 14 }}>
+                  <span style={{ padding: 4 }}>{item.reason}</span>
+                  <Address minimized address={item.from} />
+                </span>
+              </List.Item>
+            );
+          }}
+        />
+        <hr style={{ opacity: 0.3333 }} />
+        <Input
+          style={{ marginBottom: 8 }}
+          value={depositReason}
+          placeholder="reason / guidance / north star"
+          onChange={e => {
+            setDepositReason(e.target.value);
+          }}
+        />
+        <EtherInput
+          mode="USD"
+          autofocus
+          price={quoteRate}
+          value={depositAmount}
+          placeholder="Deposit amount"
+          onChange={value => {
+            setDepositAmount(value);
+          }}
+        />
 
-        <Card style={{ marginTop: 32 }}>
-          <div>
-            There are tons of generic components included from{" "}
-            <a href="https://ant.design/components/overview/" target="_blank" rel="noopener noreferrer">
-              🐜 ant.design
-            </a>{" "}
-            too!
-          </div>
-
-          <div style={{ marginTop: 8 }}>
-            <Button type="primary">Buttons</Button>
-          </div>
-
-          <div style={{ marginTop: 8 }}>
-            <SyncOutlined spin /> Icons
-          </div>
-
-          <div style={{ marginTop: 8 }}>
-            Date Pickers?
-            <div style={{ marginTop: 2 }}>
-              <DatePicker onChange={() => {}} />
-            </div>
-          </div>
-
-          <div style={{ marginTop: 32 }}>
-            <Slider range defaultValue={[20, 50]} onChange={() => {}} />
-          </div>
-
-          <div style={{ marginTop: 32 }}>
-            <Switch defaultChecked onChange={() => {}} />
-          </div>
-
-          <div style={{ marginTop: 32 }}>
-            <Progress percent={50} status="active" />
-          </div>
-
-          <div style={{ marginTop: 32 }}>
-            <Spin />
-          </div>
-        </Card>
+        {readContracts.GTC && (
+          <PayButton
+            style={{ marginTop: 8 }}
+            token="GTC"
+            appName="stream.party"
+            callerAddress={address}
+            maxApproval={depositAmount}
+            amount={depositAmount}
+            spender={SimpleStream.address}
+            readContracts={readContracts}
+            writeContracts={writeContracts}
+            tokenPayHandler={tokenPayHandler}
+          />
+        )}
       </div>
+
+      <div style={{ paddingBottom: 256 }} />
     </div>
   );
 }
