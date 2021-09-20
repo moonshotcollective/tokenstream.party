@@ -1,16 +1,23 @@
 // deploy/00_deploy_stream_factory_contract.js
 
-module.exports = async ({ getNamedAccounts, deployments }) => {
+module.exports = async ({ getNamedAccounts, getChainId, deployments }) => {
   const { deploy } = deployments;
   const { deployer } = await getNamedAccounts();
+  const chainId = await getChainId();
+
+  console.log({ chainId, type: typeof chainId });
 
   const admin = "0x816a7DCCddB35F12207307d26424d31D2b674dFF";
+  let GTC = { address: "0xde30da39c46104798bb5aa3fe8b9e0e1f348163f" };
 
-  // const GTC = await deploy("GTC", {
-  //   from: deployer,
-  //   args: [admin],
-  //   log: true,
-  // });
+  // deploy dummy GTC on non-mainnet networks
+  if (chainId !== "1") {
+    GTC = await deploy("GTC", {
+      from: deployer,
+      args: [admin],
+      log: true,
+    });
+  }
 
   const streamFactory = await deploy("StreamFactory", {
     from: deployer,
@@ -19,7 +26,7 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
   });
 
   console.log({
-    // GTC: GTC.address,
+    GTC: GTC.address,
     streamFactory: streamFactory.address,
   });
 };
