@@ -5,8 +5,6 @@ module.exports = async ({ getNamedAccounts, getChainId, deployments }) => {
   const { deployer } = await getNamedAccounts();
   const chainId = await getChainId();
 
-  console.log({ chainId, type: typeof chainId });
-
   const admin = "0x816a7DCCddB35F12207307d26424d31D2b674dFF";
   let GTC = { address: "0xde30da39c46104798bb5aa3fe8b9e0e1f348163f" };
 
