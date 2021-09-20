@@ -431,7 +431,7 @@ function App(props) {
               }}
               to="/"
             >
-              YourContract
+              App
             </Link>
           </Menu.Item>
           <Menu.Item key="/debug">
@@ -448,7 +448,7 @@ function App(props) {
 
         <Switch>
           <Route exact path="/">
-            <div>Welcome To GTC Stream</div>
+            <div style={{ marginTop: 60 }}>Welcome To GTC Stream</div>
           </Route>
           <Route path="/user/:address">
             <UserStream

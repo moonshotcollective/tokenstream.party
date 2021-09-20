@@ -12,13 +12,11 @@ function StreamHOC(props) {
   // const [stream, setStream] = useState();
   const stream = useContractReader(props.readContracts, "StreamFactory", "getStreamForUser", [address]) || genAddress;
 
-  // const loadUserStream = async () => {
-  //   // fetch stream address from streamFactory
-  //   const streamAddress = await props.readContracts?.StreamFactory?.getStreamForUser(address);
-  //   setStream(streamAddress);
-  // };
-
-  return stream !== genAddress ? <UserStream stream={stream} {...props} /> : <Button>Create Stream For User</Button>;
+  return stream !== genAddress ? (
+    <UserStream stream={stream} {...props} />
+  ) : (
+    <div style={{ marginTop: 60 }}>This user's stream does not exist. Please create Stream for user first.</div>
+  );
 }
 
 function UserStream({ stream, provider, localProvider, readContracts, ...props }) {
@@ -46,8 +44,6 @@ function UserStream({ stream, provider, localProvider, readContracts, ...props }
       createDepositEvents({ SimpleStream }, "SimpleStream", "Deposit", provider, 1);
     }
   }, [SimpleStream.streamBalance]);
-
-  console.log({ SimpleStream, withdrawEvents });
 
   return ready ? (
     <ExampleUI
