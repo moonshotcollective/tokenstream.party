@@ -26,12 +26,7 @@ contract StreamFactory is AccessControl, Ownable {
         _;
     }
 
-    constructor 
-    (
-        address _admin
-    )
-        public
-    {
+    constructor(address _admin) public {
         _setupRole(DEFAULT_ADMIN_ROLE, _admin);
         transferOwnership(_admin);
     }
@@ -68,7 +63,10 @@ contract StreamFactory is AccessControl, Ownable {
 
     /// @notice Add a new stream for a new user
     /// @param stream the stream contract address
-    function addStreamForUser(SimpleStream stream) public isPermittedFactoryManager {
+    function addStreamForUser(SimpleStream stream)
+        public
+        isPermittedFactoryManager
+    {
         address payable _toAddress = stream.toAddress();
         address streamAddress = address(stream);
 
@@ -85,10 +83,7 @@ contract StreamFactory is AccessControl, Ownable {
 
     /// @notice Adds a new Factory Manager
     /// @param _newFactoryManager the address of the person you are adding
-    function addFactoryManager(address _newFactoryManager)
-        public
-        onlyOwner
-    {
+    function addFactoryManager(address _newFactoryManager) public onlyOwner {
         grantRole(FACTORY_MANAGER, _newFactoryManager);
     }
 }
