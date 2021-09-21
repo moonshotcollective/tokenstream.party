@@ -796,6 +796,10 @@ module.exports = {
         address: "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984",
         abi: ERC20ABI,
       },
+      GTC: {
+        address: "0xDe30da39c46104798bB5aA3fe8B9e0e1F348163F",
+        abi: ERC20ABI,
+      },
     },
   },
 };
