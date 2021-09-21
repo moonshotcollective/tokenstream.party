@@ -20,7 +20,7 @@ import {
 } from "eth-hooks";
 import { useEventListener } from "eth-hooks/events/useEventListener";
 import { useExchangeEthPrice } from "eth-hooks/dapps/dex";
-import { UserStream } from "./views";
+import { UserStream, Home } from "./views";
 
 import { useContractConfig, useUserSigner } from "./hooks";
 import Portis from "@portis/web3";
@@ -448,7 +448,16 @@ function App(props) {
 
         <Switch>
           <Route exact path="/">
-            <div style={{ marginTop: 60 }}>Welcome To GTC Stream</div>
+            <Home
+              mainnetProvider={mainnetProvider}
+              localProvider={localProvider}
+              provider={injectedProvider}
+              address={address}
+              tx={tx}
+              userSigner={userSigner}
+              writeContracts={writeContracts}
+              readContracts={readContracts}
+            />
           </Route>
           <Route path="/user/:address">
             <UserStream
