@@ -44,7 +44,7 @@ contract StreamFactory is AccessControl, Ownable {
         uint256 _frequency,
         bool _startsFull,
         IERC20 _gtc
-    ) public returns (address streamAddress) {
+    ) public isPermittedFactoryManager returns (address streamAddress) {
         // deploy a new stream contract
         SimpleStream newStream = new SimpleStream(
             _toAddress,
