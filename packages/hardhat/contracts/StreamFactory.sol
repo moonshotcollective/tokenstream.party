@@ -1,5 +1,5 @@
-pragma solidity >=0.8.0;
 //SPDX-License-Identifier: MIT
+pragma solidity >=0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
@@ -26,8 +26,9 @@ contract StreamFactory is AccessControl, Ownable {
         _;
     }
 
-    constructor(address _admin) public {
+    constructor(address _admin) {
         _setupRole(DEFAULT_ADMIN_ROLE, _admin);
+        _setupRole(FACTORY_MANAGER, _admin);
         transferOwnership(_admin);
     }
 

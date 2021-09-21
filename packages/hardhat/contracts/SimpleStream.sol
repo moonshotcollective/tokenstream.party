@@ -1,5 +1,5 @@
-pragma solidity >=0.8.0;
 //SPDX-License-Identifier: MIT
+pragma solidity >=0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
@@ -14,7 +14,7 @@ contract SimpleStream {
     uint256 public cap; // = 0.5 ether;
     uint256 public frequency; // 1296000 seconds == 2 weeks;
     uint256 public last; // stream starts empty (last = block.timestamp) or full (block.timestamp - frequency)
-    IERC20 public gtc; 
+    IERC20 public gtc;
 
     constructor(
         address payable _toAddress,
@@ -65,7 +65,7 @@ contract SimpleStream {
     /// @dev Explain to a developer any extra details
     /// @param reason reason for deposit
     /// @param  value the amount of the deposit
-    function streamDeposit(string memory reason, uint value) external {
+    function streamDeposit(string memory reason, uint256 value) external {
         require(value >= cap / 10, "Not big enough, sorry.");
         require(
             gtc.transferFrom(msg.sender, address(this), value),
