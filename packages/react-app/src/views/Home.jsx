@@ -14,16 +14,17 @@ export default function Home({ mainnetProvider, tx, writeContracts, readContract
     const capFormatted = ethers.utils.parseEther(`${amount || "1"}`);
     const frequencyFormatted = ethers.BigNumber.from(`${duration || 1}`).mul("604800");
     const _startFull = startFull === 1;
-    const GTCContractAddress = readContracts.GTC.address;
+    const GTCContractAddress = readContracts && readContracts.GTC.address;
 
     const result = tx(
-      writeContracts.StreamFactory.createStreamFor(
-        userAddress,
-        capFormatted,
-        frequencyFormatted,
-        _startFull,
-        GTCContractAddress,
-      ),
+      writeContracts &&
+        writeContracts.StreamFactory.createStreamFor(
+          userAddress,
+          capFormatted,
+          frequencyFormatted,
+          _startFull,
+          GTCContractAddress,
+        ),
       async update => {
         console.log("📡 Transaction Update:", update);
         if (update && (update.status === "confirmed" || update.status === 1)) {
