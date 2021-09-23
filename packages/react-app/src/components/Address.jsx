@@ -104,14 +104,22 @@ export default function Address(props) {
     );
   }
 
-  return (
+  const blockie = <Blockies seed={address.toLowerCase()} size={8} scale={props.fontSize ? props.fontSize / 7 : 4} />;
+  const textContent = (
+    <span style={{ verticalAlign: "middle", paddingLeft: 5, fontSize: props.fontSize ? props.fontSize : 28 }}>
+      {text}
+    </span>
+  );
+
+  return props.style ? (
+    <div style={props.style || {}}>
+      {blockie}
+      {textContent}
+    </div>
+  ) : (
     <span>
-      <span style={{ verticalAlign: "middle" }}>
-        <Blockies seed={address.toLowerCase()} size={8} scale={props.fontSize ? props.fontSize / 7 : 4} />
-      </span>
-      <span style={{ verticalAlign: "middle", paddingLeft: 5, fontSize: props.fontSize ? props.fontSize : 28 }}>
-        {text}
-      </span>
+      <span style={{ verticalAlign: "middle" }}>{blockie}</span>
+      {textContent}
     </span>
   );
 }
