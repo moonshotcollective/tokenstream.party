@@ -1,33 +1,16 @@
 import React, { useState, useEffect } from "react";
-import {
-  message,
-  Row,
-  Col,
-  Button,
-  List,
-  Divider,
-  Input,
-  Card,
-  DatePicker,
-  Slider,
-  Switch,
-  Progress,
-  Spin,
-} from "antd";
-import { ConsoleSqlOutlined, SyncOutlined } from "@ant-design/icons";
+import { message, Button, List, Divider, Input, notification, Progress } from "antd";
 import { parseEther, formatEther } from "@ethersproject/units";
 import { ethers } from "ethers";
 import axios from "axios";
 import pretty from "pretty-time";
-import { QRPunkBlockie, QRBlockie, EtherInput, Address, Balance, PayButton } from "../components";
-import { DAIABI } from "../contracts/external_ABI";
+import { QRPunkBlockie, Address, Balance, PayButton } from "../components";
 import { useContractReader } from "eth-hooks";
 
 export default function ExampleUI({
   SimpleStream,
   streamToAddress,
   streamfrequency,
-  totalStreamBalance,
   streamCap,
   depositEvents,
   withdrawEvents,
@@ -35,7 +18,6 @@ export default function ExampleUI({
   address,
   stream,
   mainnetProvider,
-  localProvider,
   price,
   tx,
   readContracts,
@@ -109,11 +91,58 @@ export default function ExampleUI({
     );
   }
 
+  const handleStreamWithMessage = (notif, cb) => async update => {
+    console.log("📡 Transaction Update:", update);
+    if (update && (update.status === "confirmed" || update.status === 1)) {
+      console.log(" 🍾 Transaction " + update.hash + " finished!");
+      console.log(
+        " ⛽️ " +
+          update.gasUsed +
+          "/" +
+          (update.gasLimit || update.gas) +
+          " @ " +
+          parseFloat(update.gasPrice) / 1000000000 +
+          " gwei",
+      );
+      notification.success({
+        placement: "topRight",
+        ...notif,
+      });
+      cb && cb();
+    }
+  };
+
+  const withdrawFromStream = async () => {
+    if (!reason || reason.length < 6) {
+      message.error("Please provide a longer reason / work / length");
+    } else {
+      tx(
+        SimpleStream.streamWithdraw(parseEther("" + amount), reason),
+        handleStreamWithMessage(
+          { message: "Withdrawal successful", description: "Your withdrawal from this stream has been processed." },
+          () => {
+            setReason();
+            setAmount();
+          },
+        ),
+      );
+    }
+  };
+
   const tokenPayHandler = async tokenInfo => {
     // deposit amount and reason to stream after transfer confirmations
-    // console.log(tokenInfo);
+    console.log(tokenInfo);
     const formattedAmount = ethers.utils.parseUnits(depositAmount, tokenInfo.decimals);
-    const deposit = tx(await SimpleStream.streamDeposit(depositReason, formattedAmount));
+    await tx(
+      SimpleStream.streamDeposit(depositReason, formattedAmount),
+      handleStreamWithMessage(
+        {
+          message: "Deposit successful",
+          description: `${depositAmount} ${tokenInfo.token} was deposited to this stream.`,
+        },
+        null,
+      ),
+    );
 
     setDepositReason();
     setDepositAmount();
@@ -179,28 +208,15 @@ export default function ExampleUI({
               setReason(e.target.value);
             }}
           />
-          <EtherInput
-            mode="USD"
+          <Input
             autofocus
             price={quoteRate}
             value={amount}
             placeholder="Withdraw amount"
-            onChange={value => {
-              setAmount(value);
-            }}
+            addonAfter="GTC"
+            onChange={e => setAmount(e.target.value)}
           />
-          <Button
-            style={{ marginTop: 8 }}
-            onClick={() => {
-              if (!reason || reason.length < 6) {
-                message.error("Please provide a longer reason / work / length");
-              } else {
-                tx(SimpleStream.streamWithdraw(parseEther("" + amount), reason));
-                setReason();
-                setAmount();
-              }
-            }}
-          >
+          <Button style={{ marginTop: 8 }} onClick={withdrawFromStream}>
             Withdraw
           </Button>
         </div>
@@ -255,15 +271,13 @@ export default function ExampleUI({
             setDepositReason(e.target.value);
           }}
         />
-        <EtherInput
-          mode="USD"
+        <Input
           autofocus
           price={quoteRate}
           value={depositAmount}
           placeholder="Deposit amount"
-          onChange={value => {
-            setDepositAmount(value);
-          }}
+          addonAfter="GTC"
+          onChange={e => setDepositAmount(e.target.value)}
         />
 
         {readContracts.GTC && (
