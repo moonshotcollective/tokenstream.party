@@ -30,7 +30,7 @@ import Authereum from "authereum";
 const { ethers } = require("ethers");
 
 /// 📡 What chain are your contracts deployed to?
-const targetNetwork = NETWORKS.mainnet; // <------- select your target frontend network (localhost, rinkeby, xdai, mainnet)
+const targetNetwork = NETWORKS.localhost; // <------- select your target frontend network (localhost, rinkeby, xdai, mainnet)
 
 // 😬 Sorry for all the console logging
 const DEBUG = false;
@@ -211,6 +211,10 @@ function App(props) {
 
   // If you want to make 🔐 write transactions to your contracts, use the userSigner:
   const writeContracts = useContractLoader(userSigner, contractConfig);
+
+  const streams = useEventListener(readContracts, "StreamFactory", "StreamAdded").map(s => {
+    return s.decode(s.data);
+  });
 
   // EXTERNAL CONTRACT EXAMPLE:
   //
@@ -457,6 +461,7 @@ function App(props) {
               userSigner={userSigner}
               writeContracts={writeContracts}
               readContracts={readContracts}
+              streams={streams}
             />
           </Route>
           <Route path="/user/:address">
