@@ -27,6 +27,7 @@ cd tokenstream
 yarn start
 ```
 
+> Make a copy of `.sample.env` and rename to `.env` in `packages/hardhat`. Don't forget to fill in the variables.
 > in a third terminal window, 🛰 deploy your contract:
 
 ```bash
