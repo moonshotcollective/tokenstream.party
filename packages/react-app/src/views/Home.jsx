@@ -1,11 +1,14 @@
 import React, { useState } from "react";
 import { ethers } from "ethers";
-import { Modal, Button, notification, Radio, InputNumber } from "antd";
-import { AddressInput, EtherInput } from "../components";
+import { Modal, Button, notification, Radio, InputNumber, List } from "antd";
+import { AddressInput, Address } from "../components";
+import { useHistory } from "react-router";
+import { Link } from "react-router-dom";
 
-export default function Home({ mainnetProvider, tx, writeContracts, readContracts, ...props }) {
+export default function Home({ mainnetProvider, tx, writeContracts, readContracts, streams, ...props }) {
+  const history = useHistory();
   const [amount, setAmount] = useState(1);
-  const [userAddress, updateUserAddress] = useState("");
+  const [userAddress, setUserAddress] = useState("");
   const [duration, setDuration] = useState(4);
   const [startFull, setStartFull] = useState(0);
   const [newStreamModal, setNewStreamModal] = useState(false);
@@ -37,6 +40,16 @@ export default function Home({ mainnetProvider, tx, writeContracts, readContract
               parseFloat(update.gasPrice) / 1000000000 +
               " gwei",
           );
+          // reset form to default values
+          setUserAddress("");
+          setAmount(1);
+          setDuration(4);
+          setStartFull(0);
+
+          // close stream modal
+          setNewStreamModal(false);
+
+          // send notification of stream creation
           notification.success({
             message: "New GTC Stream created",
             description: `Stream is now available for ${userAddress}`,
@@ -50,52 +63,83 @@ export default function Home({ mainnetProvider, tx, writeContracts, readContract
   };
 
   return (
-    <div style={{ marginTop: 60 }}>
-      <Button type="primary" onClick={() => setNewStreamModal(true)}>
+    <div style={{ width: 600, margin: "20px auto", padding: 20 }}>
+      <Button style={{ marginTop: 20 }} type="primary" onClick={() => setNewStreamModal(true)}>
         Create New Stream
       </Button>
-      <Modal
-        centered
-        title="Create new stream"
-        visible={newStreamModal}
-        onOk={createNewStream}
-        onCancel={() => setNewStreamModal(false)}
-      >
-        <div style={{ marginBottom: 5 }}>Recipient:</div>
-        <AddressInput ensProvider={mainnetProvider} onChange={a => updateUserAddress(a)} />
-        <div style={{ marginBottom: 25 }} />
-        <div style={{ display: "flex", flex: 1, flexDirection: "row" }}>
-          <div style={{ flex: 1, flexDirection: "column" }}>
-            <div style={{ marginBottom: 5 }}>GTC Amount:</div>
-            <InputNumber
-              placeholder="Amount"
-              min={1}
-              value={amount}
-              onChange={v => setAmount(v)}
-              style={{ width: "100%" }}
-            />
+      {newStreamModal && (
+        <Modal
+          centered
+          title="Create new stream"
+          visible={newStreamModal}
+          onOk={createNewStream}
+          onCancel={() => setNewStreamModal(false)}
+        >
+          <div style={{ marginBottom: 5 }}>Recipient:</div>
+          <AddressInput ensProvider={mainnetProvider} value={userAddress} onChange={a => setUserAddress(a)} />
+          <div style={{ marginBottom: 25 }} />
+          <div style={{ display: "flex", flex: 1, flexDirection: "row" }}>
+            <div style={{ flex: 1, flexDirection: "column" }}>
+              <div style={{ marginBottom: 5 }}>GTC Amount:</div>
+              <InputNumber
+                placeholder="Amount"
+                min={1}
+                value={amount}
+                onChange={v => setAmount(v)}
+                style={{ width: "100%" }}
+              />
+            </div>
+            <div style={{ marginLeft: 10, marginRight: 10 }} />
+            <div style={{ flex: 1, flexDirection: "column" }}>
+              <div style={{ marginBottom: 5 }}>Frequency in weeks:</div>
+              <InputNumber
+                placeholder="Duration"
+                min={1}
+                value={duration}
+                onChange={d => setDuration(d)}
+                style={{ width: "100%" }}
+              />
+            </div>
+            <div style={{ marginLeft: 10, marginRight: 10 }} />
+            <div style={{ flex: 1, flexDirection: "column" }}>
+              <div style={{ marginBottom: 5 }}>Start full:</div>
+              <Radio.Group onChange={e => setStartFull(e.target.value)} value={startFull}>
+                <Radio value={1}>Yes</Radio>
+                <Radio value={0}>No</Radio>
+              </Radio.Group>
+            </div>
           </div>
-          <div style={{ marginLeft: 10, marginRight: 10 }} />
-          <div style={{ flex: 1, flexDirection: "column" }}>
-            <div style={{ marginBottom: 5 }}>Frequency in weeks:</div>
-            <InputNumber
-              placeholder="Duration"
-              min={1}
-              value={duration}
-              onChange={d => setDuration(d)}
-              style={{ width: "100%" }}
-            />
-          </div>
-          <div style={{ marginLeft: 10, marginRight: 10 }} />
-          <div style={{ flex: 1, flexDirection: "column" }}>
-            <div style={{ marginBottom: 5 }}>Start full:</div>
-            <Radio.Group onChange={e => setStartFull(e.target.value)} value={startFull}>
-              <Radio value={1}>Yes</Radio>
-              <Radio value={0}>No</Radio>
-            </Radio.Group>
-          </div>
-        </div>
-      </Modal>
+        </Modal>
+      )}
+
+      <div style={{ marginTop: 30 }}>
+        <List
+          bordered
+          dataSource={streams}
+          renderItem={item => (
+            <List.Item>
+              <div
+                style={{
+                  width: "100%",
+                  position: "relative",
+                  display: "flex",
+                  flex: 1,
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <Address
+                  value={item.user}
+                  ensProvider={mainnetProvider}
+                  fontSize={18}
+                  style={{ display: "flex", flex: 1, alignItems: "center" }}
+                />
+                <Link to={`/user/${item.user}`}>View Stream</Link>
+              </div>
+            </List.Item>
+          )}
+        />
+      </div>
     </div>
   );
 }
