@@ -2,11 +2,12 @@
 pragma solidity >=0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
 /// @title Simple Stream Contract
 /// @author ghostffcode
 /// @notice the meat and potatoes of the stream
-contract SimpleStream {
+contract SimpleStream is Ownable {
     event Withdraw(address indexed to, uint256 amount, string reason);
     event Deposit(address indexed from, uint256 amount, string reason);
 
@@ -32,6 +33,12 @@ contract SimpleStream {
         } else {
             last = block.timestamp;
         }
+    }
+
+    /// @dev update the cap of a stream
+    /// @param _cap cap update value for the stream
+    function updateCap(uint256 _cap) public onlyOwner {
+        cap = _cap;
     }
 
     /// @dev get the balance of a stream
