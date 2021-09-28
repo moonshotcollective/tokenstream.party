@@ -5,7 +5,7 @@
       "chainId": "1",
       "contracts": {
         "StreamFactory": {
-          "address": "0xE5097a234dB7A19e32004c2fFD777Fac040B2529",
+          "address": "0x83956ee78a378c8b9FCdeA283c627da4b59ae9dD",
           "abi": [
             {
               "inputs": [
@@ -400,6 +400,24 @@
               "inputs": [
                 {
                   "internalType": "address",
+                  "name": "user",
+                  "type": "address"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "cap",
+                  "type": "uint256"
+                }
+              ],
+              "name": "updateUserStreamCap",
+              "outputs": [],
+              "stateMutability": "nonpayable",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "address",
                   "name": "",
                   "type": "address"
                 }
@@ -426,7 +444,7 @@
       "chainId": "4",
       "contracts": {
         "GTC": {
-          "address": "0xbC4eb98B8442bc60504Ed3e4a349CC098c11a000",
+          "address": "0x83956ee78a378c8b9FCdeA283c627da4b59ae9dD",
           "abi": [
             {
               "inputs": [
@@ -594,6 +612,13 @@
               "type": "function"
             },
             {
+              "inputs": [],
+              "name": "faucetMint",
+              "outputs": [],
+              "stateMutability": "nonpayable",
+              "type": "function"
+            },
+            {
               "inputs": [
                 {
                   "internalType": "address",
@@ -712,7 +737,7 @@
           ]
         },
         "StreamFactory": {
-          "address": "0xE5097a234dB7A19e32004c2fFD777Fac040B2529",
+          "address": "0x893bf733497f6d5AaBA3B3Ac3258Cf570fB7BDb4",
           "abi": [
             {
               "inputs": [
@@ -1099,6 +1124,24 @@
                 }
               ],
               "name": "transferOwnership",
+              "outputs": [],
+              "stateMutability": "nonpayable",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "address",
+                  "name": "user",
+                  "type": "address"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "cap",
+                  "type": "uint256"
+                }
+              ],
+              "name": "updateUserStreamCap",
               "outputs": [],
               "stateMutability": "nonpayable",
               "type": "function"
