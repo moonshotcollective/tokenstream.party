@@ -18,7 +18,8 @@ import {
   useOnBlock,
   useUserProviderAndSigner,
 } from "eth-hooks";
-import { useEventListener } from "eth-hooks/events/useEventListener";
+import { useEventListener } from "eth-hooks/events";
+// import useEventListener from "./hooks/oldEventListener";
 import { useExchangeEthPrice } from "eth-hooks/dapps/dex";
 import { UserStream, Home } from "./views";
 
@@ -212,7 +213,7 @@ function App(props) {
   // If you want to make 🔐 write transactions to your contracts, use the userSigner:
   const writeContracts = useContractLoader(userSigner, contractConfig);
 
-  const streams = useEventListener(readContracts, "StreamFactory", "StreamAdded").map(s => {
+  const streams = useEventListener(readContracts, "StreamFactory", "StreamAdded", localProvider).map(s => {
     return s.decode(s.data);
   });
 
