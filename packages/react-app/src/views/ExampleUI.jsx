@@ -282,9 +282,10 @@ export default function ExampleUI({
 
         {readContracts.GTC && (
           <PayButton
+            tx={tx}
             style={{ marginTop: 8 }}
             token="GTC"
-            appName="stream.party"
+            appName="GTCStream"
             callerAddress={address}
             maxApproval={depositAmount}
             amount={depositAmount}
