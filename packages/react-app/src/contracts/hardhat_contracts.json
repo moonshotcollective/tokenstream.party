@@ -5,7 +5,7 @@
       "chainId": "1",
       "contracts": {
         "StreamFactory": {
-          "address": "0x83956ee78a378c8b9FCdeA283c627da4b59ae9dD",
+          "address": "0xE5097a234dB7A19e32004c2fFD777Fac040B2529",
           "abi": [
             {
               "inputs": [
@@ -392,24 +392,6 @@
                 }
               ],
               "name": "transferOwnership",
-              "outputs": [],
-              "stateMutability": "nonpayable",
-              "type": "function"
-            },
-            {
-              "inputs": [
-                {
-                  "internalType": "address",
-                  "name": "user",
-                  "type": "address"
-                },
-                {
-                  "internalType": "uint256",
-                  "name": "cap",
-                  "type": "uint256"
-                }
-              ],
-              "name": "updateUserStreamCap",
               "outputs": [],
               "stateMutability": "nonpayable",
               "type": "function"
@@ -737,7 +719,7 @@
           ]
         },
         "StreamFactory": {
-          "address": "0x893bf733497f6d5AaBA3B3Ac3258Cf570fB7BDb4",
+          "address": "0xE5097a234dB7A19e32004c2fFD777Fac040B2529",
           "abi": [
             {
               "inputs": [
@@ -1124,24 +1106,6 @@
                 }
               ],
               "name": "transferOwnership",
-              "outputs": [],
-              "stateMutability": "nonpayable",
-              "type": "function"
-            },
-            {
-              "inputs": [
-                {
-                  "internalType": "address",
-                  "name": "user",
-                  "type": "address"
-                },
-                {
-                  "internalType": "uint256",
-                  "name": "cap",
-                  "type": "uint256"
-                }
-              ],
-              "name": "updateUserStreamCap",
               "outputs": [],
               "stateMutability": "nonpayable",
               "type": "function"

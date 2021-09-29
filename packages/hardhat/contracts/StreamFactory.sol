@@ -76,13 +76,6 @@ contract StreamFactory is AccessControl, Ownable {
         emit StreamAdded(msg.sender, _toAddress, streamAddress);
     }
 
-    function updateUserStreamCap(address user, uint256 cap)
-        public
-        isPermittedFactoryManager
-    {
-        SimpleStream(userStreams[user]).updateCap(cap);
-    }
-
     /// @notice returns a stream for a specified user
     /// @param user the user to get a stream for
     function getStreamForUser(address user) public view returns (address) {
