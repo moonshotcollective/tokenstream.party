@@ -149,10 +149,10 @@ const web3Modal = new Web3Modal({
 
 function App(props) {
   const mainnetProvider =
-    poktMainnetProvider && poktMainnetProvider._isProvider
-      ? poktMainnetProvider
-      : scaffoldEthProvider && scaffoldEthProvider._network
+    scaffoldEthProvider && scaffoldEthProvider._network
       ? scaffoldEthProvider
+      : poktMainnetProvider && poktMainnetProvider._isProvider
+      ? poktMainnetProvider
       : mainnetInfura;
 
   const [injectedProvider, setInjectedProvider] = useState();
@@ -456,7 +456,7 @@ function App(props) {
             <Home
               mainnetProvider={mainnetProvider}
               localProvider={localProvider}
-              provider={injectedProvider}
+              provider={localProvider || injectedProvider}
               address={address}
               tx={tx}
               userSigner={userSigner}
