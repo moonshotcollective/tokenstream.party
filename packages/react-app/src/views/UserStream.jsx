@@ -22,7 +22,7 @@ function StreamHOC(props) {
 function UserStream({ stream, provider, localProvider, readContracts, ...props }) {
   const [data, setData] = useState({});
   const [ready, setReady] = useState(false);
-  const SimpleStream = useExternalContractLoader(provider, stream, SimpleStreamABI) || {};
+  const SimpleStream = useExternalContractLoader(localProvider, stream, SimpleStreamABI) || {};
   const [withdrawEvents, createWithdrawEvents] = useEventListener();
   const [depositEvents, createDepositEvents] = useEventListener();
 
@@ -40,8 +40,8 @@ function UserStream({ stream, provider, localProvider, readContracts, ...props }
   useEffect(() => {
     if (SimpleStream.streamBalance) {
       loadStreamData();
-      createWithdrawEvents({ SimpleStream }, "SimpleStream", "Withdraw", provider, 1);
-      createDepositEvents({ SimpleStream }, "SimpleStream", "Deposit", provider, 1);
+      createWithdrawEvents({ SimpleStream }, "SimpleStream", "Withdraw", localProvider, 1);
+      createDepositEvents({ SimpleStream }, "SimpleStream", "Deposit", localProvider, 1);
     }
   }, [SimpleStream.streamBalance]);
 
