@@ -131,7 +131,6 @@ export default function ExampleUI({
 
   const tokenPayHandler = async tokenInfo => {
     // deposit amount and reason to stream after transfer confirmations
-    console.log(tokenInfo);
     const formattedAmount = ethers.utils.parseUnits(depositAmount, tokenInfo.decimals);
     await tx(
       SimpleStream.streamDeposit(depositReason, formattedAmount),
