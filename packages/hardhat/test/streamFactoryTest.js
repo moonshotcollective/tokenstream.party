@@ -16,7 +16,10 @@ describe("GTCStream", function () {
 
       const [signer] = await ethers.getSigners();
 
-      myStreamFactory = await StreamFactory.deploy(signer.address);
+      myStreamFactory = await StreamFactory.deploy(signer.address, [
+        signer.address,
+        user,
+      ]);
       myGTC = await GTC.deploy(signer.address);
     });
 
