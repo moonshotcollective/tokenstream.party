@@ -31,7 +31,7 @@ import Authereum from "authereum";
 const { ethers } = require("ethers");
 
 /// 📡 What chain are your contracts deployed to?
-const targetNetwork = NETWORKS.mainnet; // <------- select your target frontend network (localhost, rinkeby, xdai, mainnet)
+const targetNetwork = NETWORKS.localhost; // <------- select your target frontend network (localhost, rinkeby, xdai, mainnet)
 
 // 😬 Sorry for all the console logging
 const DEBUG = false;
@@ -456,7 +456,6 @@ function App(props) {
             <Home
               mainnetProvider={mainnetProvider}
               localProvider={localProvider}
-              provider={localProvider || injectedProvider}
               address={address}
               tx={tx}
               userSigner={userSigner}
@@ -471,7 +470,7 @@ function App(props) {
               userSigner={userSigner}
               mainnetProvider={mainnetProvider}
               localProvider={localProvider}
-              provider={injectedProvider}
+              provider={injectedProvider || localProvider}
               tx={tx}
               gasPrice={gasPrice}
               price={price}
