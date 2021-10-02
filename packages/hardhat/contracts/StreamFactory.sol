@@ -26,10 +26,12 @@ contract StreamFactory is AccessControl, Ownable {
         _;
     }
 
-    constructor(address _admin) {
-        _setupRole(DEFAULT_ADMIN_ROLE, _admin);
-        _setupRole(FACTORY_MANAGER, _admin);
-        transferOwnership(_admin);
+    constructor(address owner, address[] memory admins) {
+        for (uint256 i = 0; i < admins.length; i++) {
+            _setupRole(DEFAULT_ADMIN_ROLE, admins[i]);
+            _setupRole(FACTORY_MANAGER, admins[i]);
+        }
+        transferOwnership(owner);
     }
 
     /// @notice Creates a new stream
@@ -78,13 +80,28 @@ contract StreamFactory is AccessControl, Ownable {
 
     /// @notice returns a stream for a specified user
     /// @param user the user to get a stream for
-    function getStreamForUser(address user) public view returns (address) {
-        return userStreams[user];
+    function getStreamForUser(address payable user)
+        public
+        view
+        returns (address streamAddress)
+    {
+        streamAddress = userStreams[user];
     }
 
     /// @notice Adds a new Factory Manager
     /// @param _newFactoryManager the address of the person you are adding
     function addFactoryManager(address _newFactoryManager) public onlyOwner {
         grantRole(FACTORY_MANAGER, _newFactoryManager);
+    }
+
+    function increaseUserStreamCap(address user, uint256 increase)
+        public
+        isPermittedFactoryManager
+    {
+        SimpleStream(userStreams[user]).increaseCap(increase);
+    }
+
+    function releaseUserStream(address user) public isPermittedFactoryManager {
+        SimpleStream(userStreams[user]).transferOwnership(user);
     }
 }
