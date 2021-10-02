@@ -2,11 +2,15 @@
 pragma solidity >=0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
 /// @title Simple Stream Contract
 /// @author ghostffcode
 /// @notice the meat and potatoes of the stream
-contract SimpleStream {
+contract SimpleStream is Ownable {
+    using SafeMath for uint256;
+
     event Withdraw(address indexed to, uint256 amount, string reason);
     event Deposit(address indexed from, uint256 amount, string reason);
 
@@ -72,5 +76,10 @@ contract SimpleStream {
             "Transfer of tokens is not approved or insufficient funds"
         );
         emit Deposit(msg.sender, value, reason);
+    }
+
+    function increaseCap(uint256 _increase) public onlyOwner {
+        require(_increase > 0, "Increase cap by more than 0");
+        cap = cap.add(_increase);
     }
 }
