@@ -20,15 +20,26 @@ module.exports = async ({ getNamedAccounts, getChainId, deployments }) => {
     });
   }
 
+  // deploy the stream factory
   const streamFactory = await deploy("StreamFactory", {
     from: deployer,
     args: [admins[0], admins],
     log: true,
   });
 
+  // log the GTC and StreamFactory addresses
   console.log({
     GTC: GTC.address,
     streamFactory: streamFactory.address,
   });
+
+  if (chainId !== "31337") {
+    await run("verify:verify", {
+      address: streamFactory.address,
+      contract: "contracts/StreamFactory.sol:StreamFactory",
+      constructorArguments: [admins[0], admins],
+    });
+  }
 };
+
 module.exports.tags = ["GTC", "StreamFactory", "SimpleStream"];
