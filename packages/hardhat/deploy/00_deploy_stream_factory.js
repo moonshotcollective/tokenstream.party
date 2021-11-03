@@ -11,7 +11,8 @@ module.exports = async ({ getNamedAccounts, getChainId, deployments }) => {
 
   // deploy dummy GTC on non-mainnet networks
   if (chainId !== "1") {
-    admins[0] = process.env.DEVELOPER;
+    admins[0] = process.env.MANAGER1;
+    admins[1] = process.env.MANAGER2;
 
     GTC = await deploy("GTC", {
       from: deployer,
