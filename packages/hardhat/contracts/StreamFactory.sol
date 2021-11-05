@@ -56,7 +56,7 @@ contract StreamFactory is AccessControl, Ownable {
         IERC20 _gtc
     ) public isPermittedFactoryManager returns (address streamAddress) {
         User storage user = users[_toAddress];
-        require(user.hasStream, "User already has a stream!");
+        require(user.hasStream == false, "User already has a stream!");
         users[_toAddress].hasStream = true;
         // deploy a new stream contract
         SimpleStream newStream = new SimpleStream(
