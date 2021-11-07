@@ -81,6 +81,8 @@ contract StreamFactory is AccessControl, Ownable {
         public
         isPermittedFactoryManager
     {
+        User storage user = users[stream.toAddress()];
+        require(user.hasStream == false, "User already has a stream!");
         address payable _toAddress = stream.toAddress();
         address streamAddress = address(stream);
 
