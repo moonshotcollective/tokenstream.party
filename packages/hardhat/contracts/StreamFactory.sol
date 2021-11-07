@@ -75,7 +75,7 @@ contract StreamFactory is AccessControl, Ownable {
         emit StreamAdded(msg.sender, _toAddress, streamAddress);
     }
 
-    /// @notice Add a new stream for a new user
+    /// @notice Add a existing stream to the factory
     /// @param stream the stream contract address
     function addStreamForUser(SimpleStream stream)
         public
