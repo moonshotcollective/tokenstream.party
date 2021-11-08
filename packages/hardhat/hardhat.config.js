@@ -12,7 +12,7 @@ require("@nomiclabs/hardhat-etherscan");
 
 const { isAddress, getAddress, formatUnits, parseUnits } = utils;
 const defaultNetwork = "kovan";
-const mainnetGwei = 21;
+const mainnetGwei = 90;
 
 function mnemonic() {
   try {
