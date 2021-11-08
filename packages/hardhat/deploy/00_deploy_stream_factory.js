@@ -34,13 +34,13 @@ module.exports = async ({ getNamedAccounts, getChainId, deployments }) => {
     streamFactory: streamFactory.address,
   });
 
-  if (chainId !== "31337") {
-    await run("verify:verify", {
-      address: streamFactory.address,
-      contract: "contracts/StreamFactory.sol:StreamFactory",
-      constructorArguments: [admins[0], admins],
-    });
-  }
+  // if (chainId !== "31337") {
+  //   await run("verify:verify", {
+  //     address: streamFactory.address,
+  //     contract: "contracts/StreamFactory.sol:StreamFactory",
+  //     constructorArguments: [admins[0], admins],
+  //   });
+  // }
 };
 
 module.exports.tags = ["GTC", "StreamFactory", "SimpleStream"];

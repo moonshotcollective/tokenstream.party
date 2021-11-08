@@ -10,7 +10,15 @@ import "./SimpleStream.sol";
 /// @author ghostffcode
 /// @notice Creates instances of SimpleStream for users
 contract StreamFactory is AccessControl, Ownable {
+    /// @dev user address to stream address mapping
     mapping(address => address) public userStreams;
+
+    /// @dev keep track if user has a stream or not
+    mapping(address => User) public users;
+
+    struct User {
+        bool hasStream;
+    }
 
     /// @dev StreamAdded event to track the streams after creation
     event StreamAdded(address creator, address user, address stream);
@@ -47,6 +55,9 @@ contract StreamFactory is AccessControl, Ownable {
         bool _startsFull,
         IERC20 _gtc
     ) public isPermittedFactoryManager returns (address streamAddress) {
+        User storage user = users[_toAddress];
+        require(user.hasStream == false, "User already has a stream!");
+        user.hasStream = true;
         // deploy a new stream contract
         SimpleStream newStream = new SimpleStream(
             _toAddress,
@@ -64,12 +75,14 @@ contract StreamFactory is AccessControl, Ownable {
         emit StreamAdded(msg.sender, _toAddress, streamAddress);
     }
 
-    /// @notice Add a new stream for a new user
+    /// @notice Add a existing stream to the factory
     /// @param stream the stream contract address
     function addStreamForUser(SimpleStream stream)
         public
         isPermittedFactoryManager
     {
+        User storage user = users[stream.toAddress()];
+        require(user.hasStream == false, "User already has a stream!");
         address payable _toAddress = stream.toAddress();
         address streamAddress = address(stream);
 
