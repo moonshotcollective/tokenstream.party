@@ -11,8 +11,8 @@ require("hardhat-gas-reporter");
 require("@nomiclabs/hardhat-etherscan");
 
 const { isAddress, getAddress, formatUnits, parseUnits } = utils;
-const defaultNetwork = "kovan";
-const mainnetGwei = 90;
+const defaultNetwork = "mainnet";
+const mainnetGwei = 115;
 
 function mnemonic() {
   try {
@@ -48,7 +48,7 @@ module.exports = {
       },
     },
     mainnet: {
-      url: "https://eth-mainnet.alchemyapi.io/v2/qCdzfF9UqXcJYIle-Ff-BN0MII8LjLQs", // <---- YOUR INFURA ID! (or it won't work)
+      url: "https://eth-mainnet.alchemyapi.io/v2/oKxs-03sij-U_N0iOlrSsZFr29-IqbuF", // <---- YOUR INFURA ID! (or it won't work)
       //      url: "https://speedy-nodes-nyc.moralis.io/XXXXXXXXXXXXXXXXXXXXXXXXX/eth/mainnet", // <---- YOUR MORALIS ID! (not limited to infura)
       gasPrice: mainnetGwei * 1000000000,
       accounts: {

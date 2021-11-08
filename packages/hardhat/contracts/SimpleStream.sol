@@ -50,8 +50,9 @@ contract SimpleStream is Ownable {
     /// @dev withdraw from a stream
     /// @param amount amount of withdraw
     /// @param reason reason for withdraw
-    function streamWithdraw(uint256 amount, string memory reason) external {
-        require(msg.sender == toAddress, "this stream is not for you");
+    function streamWithdraw(uint256 amount, string memory reason, address beneficiary) external {
+        require(msg.sender == toAddress, "this stream is not for you ser");
+        require(beneficiary != address(0), "cannot send to zero address");
         uint256 totalAmountCanWithdraw = streamBalance();
         require(totalAmountCanWithdraw >= amount, "not enough in the stream");
         uint256 cappedLast = block.timestamp - frequency;
@@ -61,8 +62,8 @@ contract SimpleStream is Ownable {
         last =
             last +
             (((block.timestamp - last) * amount) / totalAmountCanWithdraw);
-        emit Withdraw(msg.sender, amount, reason);
-        require(gtc.transfer(msg.sender, amount), "Transfer failed");
+        emit Withdraw(beneficiary, amount, reason);
+        require(gtc.transfer(beneficiary, amount), "Transfer failed");
     }
 
     /// @notice Explain to an end user what this does

@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from "react";
-import { message, Button, List, Divider, Input, notification, Progress } from "antd";
-import { parseEther, formatEther } from "@ethersproject/units";
-import { ethers } from "ethers";
+import { formatEther, parseEther } from "@ethersproject/units";
+import { Button, Divider, Input, List, message, notification, Progress } from "antd";
 import axios from "axios";
-import pretty from "pretty-time";
-import { QRPunkBlockie, Address, Balance, PayButton } from "../components";
 import { useContractReader } from "eth-hooks";
+import { ethers } from "ethers";
+import pretty from "pretty-time";
+import React, { useEffect, useState } from "react";
+import { Address, AddressInput, Balance, PayButton, QRPunkBlockie } from "../components";
 
 export default function ExampleUI({
   SimpleStream,
@@ -25,6 +25,7 @@ export default function ExampleUI({
 }) {
   const [amount, setAmount] = useState();
   const [reason, setReason] = useState();
+  const [toAddress, setToAddress] = useState();
 
   const [depositAmount, setDepositAmount] = useState();
   const [depositReason, setDepositReason] = useState();
@@ -117,7 +118,7 @@ export default function ExampleUI({
       message.error("Please provide a longer reason / work / length");
     } else {
       tx(
-        SimpleStream.streamWithdraw(parseEther("" + amount), reason),
+        SimpleStream.streamWithdraw(parseEther("" + amount), reason, toAddress),
         handleStreamWithMessage(
           { message: "Withdrawal successful", description: "Your withdrawal from this stream has been processed." },
           () => {
@@ -208,12 +209,19 @@ export default function ExampleUI({
             }}
           />
           <Input
+            style={{ marginBottom: 8 }}
             autofocus
             price={quoteRate}
             value={amount}
-            placeholder="Withdraw amount"
+            placeholder="Withdraw Amount"
             addonAfter="GTC"
             onChange={e => setAmount(e.target.value)}
+          />
+          <AddressInput
+            ensProvider={mainnetProvider}
+            placeholder="Enter Beneficiary Address"
+            value={toAddress}
+            onChange={setToAddress}
           />
           <Button style={{ marginTop: 8 }} onClick={withdrawFromStream}>
             Withdraw
@@ -271,7 +279,7 @@ export default function ExampleUI({
           }}
         />
         <Input
-          autofocus
+          autoFocus
           price={quoteRate}
           value={depositAmount}
           placeholder="Deposit amount"
