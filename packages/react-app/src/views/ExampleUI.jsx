@@ -217,12 +217,6 @@ export default function ExampleUI({
             addonAfter="GTC"
             onChange={e => setAmount(e.target.value)}
           />
-          <AddressInput
-            ensProvider={mainnetProvider}
-            placeholder="Enter Beneficiary Address"
-            value={toAddress}
-            onChange={setToAddress}
-          />
           <Button style={{ marginTop: 8 }} onClick={withdrawFromStream}>
             Withdraw
           </Button>
