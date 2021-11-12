@@ -116,7 +116,7 @@ export default function AddressInput(props) {
   );
 
   return (
-    <div>
+    <div style={props.style}>
       {scanner}
       <Input
         id="0xAddress" // name it something other than address for auto fill doxxing

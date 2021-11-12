@@ -9,6 +9,7 @@ export default function Home({ mainnetProvider, tx, writeContracts, readContract
   const history = useHistory();
   const [amount, setAmount] = useState(1);
   const [userAddress, setUserAddress] = useState("");
+  const [defaultFunder, setDefaultFunder] = useState("");
   const [duration, setDuration] = useState(4);
   const [startFull, setStartFull] = useState(0);
   const [newStreamModal, setNewStreamModal] = useState(false);
@@ -23,6 +24,7 @@ export default function Home({ mainnetProvider, tx, writeContracts, readContract
       writeContracts &&
         writeContracts.StreamFactory.createStreamFor(
           userAddress,
+          defaultFunder,
           capFormatted,
           frequencyFormatted,
           _startFull,
@@ -78,6 +80,9 @@ export default function Home({ mainnetProvider, tx, writeContracts, readContract
         >
           <div style={{ marginBottom: 5 }}>Recipient:</div>
           <AddressInput ensProvider={mainnetProvider} value={userAddress} onChange={a => setUserAddress(a)} />
+          <div style={{ marginBottom: 20 }} />
+          <div style={{ marginBottom: 5 }}>Default funding wallet address:</div>
+          <AddressInput ensProvider={mainnetProvider} value={defaultFunder} onChange={a => setDefaultFunder(a)} />
           <div style={{ marginBottom: 25 }} />
           <div style={{ display: "flex", flex: 1, flexDirection: "row" }}>
             <div style={{ flex: 1, flexDirection: "column" }}>

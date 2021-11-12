@@ -7,6 +7,11 @@ export const SimpleStreamABI = [
         type: "address",
       },
       {
+        internalType: "address",
+        name: "_funder",
+        type: "address",
+      },
+      {
         internalType: "uint256",
         name: "_cap",
         type: "uint256",
@@ -84,6 +89,12 @@ export const SimpleStreamABI = [
         type: "address",
       },
       {
+        indexed: true,
+        internalType: "address",
+        name: "from",
+        type: "address",
+      },
+      {
         indexed: false,
         internalType: "uint256",
         name: "amount",
@@ -120,6 +131,19 @@ export const SimpleStreamABI = [
         internalType: "uint256",
         name: "",
         type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "funder",
+    outputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
       },
     ],
     stateMutability: "view",
@@ -172,19 +196,6 @@ export const SimpleStreamABI = [
         internalType: "address",
         name: "",
         type: "address",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "purpose",
-    outputs: [
-      {
-        internalType: "string",
-        name: "",
-        type: "string",
       },
     ],
     stateMutability: "view",
@@ -247,6 +258,34 @@ export const SimpleStreamABI = [
       },
     ],
     name: "streamWithdraw",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "amount",
+        type: "uint256",
+      },
+      {
+        internalType: "string",
+        name: "reason",
+        type: "string",
+      },
+      {
+        internalType: "address",
+        name: "beneficiary",
+        type: "address",
+      },
+      {
+        internalType: "address",
+        name: "from",
+        type: "address",
+      },
+    ],
+    name: "streamWithdrawFrom",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",

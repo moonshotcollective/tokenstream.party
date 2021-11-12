@@ -25,7 +25,8 @@ export default function ExampleUI({
 }) {
   const [amount, setAmount] = useState();
   const [reason, setReason] = useState();
-  const [toAddress, setToAddress] = useState();
+  const [toAddress, setToAddress] = useState("");
+  const [fromAddress, setFromAddress] = useState("");
 
   const [depositAmount, setDepositAmount] = useState();
   const [depositReason, setDepositReason] = useState();
@@ -117,8 +118,20 @@ export default function ExampleUI({
     if (!reason || reason.length < 6) {
       message.error("Please provide a longer reason / work / length");
     } else {
+      let handler = "streamWithdraw";
+      const params = [parseEther("" + amount), reason];
+      // set the beneficiary
+      params.push(toAddress.length > 0 ? toAddress : address);
+      // if a funder was specified, use as wallet address
+      if (fromAddress.length > 0) {
+        handler = "streamWithdrawFrom";
+        params.push(fromAddress);
+      }
+
+      console.log({ params, f: SimpleStream.streamWithdraw, handler });
+
       tx(
-        SimpleStream.streamWithdraw(parseEther("" + amount), reason, toAddress),
+        SimpleStream[handler](...params),
         handleStreamWithMessage(
           { message: "Withdrawal successful", description: "Your withdrawal from this stream has been processed." },
           () => {
@@ -218,10 +231,17 @@ export default function ExampleUI({
             onChange={e => setAmount(e.target.value)}
           />
           <AddressInput
+            style={{ marginBottom: 8 }}
             ensProvider={mainnetProvider}
-            placeholder="Enter Beneficiary Address"
+            placeholder="Enter Beneficiary Address (optional)"
             value={toAddress}
             onChange={setToAddress}
+          />
+          <AddressInput
+            ensProvider={mainnetProvider}
+            placeholder="Enter Funder Wallet Address (optional)"
+            value={fromAddress}
+            onChange={setFromAddress}
           />
           <Button style={{ marginTop: 8 }} onClick={withdrawFromStream}>
             Withdraw
