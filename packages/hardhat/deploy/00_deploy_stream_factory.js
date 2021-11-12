@@ -7,20 +7,20 @@ module.exports = async ({ getNamedAccounts, getChainId, deployments }) => {
   const chainId = await getChainId();
 
   const admins = [];
-  const GTC = { address: "0xde30da39c46104798bb5aa3fe8b9e0e1f348163f" };
+  let GTC = { address: "0xde30da39c46104798bb5aa3fe8b9e0e1f348163f" };
 
   admins[0] = process.env.MANAGER1;
   admins[1] = process.env.MANAGER2;
   admins[2] = process.env.MANAGER3;
 
-  // // deploy dummy GTC on non-mainnet networks
-  // if (chainId !== "1") {
-  //   GTC = await deploy("GTC", {
-  //     from: deployer,
-  //     args: [admins[2]],
-  //     log: true,
-  //   });
-  // }
+  // deploy dummy GTC on non-mainnet networks
+  if (chainId !== "1") {
+    GTC = await deploy("GTC", {
+      from: deployer,
+      args: [admins[2]],
+      log: true,
+    });
+  }
 
   // deploy the stream factory
   const streamFactory = await deploy("StreamFactory", {

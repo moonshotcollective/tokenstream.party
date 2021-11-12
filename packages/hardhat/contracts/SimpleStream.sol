@@ -66,7 +66,7 @@ contract SimpleStream is Ownable {
         string memory reason,
         address beneficiary
     ) external {
-        streamWithdraw(amount, reason, beneficiary, funder);
+        _handleWithdrawal(amount, reason, beneficiary, funder);
     }
 
     /// @dev handle stream withdrawal
@@ -74,18 +74,27 @@ contract SimpleStream is Ownable {
     /// @param reason reason for withdraw
     /// @param beneficiary who to transfer tokens to
     /// @param from who to transfer tokens from
-    function streamWithdraw(
+    function streamWithdrawFrom(
         uint256 amount,
         string memory reason,
         address beneficiary,
         address from
     ) external {
+        _handleWithdrawal(amount, reason, beneficiary, from);
+    }
+
+    function _handleWithdrawal(
+        uint256 amount,
+        string memory reason,
+        address beneficiary,
+        address from
+    ) private {
         require(msg.sender == toAddress, "this stream is not for you ser");
         require(beneficiary != address(0), "cannot send to zero address");
         require(from != address(0), "cannot send from zero address");
         require(
-            _gtc.balanceOf(from) >= amount &&
-                _gtc.allowance(from, address(this)) >= amount,
+            gtc.balanceOf(from) >= amount &&
+                gtc.allowance(from, address(this)) >= amount,
             "Not enough balance/approval of tokens"
         );
         uint256 totalAmountCanWithdraw = streamBalance();
@@ -97,7 +106,7 @@ contract SimpleStream is Ownable {
         last =
             last +
             (((block.timestamp - last) * amount) / totalAmountCanWithdraw);
-        require(gtc.transferFrom(from, beneficiary, amount), "Transfer failed");
+        gtc.safeTransferFrom(from, beneficiary, amount);
         emit Withdraw(beneficiary, from, amount, reason);
     }
 
@@ -107,10 +116,7 @@ contract SimpleStream is Ownable {
     /// @param  value the amount of the deposit
     function streamDeposit(string memory reason, uint256 value) external {
         require(value >= cap / 10, "Not big enough, sorry.");
-        require(
-            gtc.safeTransferFrom(msg.sender, address(this), value),
-            "Transfer of tokens is not approved or insufficient funds"
-        );
+        gtc.safeTransferFrom(msg.sender, address(this), value);
         emit Deposit(msg.sender, value, reason);
     }
 
