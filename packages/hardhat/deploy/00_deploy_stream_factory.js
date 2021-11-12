@@ -7,24 +7,25 @@ module.exports = async ({ getNamedAccounts, getChainId, deployments }) => {
   const chainId = await getChainId();
 
   const admins = [];
-  let GTC = { address: "0xde30da39c46104798bb5aa3fe8b9e0e1f348163f" };
+  const GTC = { address: "0xde30da39c46104798bb5aa3fe8b9e0e1f348163f" };
 
-  // deploy dummy GTC on non-mainnet networks
-  if (chainId !== "1") {
-    admins[0] = process.env.MANAGER1;
-    admins[1] = process.env.MANAGER2;
+  admins[0] = process.env.MANAGER1;
+  admins[1] = process.env.MANAGER2;
+  admins[2] = process.env.MANAGER3;
 
-    GTC = await deploy("GTC", {
-      from: deployer,
-      args: [admins[0]],
-      log: true,
-    });
-  }
+  // // deploy dummy GTC on non-mainnet networks
+  // if (chainId !== "1") {
+  //   GTC = await deploy("GTC", {
+  //     from: deployer,
+  //     args: [admins[2]],
+  //     log: true,
+  //   });
+  // }
 
   // deploy the stream factory
   const streamFactory = await deploy("StreamFactory", {
     from: deployer,
-    args: [admins[0], admins],
+    args: [admins[1], admins],
     log: true,
   });
 
@@ -34,13 +35,13 @@ module.exports = async ({ getNamedAccounts, getChainId, deployments }) => {
     streamFactory: streamFactory.address,
   });
 
-  // if (chainId !== "31337") {
-  //   await run("verify:verify", {
-  //     address: streamFactory.address,
-  //     contract: "contracts/StreamFactory.sol:StreamFactory",
-  //     constructorArguments: [admins[0], admins],
-  //   });
-  // }
+  if (chainId !== "31337") {
+    await run("verify:verify", {
+      address: streamFactory.address,
+      contract: "contracts/StreamFactory.sol:StreamFactory",
+      constructorArguments: [admins[1], admins],
+    });
+  }
 };
 
 module.exports.tags = ["GTC", "StreamFactory", "SimpleStream"];
