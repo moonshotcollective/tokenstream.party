@@ -50,17 +50,20 @@ contract StreamFactory is AccessControl, Ownable {
     /// @param _gtc the GTC token address
     function createStreamFor(
         address payable _toAddress,
+        address _funder,
         uint256 _cap,
         uint256 _frequency,
         bool _startsFull,
         IERC20 _gtc
     ) public isPermittedFactoryManager returns (address streamAddress) {
+        require(_funder != address(0), "The funder can't be the zero address");
         User storage user = users[_toAddress];
         require(user.hasStream == false, "User already has a stream!");
         user.hasStream = true;
         // deploy a new stream contract
         SimpleStream newStream = new SimpleStream(
             _toAddress,
+            _funder,
             _cap,
             _frequency,
             _startsFull,
