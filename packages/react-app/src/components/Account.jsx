@@ -50,8 +50,14 @@ export default function Account({
   loadWeb3Modal,
   logoutOfWeb3Modal,
   blockExplorer,
+  isContract,
 }) {
   const modalButtons = [];
+
+  function isValidAddress(address) {
+    return address && address !== "0x0000000000000000000000000000000000000000";
+  }
+
   if (web3Modal) {
     if (web3Modal.cachedProvider) {
       modalButtons.push(
@@ -87,20 +93,46 @@ export default function Account({
     ""
   ) : (
     <span>
-      {address ? (
-        <Address address={address} ensProvider={mainnetProvider} blockExplorer={blockExplorer} />
+      {web3Modal && web3Modal.cachedProvider ? (
+        <>
+          <Address address={address} ensProvider={mainnetProvider} blockExplorer={blockExplorer} />
+          <Balance address={address} provider={localProvider} price={price} />
+          <Wallet
+            address={address}
+            provider={localProvider}
+            signer={userSigner}
+            ensProvider={mainnetProvider}
+            price={price}
+            color={currentTheme === "light" ? "#1890ff" : "#2caad9"}
+          />
+        </>
+      ) : false ? (
+        ""
+      ) : isContract ? (
+        <>
+          <Address address={address} ensProvider={mainnetProvider} blockExplorer={blockExplorer} />
+          <Balance address={address} provider={localProvider} price={price} />
+        </>
       ) : (
-        "Connecting..."
+        <></>
       )}
-      <Balance address={address} provider={localProvider} price={price} />
-      <Wallet
-        address={address}
-        provider={localProvider}
-        signer={userSigner}
-        ensProvider={mainnetProvider}
-        price={price}
-        color={currentTheme === "light" ? "#1890ff" : "#2caad9"}
-      />
+      {false ? (
+        <>
+          <Address address={address} ensProvider={mainnetProvider} blockExplorer={blockExplorer} />
+          <Balance address={address} provider={localProvider} price={price} />
+          <Wallet
+            address={address}
+            provider={localProvider}
+            signer={userSigner}
+            ensProvider={mainnetProvider}
+            price={price}
+            color={currentTheme === "light" ? "#1890ff" : "#2caad9"}
+          />
+        </>
+      ) : (
+        <></>
+      )}
+     
     </span>
   );
 
