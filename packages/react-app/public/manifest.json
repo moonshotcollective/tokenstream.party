@@ -1,7 +1,9 @@
 {
-  "short_name": "🏗 Scaffold-Eth App",
+  "short_name": "Tokenstream",
   "start_url": ".",
-  "name": "🏗 Scaffold-Eth App",
+  "description": "Stream GTC tokens to anyone",
+  "name": "Tokenstream.Party",
+  "iconPath": "logo.svg",
   "icons": [
     {
       "src": "favicon.ico",
@@ -19,7 +21,6 @@
       "sizes": "512x512"
     }
   ],
-  "start_url": ".",
   "display": "standalone",
   "theme_color": "#000000",
   "background_color": "#ffffff"
