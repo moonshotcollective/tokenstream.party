@@ -118,7 +118,7 @@ export default function Home({ mainnetProvider, tx, writeContracts, readContract
           bordered
           dataSource={streams}
           renderItem={item => (
-            <List.Item>
+            <List.Item key={item.user}>
               <div
                 style={{
                   width: "100%",
