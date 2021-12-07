@@ -64,7 +64,7 @@ export default function Home({ mainnetProvider, tx, writeContracts, readContract
   };
 
   return (
-    <div style={{ width: 600, margin: "20px auto", padding: 20 }}>
+    <div style={{ width: 600, margin: "20px auto", padding: 20, paddingBottom: 50 }}>
       <Button style={{ marginTop: 20 }} type="primary" onClick={() => setNewStreamModal(true)}>
         Create New Stream
       </Button>
