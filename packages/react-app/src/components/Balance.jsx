@@ -30,7 +30,7 @@ const { utils } = require("ethers");
 */
 
 export default function Balance(props) {
-  const [dollarMode, setDollarMode] = useState(false);
+  const [dollarMode, setDollarMode] = useState(true);
 
   // const [listening, setListening] = useState(false);
 
