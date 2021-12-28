@@ -37,7 +37,7 @@ if (DEBUG) console.log("📡 Connecting to Mainnet Ethereum");
 // attempt to connect to our own scaffold eth rpc and if that fails fall back to infura...
 // Using StaticJsonRpcProvider as the chainId won't change see https://github.com/ethers-io/ethers.js/issues/901
 const scaffoldEthProvider = navigator.onLine
-  ? new ethers.providers.StaticJsonRpcProvider("https://eth-mainnet.alchemyapi.io/v2/W0XfQJvBYrDk6wxM2F3VEDns10TBTLzs")
+  ? new ethers.providers.StaticJsonRpcProvider(`https://mainnet.infura.io/v3/${INFURA_ID}`)
   : null;
 const poktMainnetProvider = navigator.onLine
   ? new ethers.providers.StaticJsonRpcProvider(
@@ -45,7 +45,7 @@ const poktMainnetProvider = navigator.onLine
     )
   : null;
 const mainnetInfura = navigator.onLine
-  ? new ethers.providers.StaticJsonRpcProvider("https://eth-mainnet.alchemyapi.io/v2/W0XfQJvBYrDk6wxM2F3VEDns10TBTLzs")
+  ? new ethers.providers.StaticJsonRpcProvider(`https://mainnet.infura.io/v3/${INFURA_ID}`)
   : null;
 // ( ⚠️ Getting "failed to meet quorum" errors? Check your INFURA_ID
 
@@ -66,7 +66,7 @@ const walletLink = new WalletLink({
 
 // WalletLink provider
 const walletLinkProvider = walletLink.makeWeb3Provider(
-  "https://eth-mainnet.alchemyapi.io/v2/oKxs-03sij-U_N0iOlrSsZFr29-IqbuF",
+  `https://mainnet.infura.io/v3/${INFURA_ID}`,
   1,
 );
 
@@ -224,6 +224,9 @@ function App(props) {
   const myMainnetDAIBalance = useContractReader(mainnetContracts, "DAI", "balanceOf", [
     "0x34aA3F359A9D614239015126635CE7732c18fDF3",
   ]);
+
+  // const streamContract = useContractReader(mainnetContracts, "SimpleStream", "streamBalance", []);
+  // console.log(streamContract)
 
   /*
   const addressFromENS = useResolveName(mainnetProvider, "austingriffith.eth");
