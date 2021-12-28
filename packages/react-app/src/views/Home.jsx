@@ -1,9 +1,12 @@
 import { Button, InputNumber, List, Modal, notification, Radio } from "antd";
+import { useContractReader } from "eth-hooks";
 import { ethers } from "ethers";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useHistory } from "react-router";
 import { Link } from "react-router-dom";
 import { Address, AddressInput } from "../components";
+import { SimpleStreamABI } from "../contracts/external_ABI";
+import { useExternalContractLoader } from "../hooks";
 
 export default function Home({
   mainnetProvider,
@@ -19,6 +22,18 @@ export default function Home({
   const [duration, setDuration] = useState(4);
   const [startFull, setStartFull] = useState(0);
   const [newStreamModal, setNewStreamModal] = useState(false);
+
+  const genAddress = "0x0000000000000000000000000000000000000000";
+  const stream =
+    useContractReader(
+      props.readContracts,
+      "StreamFactory",
+      "getStreamForUser",
+      [props.address]
+    ) || genAddress;
+
+  const SimpleStream =
+    useExternalContractLoader(props.provider, stream, SimpleStreamABI) || {};
 
   const createNewStream = async () => {
     const capFormatted = ethers.utils.parseEther(`${amount || "1"}`);
@@ -71,6 +86,12 @@ export default function Home({
     console.log("awaiting metamask/web3 confirm result...", result);
     console.log(await result);
   };
+
+  const [streamBalance, setStreamBalance] = useState(0);
+  useEffect(async () => {
+    const streamBalance = await SimpleStream?.streamBalance();
+    setStreamBalance(streamBalance);
+  }, [streamBalance, props.address]);
 
   return (
     <div
@@ -162,7 +183,7 @@ export default function Home({
                   fontSize={18}
                   style={{ display: "flex", flex: 1, alignItems: "center" }}
                 />
-                
+                {streamBalance}
                 <Link to={`/user/${item.user}`}>View Stream</Link>
               </div>
             </List.Item>
