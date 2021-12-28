@@ -25,7 +25,7 @@ export default function Home({
 
   const genAddress = "0x0000000000000000000000000000000000000000";
   const stream = useContractReader(
-    props.readContracts,
+    readContracts,
     "StreamFactory",
     "getStreamForUser",
     [props.address]
@@ -182,7 +182,7 @@ export default function Home({
                   fontSize={18}
                   style={{ display: "flex", flex: 1, alignItems: "center" }}
                 />
-                {streamBalance}
+                Balance: {streamBalance} | 
                 <Link to={`/user/${item.user}`}>View Stream</Link>
               </div>
             </List.Item>
