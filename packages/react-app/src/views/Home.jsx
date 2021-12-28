@@ -1,7 +1,7 @@
 import { Button, InputNumber, List, Modal, notification, Radio } from "antd";
 import { useContractReader } from "eth-hooks";
 import { ethers } from "ethers";
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useHistory } from "react-router";
 import { Link } from "react-router-dom";
 import { Address, AddressInput } from "../components";
@@ -24,13 +24,12 @@ export default function Home({
   const [newStreamModal, setNewStreamModal] = useState(false);
 
   const genAddress = "0x0000000000000000000000000000000000000000";
-  const stream =
-    useContractReader(
-      props.readContracts,
-      "StreamFactory",
-      "getStreamForUser",
-      [props.address]
-    ) || genAddress;
+  const stream = useContractReader(
+    props.readContracts,
+    "StreamFactory",
+    "getStreamForUser",
+    [props.address]
+  );
 
   const SimpleStream =
     useExternalContractLoader(props.provider, stream, SimpleStreamABI) || {};
@@ -89,7 +88,7 @@ export default function Home({
 
   const [streamBalance, setStreamBalance] = useState(0);
   useEffect(async () => {
-    const streamBalance = await SimpleStream?.streamBalance();
+    const streamBalance = (await SimpleStream) && SimpleStream.streamBalance();
     setStreamBalance(streamBalance);
   }, [streamBalance, props.address]);
 

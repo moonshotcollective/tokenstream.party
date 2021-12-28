@@ -458,7 +458,6 @@ function App(props) {
               writeContracts={writeContracts}
               readContracts={readContracts}
               streams={streams}
-              address={address}
               provider={localProvider}
             />
           </Route>
