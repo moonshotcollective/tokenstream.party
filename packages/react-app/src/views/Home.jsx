@@ -1,3 +1,4 @@
+import { Contract } from "@ethersproject/contracts";
 import { Button, InputNumber, List, Modal, notification, Radio } from "antd";
 import { useContractReader } from "eth-hooks";
 import { ethers } from "ethers";
@@ -24,15 +25,18 @@ export default function Home({
   const [newStreamModal, setNewStreamModal] = useState(false);
 
   const genAddress = "0x0000000000000000000000000000000000000000";
-  const stream = useContractReader(
-    readContracts,
-    "StreamFactory",
-    "getStreamForUser",
-    [props.address]
-  );
+  let stream;
+
+  const [streamAddress, setStreamAddress] = useState(genAddress);
+  useEffect(async () => {
+    stream = readContracts.StreamFactory.getStreamForUser(props.address);
+    setStreamAddress(stream);
+    
+    console.log("Stream Address", stream);
+  }, [props.address]);
 
   const SimpleStream =
-    useExternalContractLoader(props.provider, stream, SimpleStreamABI) || {};
+    useExternalContractLoader(props.provider, streamAddress, SimpleStreamABI) || {};
 
   const createNewStream = async () => {
     const capFormatted = ethers.utils.parseEther(`${amount || "1"}`);
@@ -88,7 +92,8 @@ export default function Home({
 
   const [streamBalance, setStreamBalance] = useState(0);
   useEffect(async () => {
-    const streamBalance = (await SimpleStream) && SimpleStream.streamBalance();
+    const streamBalance =
+      (await SimpleStream) && SimpleStream.streamBalance();
     setStreamBalance(streamBalance);
   }, [streamBalance, props.address]);
 
@@ -182,7 +187,7 @@ export default function Home({
                   fontSize={18}
                   style={{ display: "flex", flex: 1, alignItems: "center" }}
                 />
-                Balance: {streamBalance} | 
+                Balance: {streamBalance} |
                 <Link to={`/user/${item.user}`}>View Stream</Link>
               </div>
             </List.Item>
