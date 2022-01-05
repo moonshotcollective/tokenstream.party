@@ -6,6 +6,7 @@ import { Link } from "react-router-dom";
 import { Address, AddressInput } from "../components";
 import { SimpleStreamABI } from "../contracts/external_ABI";
 import { useExternalContractLoader } from "../hooks";
+import { useContractReader } from "eth-hooks";
 
 export default function Home({
   mainnetProvider,
@@ -93,12 +94,22 @@ export default function Home({
     console.log(await result);
   };
 
+  // need to use this one, not what is avalable to the user...
+  // const myMainnetGTCBalance = useContractReader(
+  //   readContracts,
+  //   "GTC",
+  //   "balanceOf",
+  //   [stream && stream]
+  // );
+  // console.log(myMainnetGTCBalance)
+
   const [streamBalance, setStreamBalance] = useState(0);
 
+  // this is the wrong balance to show..
   useEffect(async () => {
     const streamBalance = await SimpleStream?.streamBalance;
     let bal = await streamBalance();
-    setStreamBalance(bal?.toString());
+    setStreamBalance(ethers.utils.formatEther(bal?.toString()));
   }, [streamBalance, props.address]);
 
   return (
