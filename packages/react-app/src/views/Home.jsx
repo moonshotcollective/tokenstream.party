@@ -1,6 +1,4 @@
-import { Contract } from "@ethersproject/contracts";
 import { Button, InputNumber, List, Modal, notification, Radio } from "antd";
-import { useContractReader } from "eth-hooks";
 import { ethers } from "ethers";
 import React, { useEffect, useState } from "react";
 import { useHistory } from "react-router";
@@ -28,15 +26,20 @@ export default function Home({
   let stream;
 
   const [streamAddress, setStreamAddress] = useState(genAddress);
+
   useEffect(async () => {
-    stream = readContracts.StreamFactory.getStreamForUser(props.address);
+    stream = await readContracts?.StreamFactory?.getStreamForUser(
+      props.address
+    );
     setStreamAddress(stream);
-    
+
     console.log("Stream Address", stream);
   }, [props.address]);
 
   const SimpleStream =
-    useExternalContractLoader(props.provider, streamAddress, SimpleStreamABI) || {};
+    useExternalContractLoader(props.provider, streamAddress, SimpleStreamABI) ||
+    {};
+  console.log(SimpleStream);
 
   const createNewStream = async () => {
     const capFormatted = ethers.utils.parseEther(`${amount || "1"}`);
@@ -91,10 +94,11 @@ export default function Home({
   };
 
   const [streamBalance, setStreamBalance] = useState(0);
+
   useEffect(async () => {
-    const streamBalance =
-      (await SimpleStream) && SimpleStream.streamBalance();
-    setStreamBalance(streamBalance);
+    const streamBalance = await SimpleStream?.streamBalance;
+    let bal = await streamBalance();
+    setStreamBalance(bal?.toString());
   }, [streamBalance, props.address]);
 
   return (
