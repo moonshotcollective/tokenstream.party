@@ -12,6 +12,7 @@ export default function Home({ mainnetProvider, tx, writeContracts, readContract
   const [duration, setDuration] = useState(4);
   const [startFull, setStartFull] = useState(0);
   const [newStreamModal, setNewStreamModal] = useState(false);
+  const [streamHealth, setStreamHealth] = useState({});
 
   const createNewStream = async () => {
     const capFormatted = ethers.utils.parseEther(`${amount || "1"}`);
