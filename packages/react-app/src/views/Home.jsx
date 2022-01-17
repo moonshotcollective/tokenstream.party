@@ -1,7 +1,15 @@
 import React, { useState } from "react";
 import { ethers } from "ethers";
-import { Modal, Button, notification, Radio, InputNumber, List } from "antd";
-import { AddressInput, Address } from "../components";
+import {
+  Modal,
+  Button,
+  notification,
+  Radio,
+  InputNumber,
+  List,
+  Progress,
+} from "antd";
+import { AddressInput, Address, Balance } from "../components";
 import { useHistory } from "react-router";
 import { Link } from "react-router-dom";
 
@@ -167,7 +175,22 @@ export default function Home({
                   value={item.stream}
                   ensProvider={mainnetProvider}
                   fontSize={10}
-                  style={{ paddingLeft: 10, flex: 0.2, alignItems: "center" }}
+                  style={{
+                    paddingLeft: 30,
+                    paddingRight: 30,
+                    flex: 0.3,
+                    alignItems: "center",
+                  }}
+                />
+                <Progress
+                  style={{ marginTop: 4 }}
+                  strokeLinecap="square"
+                  type="dashboard"
+                  percent={0}
+                  width={50}
+                  format={() => {
+                    return <Balance value={0} size={9} />;
+                  }}
                 />
               </div>
             </List.Item>
