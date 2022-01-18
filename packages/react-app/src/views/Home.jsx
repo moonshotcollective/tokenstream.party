@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { ethers } from "ethers";
 import {
   Modal,
@@ -8,8 +8,10 @@ import {
   InputNumber,
   List,
   Progress,
+  Spin,
 } from "antd";
 import { AddressInput, Address, Balance } from "../components";
+import { SimpleStreamABI } from "../contracts/external_ABI";
 import { useHistory } from "react-router";
 import { Link } from "react-router-dom";
 
@@ -27,6 +29,53 @@ export default function Home({
   const [duration, setDuration] = useState(4);
   const [startFull, setStartFull] = useState(0);
   const [newStreamModal, setNewStreamModal] = useState(false);
+  const [ready, setReady] = useState(false);
+
+  const [sData, setData] = useState([]);
+  /* const getBalances = async () => {
+    
+  }; */
+
+  //console.log(streamsAddresses);
+
+  let copy = JSON.parse(JSON.stringify(streams));
+
+  useEffect(async () => {
+    for (let b in streams) {
+      if (streams)
+        var contract = new ethers.Contract(
+          streams[b].stream,
+          SimpleStreamABI,
+          mainnetProvider
+        );
+      let beegNumber;
+
+      const cap = await contract
+        .cap()
+        .then((result) =>
+          copy[b].push(Number(result._hex) * 0.000000000000000001)
+        );
+      //const symbol = contract.symbol();
+      //streamInstances.push(SimpleStream);
+
+      const balance = await contract
+        .streamBalance()
+        .then(
+          (result) =>
+            (copy[b].percent =
+              ((Number(result._hex) * 0.000000000000000001) / copy[b][3]) * 100)
+        );
+
+      /* const percent =
+    streamCap &&
+    streamBalance &&
+    streamBalance.mul(100).div(streamCap).toNumber();
+           */
+    }
+    setData(copy);
+
+    if (copy.length >= 15) setReady(true);
+  }, [streams]);
 
   const createNewStream = async () => {
     const capFormatted = ethers.utils.parseEther(`${amount || "1"}`);
@@ -148,55 +197,59 @@ export default function Home({
         </Modal>
       )}
 
-      <div style={{ marginTop: 30 }}>
-        <List
-          bordered
-          dataSource={streams}
-          renderItem={(item) => (
-            <List.Item key={item.user}>
-              <div
-                style={{
-                  width: "110%",
-                  position: "relative",
-                  display: "flex",
-                  flex: 1,
-                  justifyContent: "right",
-                  alignItems: "center",
-                }}
-              >
-                <Address
-                  value={item.user}
-                  ensProvider={mainnetProvider}
-                  fontSize={18}
-                  style={{ display: "flex", flex: 1, alignItems: "center" }}
-                />
-                <Link to={`/user/${item.user}`}>View Stream</Link>
-                <Address
-                  value={item.stream}
-                  ensProvider={mainnetProvider}
-                  fontSize={10}
+      {ready ? (
+        <div style={{ marginTop: 30 }}>
+          <List
+            bordered
+            dataSource={sData}
+            renderItem={(item) => (
+              <List.Item key={item[1]}>
+                <div
                   style={{
-                    paddingLeft: 30,
-                    paddingRight: 30,
-                    flex: 0.3,
+                    width: "110%",
+                    position: "relative",
+                    display: "flex",
+                    flex: 1,
+                    justifyContent: "right",
                     alignItems: "center",
                   }}
-                />
-                <Progress
-                  style={{ marginTop: 4 }}
-                  strokeLinecap="square"
-                  type="dashboard"
-                  percent={0}
-                  width={50}
-                  format={() => {
-                    return <Balance value={0} size={9} />;
-                  }}
-                />
-              </div>
-            </List.Item>
-          )}
-        />
-      </div>
+                >
+                  <Address
+                    value={item[1]}
+                    ensProvider={mainnetProvider}
+                    fontSize={18}
+                    style={{ display: "flex", flex: 1, alignItems: "center" }}
+                  />
+                  <Link to={`/user/${item[1]}`}>View Stream</Link>
+                  <Address
+                    value={item[2]}
+                    ensProvider={mainnetProvider}
+                    fontSize={10}
+                    style={{
+                      paddingLeft: 30,
+                      paddingRight: 30,
+                      flex: 0.3,
+                      alignItems: "center",
+                    }}
+                  />
+                  <Progress
+                    type="dashboard"
+                    showInfo={true}
+                    width={40}
+                    fontSize={1}
+                    percent={item.percent}
+                    format={(percent) => `${percent.toFixed(0)}%`}
+                  />
+                </div>
+              </List.Item>
+            )}
+          />
+        </div>
+      ) : (
+        <div style={{ marginTop: 30 }}>
+          <Spin tip="Loading Streams... (This may take a moment)" />
+        </div>
+      )}
     </div>
   );
 }
