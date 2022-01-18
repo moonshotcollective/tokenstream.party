@@ -16,7 +16,7 @@ import { SafeAppWeb3Modal } from "@gnosis.pm/safe-apps-web3modal";
 import "./App.css";
 import { Account, Contract, Faucet, GasGauge, Header, Ramp, ThemeSwitch } from "./components";
 import { INFURA_ID, NETWORK, NETWORKS } from "./constants";
-import { Transactor, filterStreamsThatAreHidden } from "./helpers";
+import { Transactor } from "./helpers";
 import { useContractConfig, useUserSigner } from "./hooks";
 import { Home, UserStream } from "./views";
 
@@ -206,11 +206,9 @@ function App(props) {
   // If you want to make 🔐 write transactions to your contracts, use the userSigner:
   const writeContracts = useContractLoader(userSigner, contractConfig);
 
-  const rawStreams = useEventListener(readContracts, "StreamFactory", "StreamAdded", localProvider)
-  const streams = React.useMemo(() => rawStreams
-      .map(s => s.decode(s.data))
-      .filter(filterStreamsThatAreHidden),
-    [rawStreams]);
+  const streams = useEventListener(readContracts, "StreamFactory", "StreamAdded", localProvider).map(s => {
+    return s.decode(s.data);
+  });
 
   // EXTERNAL CONTRACT EXAMPLE:
   //
