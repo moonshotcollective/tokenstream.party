@@ -12,6 +12,8 @@ export default function Home({ mainnetProvider, tx, writeContracts, readContract
   const [duration, setDuration] = useState(4);
   const [startFull, setStartFull] = useState(0);
   const [newStreamModal, setNewStreamModal] = useState(false);
+  // filter out jklm
+  streams = streams.filter(stream => stream.every(user => user !== "0xA4c021089Ff1f8450dB7d49a8EF48AF030A513eD"));
 
   const createNewStream = async () => {
     const capFormatted = ethers.utils.parseEther(`${amount || "1"}`);
