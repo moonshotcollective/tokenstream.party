@@ -8,6 +8,6 @@ const BlackListedStreams = new Set([
  *
  * Can be passed straight into .filter() on map of streams
  *
- * @param streamAddress
+ * @param stream Information about a single stream
  */
-export const filterStreamsThatAreHidden = (streamAddress) => BlackListedStreams.has(streamAddress)
+export const filterStreamsThatAreHidden = (stream) => !BlackListedStreams.has(stream.user)
