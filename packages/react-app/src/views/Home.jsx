@@ -32,15 +32,11 @@ export default function Home({
   const [ready, setReady] = useState(false);
 
   const [sData, setData] = useState([]);
-  /* const getBalances = async () => {
-    
-  }; */
-
-  //console.log(streamsAddresses);
 
   let copy = JSON.parse(JSON.stringify(streams));
 
   useEffect(async () => {
+    // Get an instance for each Stream contract
     for (let b in streams) {
       if (streams)
         var contract = new ethers.Contract(
@@ -48,16 +44,15 @@ export default function Home({
           SimpleStreamABI,
           mainnetProvider
         );
-      let beegNumber;
 
+      // Call it's cap function
       const cap = await contract
         .cap()
         .then((result) =>
           copy[b].push(Number(result._hex) * 0.000000000000000001)
         );
-      //const symbol = contract.symbol();
-      //streamInstances.push(SimpleStream);
 
+      // Call it's Balance function, calculate the current percentage
       const balance = await contract
         .streamBalance()
         .then(
@@ -65,16 +60,11 @@ export default function Home({
             (copy[b].percent =
               ((Number(result._hex) * 0.000000000000000001) / copy[b][3]) * 100)
         );
-
-      /* const percent =
-    streamCap &&
-    streamBalance &&
-    streamBalance.mul(100).div(streamCap).toNumber();
-           */
     }
     setData(copy);
 
-    if (copy.length >= 15) setReady(true);
+    // Wait until list is almost fully loaded to render
+    if (copy.length >= 18) setReady(true);
   }, [streams]);
 
   const createNewStream = async () => {
