@@ -200,17 +200,17 @@ export default function Home({
                     position: "relative",
                     display: "flex",
                     flex: 1,
-                    justifyContent: "right",
+                    justifyContent: "space-between",
                     alignItems: "center",
                   }}
-                >
+                >{"  "}
                   <Address
                     value={item[1]}
                     ensProvider={mainnetProvider}
                     fontSize={18}
                     style={{ display: "flex", flex: 1, alignItems: "center" }}
-                  />
-                  <Link to={`/user/${item[1]}`}>View Stream</Link>
+                  />{"  "}
+                  <Link to={`/user/${item[1]}`}>View Stream</Link>{"  "}
                   <Address
                     value={item[2]}
                     ensProvider={mainnetProvider}
@@ -221,8 +221,9 @@ export default function Home({
                       flex: 0.3,
                       alignItems: "center",
                     }}
-                  />
+                  />{"  "}
                   <Progress
+                    style={{ alignItems: "right" }}
                     type="dashboard"
                     showInfo={true}
                     width={40}
