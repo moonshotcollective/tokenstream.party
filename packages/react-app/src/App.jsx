@@ -1,57 +1,32 @@
+import Portis from "@portis/web3";
 import WalletConnectProvider from "@walletconnect/web3-provider";
-//import Torus from "@toruslabs/torus-embed"
-import WalletLink from "walletlink";
 import { Alert, Button, Col, Menu, Row } from "antd";
 import "antd/dist/antd.css";
+import Authereum from "authereum";
+import { useBalance, useContractLoader, useContractReader, useGasPrice, useOnBlock } from "eth-hooks";
+// import useEventListener from "./hooks/oldEventListener";
+import { useExchangeEthPrice } from "eth-hooks/dapps/dex";
+import { useEventListener } from "eth-hooks/events";
+import Fortmatic from "fortmatic";
 import React, { useCallback, useEffect, useState } from "react";
 import { BrowserRouter, Link, Route, Switch } from "react-router-dom";
-import Web3Modal from "web3modal";
+//import Torus from "@toruslabs/torus-embed"
+import WalletLink from "walletlink";
+import { SafeAppWeb3Modal } from "@gnosis.pm/safe-apps-web3modal";
 import "./App.css";
 import { Account, Contract, Faucet, GasGauge, Header, Ramp, ThemeSwitch } from "./components";
 import { INFURA_ID, NETWORK, NETWORKS } from "./constants";
-import { Transactor } from "./helpers";
-import {
-  useBalance,
-  useContractLoader,
-  useContractReader,
-  useGasPrice,
-  useOnBlock,
-  useUserProviderAndSigner,
-} from "eth-hooks";
-import { useEventListener } from "eth-hooks/events/useEventListener";
-import { useExchangeEthPrice } from "eth-hooks/dapps/dex";
-import { UserStream } from "./views";
-
+import { Transactor, filterStreamsThatAreHidden } from "./helpers";
 import { useContractConfig, useUserSigner } from "./hooks";
-import Portis from "@portis/web3";
-import Fortmatic from "fortmatic";
-import Authereum from "authereum";
+import { Home, UserStream } from "./views";
 
 const { ethers } = require("ethers");
-/*
-    Welcome to 🏗 scaffold-eth !
-
-    Code:
-    https://github.com/austintgriffith/scaffold-eth
-
-    Support:
-    https://t.me/joinchat/KByvmRe5wkR-8F_zz6AjpA
-    or DM @austingriffith on twitter or telegram
-
-    You should get your own Infura.io ID and put it in `constants.js`
-    (this is your connection to the main Ethereum network for ENS etc.)
-
-
-    🌏 EXTERNAL CONTRACTS:
-    You can also bring in contract artifacts in `constants.js`
-    (and then use the `useExternalContractLoader()` hook!)
-*/
 
 /// 📡 What chain are your contracts deployed to?
-const targetNetwork = NETWORKS.localhost; // <------- select your target frontend network (localhost, rinkeby, xdai, mainnet)
+const targetNetwork = NETWORKS.mainnet; // <------- select your target frontend network (localhost, rinkeby, xdai, mainnet)
 
 // 😬 Sorry for all the console logging
-const DEBUG = true;
+const DEBUG = false;
 const NETWORKCHECK = true;
 
 // 🛰 providers
@@ -62,7 +37,7 @@ if (DEBUG) console.log("📡 Connecting to Mainnet Ethereum");
 // attempt to connect to our own scaffold eth rpc and if that fails fall back to infura...
 // Using StaticJsonRpcProvider as the chainId won't change see https://github.com/ethers-io/ethers.js/issues/901
 const scaffoldEthProvider = navigator.onLine
-  ? new ethers.providers.StaticJsonRpcProvider("https://eth-mainnet.alchemyapi.io/v2/qCdzfF9UqXcJYIle-Ff-BN0MII8LjLQs")
+  ? new ethers.providers.StaticJsonRpcProvider("https://eth-mainnet.alchemyapi.io/v2/W0XfQJvBYrDk6wxM2F3VEDns10TBTLzs")
   : null;
 const poktMainnetProvider = navigator.onLine
   ? new ethers.providers.StaticJsonRpcProvider(
@@ -70,7 +45,7 @@ const poktMainnetProvider = navigator.onLine
     )
   : null;
 const mainnetInfura = navigator.onLine
-  ? new ethers.providers.StaticJsonRpcProvider("https://eth-mainnet.alchemyapi.io/v2/qCdzfF9UqXcJYIle-Ff-BN0MII8LjLQs")
+  ? new ethers.providers.StaticJsonRpcProvider("https://eth-mainnet.alchemyapi.io/v2/W0XfQJvBYrDk6wxM2F3VEDns10TBTLzs")
   : null;
 // ( ⚠️ Getting "failed to meet quorum" errors? Check your INFURA_ID
 
@@ -91,7 +66,7 @@ const walletLink = new WalletLink({
 
 // WalletLink provider
 const walletLinkProvider = walletLink.makeWeb3Provider(
-  "https://eth-mainnet.alchemyapi.io/v2/qCdzfF9UqXcJYIle-Ff-BN0MII8LjLQs",
+  "https://eth-mainnet.alchemyapi.io/v2/oKxs-03sij-U_N0iOlrSsZFr29-IqbuF",
   1,
 );
 
@@ -99,7 +74,7 @@ const walletLinkProvider = walletLink.makeWeb3Provider(
 /*
   Web3 modal helps us "connect" external wallets:
 */
-const web3Modal = new Web3Modal({
+const web3Modal = new SafeAppWeb3Modal({
   network: "mainnet", // Optional. If using WalletConnect on xDai, change network to "xdai" and add RPC info below for xDai chain.
   cacheProvider: true, // optional
   theme: "light", // optional. Change to "dark" for a dark theme.
@@ -110,7 +85,7 @@ const web3Modal = new Web3Modal({
         bridge: "https://polygon.bridge.walletconnect.org",
         infuraId: INFURA_ID,
         rpc: {
-          1: "https://eth-mainnet.alchemyapi.io/v2/qCdzfF9UqXcJYIle-Ff-BN0MII8LjLQs", // mainnet // For more WalletConnect providers: https://docs.walletconnect.org/quick-start/dapps/web3-provider#required
+          1: "https://eth-mainnet.alchemyapi.io/v2/oKxs-03sij-U_N0iOlrSsZFr29-IqbuF", // mainnet // For more WalletConnect providers: https://docs.walletconnect.org/quick-start/dapps/web3-provider#required
           42: `https://kovan.infura.io/v3/${INFURA_ID}`,
           100: "https://dai.poa.network", // xDai
         },
@@ -166,14 +141,14 @@ const web3Modal = new Web3Modal({
 
 function App(props) {
   const mainnetProvider =
-    poktMainnetProvider && poktMainnetProvider._isProvider
-      ? poktMainnetProvider
-      : scaffoldEthProvider && scaffoldEthProvider._network
+    scaffoldEthProvider && scaffoldEthProvider._network
       ? scaffoldEthProvider
+      : poktMainnetProvider && poktMainnetProvider._isProvider
+      ? poktMainnetProvider
       : mainnetInfura;
 
   const [injectedProvider, setInjectedProvider] = useState();
-  const [address, setAddress] = useState();
+  const [address, setAddress] = useState("0x0000000000000000000000000000000000000000");
 
   const logoutOfWeb3Modal = async () => {
     await web3Modal.clearCachedProvider();
@@ -192,6 +167,7 @@ function App(props) {
   const gasPrice = useGasPrice(targetNetwork, "fast");
   // Use your injected provider from 🦊 Metamask or if you don't have it then instantly generate a 🔥 burner wallet.
   const userSigner = useUserSigner(injectedProvider, localProvider, true);
+  // const userProviderAndSigner = useUserProviderAndSigner(injectedProvider, localProvider, false);
 
   useEffect(() => {
     async function getAddress() {
@@ -229,6 +205,12 @@ function App(props) {
 
   // If you want to make 🔐 write transactions to your contracts, use the userSigner:
   const writeContracts = useContractLoader(userSigner, contractConfig);
+
+  const rawStreams = useEventListener(readContracts, "StreamFactory", "StreamAdded", localProvider)
+  const streams = React.useMemo(() => rawStreams
+      .map(s => s.decode(s.data))
+      .filter(filterStreamsThatAreHidden),
+    [rawStreams]);
 
   // EXTERNAL CONTRACT EXAMPLE:
   //
@@ -374,7 +356,7 @@ function App(props) {
   }
 
   const loadWeb3Modal = useCallback(async () => {
-    const provider = await web3Modal.connect();
+    const provider = await web3Modal.requestProvider();
     setInjectedProvider(new ethers.providers.Web3Provider(provider));
 
     provider.on("chainChanged", chainId => {
@@ -449,7 +431,7 @@ function App(props) {
               }}
               to="/"
             >
-              YourContract
+              App
             </Link>
           </Menu.Item>
           <Menu.Item key="/debug">
@@ -466,7 +448,16 @@ function App(props) {
 
         <Switch>
           <Route exact path="/">
-            <div>Welcome To GTC Stream</div>
+            <Home
+              mainnetProvider={mainnetProvider}
+              localProvider={localProvider}
+              address={address}
+              tx={tx}
+              userSigner={userSigner}
+              writeContracts={writeContracts}
+              readContracts={readContracts}
+              streams={streams}
+            />
           </Route>
           <Route path="/user/:address">
             <UserStream
@@ -474,7 +465,7 @@ function App(props) {
               userSigner={userSigner}
               mainnetProvider={mainnetProvider}
               localProvider={localProvider}
-              provider={injectedProvider}
+              provider={injectedProvider || localProvider}
               tx={tx}
               gasPrice={gasPrice}
               price={price}
@@ -488,7 +479,14 @@ function App(props) {
                 this <Contract/> component will automatically parse your ABI
                 and give you a form to interact with it locally
             */}
-
+            <Contract
+              name="SimpleStream"
+              signer={userSigner}
+              provider={localProvider}
+              address={"0xb219e66bf9092eafc84ed3fd28d896bf121d9bae"}
+              blockExplorer={blockExplorer}
+              contractConfig={contractConfig}
+            />
             <Contract
               name="StreamFactory"
               signer={userSigner}
@@ -498,14 +496,16 @@ function App(props) {
               contractConfig={contractConfig}
             />
 
-            <Contract
-              name="GTC"
-              signer={userSigner}
-              provider={localProvider}
-              address={address}
-              blockExplorer={blockExplorer}
-              contractConfig={contractConfig}
-            />
+            {targetNetwork.name !== "mainnet" && (
+              <Contract
+                name="GTC"
+                signer={userSigner}
+                provider={localProvider}
+                address={address}
+                blockExplorer={blockExplorer}
+                contractConfig={contractConfig}
+              />
+            )}
           </Route>
         </Switch>
       </BrowserRouter>
@@ -524,6 +524,7 @@ function App(props) {
           loadWeb3Modal={loadWeb3Modal}
           logoutOfWeb3Modal={logoutOfWeb3Modal}
           blockExplorer={blockExplorer}
+          isContract={false}
         />
         {faucetHint}
       </div>

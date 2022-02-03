@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { Button } from "antd";
+import { Button, notification } from "antd";
 import { ethers } from "ethers";
 
 const loadingStatus = [0, 2, 4];
 const disabledStatus = [...loadingStatus, 5];
 
 export default function PayButton({
+  tx,
   token,
   amount = "0",
   appName,
@@ -53,11 +54,31 @@ export default function PayButton({
 
   const approveTokenAllowance = async () => {
     setStatus(2);
+    const approvalAmount = maxApproval;
+    const approvalToken = token;
     const newAllowance = ethers.utils.parseUnits(maxApproval, tokenInfo[token].decimals);
 
-    const res = await writeContracts[token].approve(spender, newAllowance);
-    await res.wait(1);
-    await refreshTokenDetails();
+    await tx(writeContracts[token].approve(spender, newAllowance), async update => {
+      console.log("📡 Transaction Update:", update);
+      if (update && (update.status === "confirmed" || update.status === 1)) {
+        console.log(" 🍾 Transaction " + update.hash + " finished!");
+        console.log(
+          " ⛽️ " +
+            update.gasUsed +
+            "/" +
+            (update.gasLimit || update.gas) +
+            " @ " +
+            parseFloat(update.gasPrice) / 1000000000 +
+            " gwei",
+        );
+        notification.success({
+          message: "Token approval successful",
+          description: `${approvalAmount} ${approvalToken} was approved for GTCStream.`,
+          placement: "topRight",
+        });
+        await refreshTokenDetails();
+      }
+    });
   };
 
   const isETH = () => {

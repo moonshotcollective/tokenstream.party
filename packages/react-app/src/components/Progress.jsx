@@ -21,7 +21,7 @@ import {
   QRPunkBlockie,
 } from "../components";
 
-export default function ExampleUI({
+export default function ProgressComponent({
   SimpleStream,
   streamToAddress,
   streamfrequency,
@@ -30,13 +30,21 @@ export default function ExampleUI({
   withdrawEvents,
   streamBalance,
   address,
-  stream,
   mainnetProvider,
   price,
   tx,
   readContracts,
   writeContracts,
 }) {
+  const genAddress = "0x0000000000000000000000000000000000000000";
+  // const [stream, setStream] = useState();
+  const stream =
+    useContractReader(
+      props.readContracts,
+      "StreamFactory",
+      "getStreamForUser",
+      [address]
+    ) || genAddress;
   const [amount, setAmount] = useState();
   const [reason, setReason] = useState();
   const [toAddress, setToAddress] = useState();
@@ -201,182 +209,14 @@ export default function ExampleUI({
 
   return (
     <div style={{ paddingBotton: "25px" }}>
-      <div style={{ padding: 16, width: WIDTH, margin: "auto" }}>
-        <div style={{ padding: 32 }}>
-          <div style={{ padding: 32 }}>
-            <Balance value={myMainnetGTCBalance} price={quoteRate} />
-            <span style={{ opacity: 0.5 }}>
-              {" "}
-              @ <Balance value={streamCap} price={quoteRate} /> /{" "}
-              {streamfrequency &&
-                pretty(streamfrequency.toNumber() * 1000000000)}
-            </span>
-          </div>
-          <div>
-            {totalProgress} (
-            {totalSeconds && pretty(totalSeconds.toNumber() * 10000000)})
-          </div>
-        </div>
-      </div>
-
-      <div style={{ marginTop: -32 }}>
-        <Address value={stream} />
-      </div>
-
-      <div
-        style={{
-          width: 400,
-          margin: "auto",
-          marginTop: 32,
-          position: "relative",
+      <Progress
+        strokeLinecap="square"
+        type="dashboard"
+        percent={percent}
+        format={() => {
+          return <Balance price={quoteRate} value={streamBalance} size={18} />;
         }}
-      >
-        <div style={{ padding: 16, marginBottom: 64 }}>
-          <span style={{ opacity: 0.5 }}>Streaming To:</span>
-        </div>
-        <div style={{ position: "absolute", top: -50 }}>
-          <QRPunkBlockie withQr={false} address={streamToAddress} scale={0.7} />
-        </div>
-        <Address value={streamToAddress} ensProvider={mainnetProvider} />
-      </div>
-
-      <div
-        style={{
-          border: "1px solid #cccccc",
-          padding: 16,
-          width: WIDTH,
-          margin: "auto",
-          marginTop: 64,
-        }}
-      >
-        {/* <h4>stream balance: {streamBalance && formatEther(streamBalance)}</h4> */}
-
-        <Progress
-          strokeLinecap="square"
-          type="dashboard"
-          percent={percent}
-          format={() => {
-            return (
-              <Balance price={quoteRate} value={streamBalance} size={18} />
-            );
-          }}
-        />
-
-        <Divider />
-
-        <div style={{ margin: 8 }}>
-          <Input
-            style={{ marginBottom: 8 }}
-            value={reason}
-            placeholder="reason / work / link"
-            onChange={(e) => {
-              setReason(e.target.value);
-            }}
-          />
-          <Input
-            style={{ marginBottom: 8 }}
-            autofocus
-            price={quoteRate}
-            value={amount}
-            placeholder="Withdraw Amount"
-            addonAfter="GTC"
-            onChange={(e) => setAmount(e.target.value)}
-          />
-          <AddressInput
-            ensProvider={mainnetProvider}
-            placeholder="Enter Beneficiary Address"
-            value={toAddress}
-            onChange={setToAddress}
-          />
-          <Button style={{ marginTop: 8 }} onClick={withdrawFromStream}>
-            Withdraw
-          </Button>
-        </div>
-      </div>
-
-      {/*
-        📑 Maybe display a list of events?
-          (uncomment the event and emit line in YourContract.sol! )
-      */}
-      <div
-        style={{
-          width: WIDTH,
-          margin: "auto",
-          marginTop: 32,
-          paddingBottom: 32,
-        }}
-      >
-        <h2>Work log:</h2>
-        <List
-          bordered
-          dataSource={withdrawEvents}
-          renderItem={(item) => {
-            return (
-              <List.Item key={item.blockNumber + "_" + item.to}>
-                <Balance value={item.amount} price={quoteRate} />
-                <span style={{ fontSize: 14 }}>
-                  <span style={{ padding: 4 }}>{item.reason}</span>
-                  <Address minimized address={item.to} />
-                </span>
-              </List.Item>
-            );
-          }}
-        />
-      </div>
-
-      <div style={{ width: WIDTH, margin: "auto", marginTop: 32 }}>
-        <h2>Deposits:</h2>
-        <List
-          bordered
-          dataSource={depositEvents}
-          renderItem={(item) => {
-            return (
-              <List.Item key={item.blockNumber + "_" + item.from}>
-                <Balance value={item.amount} price={quoteRate} />
-                <span style={{ fontSize: 14 }}>
-                  <span style={{ padding: 4 }}>{item.reason}</span>
-                  <Address minimized address={item.from} />
-                </span>
-              </List.Item>
-            );
-          }}
-        />
-        <hr style={{ opacity: 0.3333 }} />
-        <Input
-          style={{ marginBottom: 8 }}
-          value={depositReason}
-          placeholder="reason / guidance / north star"
-          onChange={(e) => {
-            setDepositReason(e.target.value);
-          }}
-        />
-        <Input
-          autoFocus
-          price={quoteRate}
-          value={depositAmount}
-          placeholder="Deposit amount"
-          addonAfter="GTC"
-          onChange={(e) => setDepositAmount(e.target.value)}
-        />
-
-        {readContracts.GTC && (
-          <PayButton
-            tx={tx}
-            style={{ marginTop: 8 }}
-            token="GTC"
-            appName="GTCStream"
-            callerAddress={address}
-            maxApproval={depositAmount}
-            amount={depositAmount}
-            spender={SimpleStream.address}
-            readContracts={readContracts}
-            writeContracts={writeContracts}
-            tokenPayHandler={tokenPayHandler}
-          />
-        )}
-      </div>
-
-      <div style={{ paddingBottom: 256 }} />
+      />
     </div>
   );
 }

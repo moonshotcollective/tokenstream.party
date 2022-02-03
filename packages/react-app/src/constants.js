@@ -20,7 +20,7 @@ export const NETWORKS = {
     color: "#ff8b9e",
     chainId: 1,
     // rpcUrl: `https://mainnet.infura.io/v3/${INFURA_ID}`,
-    rpcUrl: "https://eth-mainnet.alchemyapi.io/v2/qCdzfF9UqXcJYIle-Ff-BN0MII8LjLQs",
+    rpcUrl: "https://eth-mainnet.alchemyapi.io/v2/W0XfQJvBYrDk6wxM2F3VEDns10TBTLzs",
     blockExplorer: "https://etherscan.io/",
   },
   kovan: {
