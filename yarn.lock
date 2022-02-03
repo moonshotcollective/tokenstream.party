@@ -2503,15 +2503,23 @@
     "@ethersproject/properties" "^5.5.0"
     "@ethersproject/strings" "^5.5.0"
 
-"@gnosis.pm/safe-apps-provider@0.9.0":
-  version "0.9.0"
-  resolved "https://registry.yarnpkg.com/@gnosis.pm/safe-apps-provider/-/safe-apps-provider-0.9.0.tgz#02451e24d50e0ada5ccf98023c381481ccc8efd8"
-  integrity sha512-Z5hRy8SkroREHb4S5GAkzURuliS4Y2UWR92toLLIiu39NZKILq/OdbrNHYeiF8r8aemSnmxsmDX25cQ+8l/J6A==
+"@gnosis.pm/safe-apps-provider@0.9.3":
+  version "0.9.3"
+  resolved "https://registry.yarnpkg.com/@gnosis.pm/safe-apps-provider/-/safe-apps-provider-0.9.3.tgz#d8913b0f8abc15fdca229571eefc5f9385c82ea7"
+  integrity sha512-WzsfEMrOTd7/epEKs7S0QBB+sgw25d1B4SeLCD7q9RYi0vYLaeWT3jTuVXVGqwAlT3tFyedmvXnryLV5SUwiug==
   dependencies:
-    "@gnosis.pm/safe-apps-sdk" "6.0.0"
+    "@gnosis.pm/safe-apps-sdk" "6.2.0"
     events "^3.3.0"
 
-"@gnosis.pm/safe-apps-sdk@6.0.0", "@gnosis.pm/safe-apps-sdk@^6.0.0":
+"@gnosis.pm/safe-apps-sdk@6.2.0":
+  version "6.2.0"
+  resolved "https://registry.yarnpkg.com/@gnosis.pm/safe-apps-sdk/-/safe-apps-sdk-6.2.0.tgz#05751b4ae4c6cfa7e19839d3655e7d9b5fb72dfe"
+  integrity sha512-dOpVBlu+Nv7bOrOl9llTeRriEpdUnnbXEM/RgTkS1v8Q2swT6+M+WIKTuKB/cadFXbjUsBD/nd3IsihHP24b5g==
+  dependencies:
+    "@gnosis.pm/safe-react-gateway-sdk" "^2.5.6"
+    ethers "^5.4.7"
+
+"@gnosis.pm/safe-apps-sdk@^6.0.0":
   version "6.0.0"
   resolved "https://registry.yarnpkg.com/@gnosis.pm/safe-apps-sdk/-/safe-apps-sdk-6.0.0.tgz#c3974d34c5758948cf16507eb0cdcedfaf63e2e7"
   integrity sha512-3d01OKG7mUVqyWqSmWLp6mjblcVVe3EoHNMXMaC7kBkmDVyDEqcrLKRxAjx1OvPkjSg6MTvPtNAsJtSd0jyeYA==
@@ -2519,12 +2527,19 @@
     "@changesets/cli" "^2.16.0"
     ethers "^5.4.7"
 
-"@gnosis.pm/safe-apps-web3modal@^5.0.0":
-  version "5.0.0"
-  resolved "https://registry.yarnpkg.com/@gnosis.pm/safe-apps-web3modal/-/safe-apps-web3modal-5.0.0.tgz#faa986cddf5cf37bf58bf27eaadaad5e609f00d5"
-  integrity sha512-mRhDLmd3PXPM4lSpfsEbAQhFvoyTDLG1p+9wEK0WbQhTg4bF8qwVjhsWxgSx2FVqqb+H11609qZCY6v+UvKqmw==
+"@gnosis.pm/safe-apps-web3modal@^7.0.0":
+  version "7.0.0"
+  resolved "https://registry.yarnpkg.com/@gnosis.pm/safe-apps-web3modal/-/safe-apps-web3modal-7.0.0.tgz#85eca61a181382292b5d254f2305bbdd136c0cab"
+  integrity sha512-lDqcHnE+IbnYalalx26H26QbEku3rRIBFaqq+kI1IGO1kWqGEaQg4f0qbYd5Gl/2rUAQjVObncs4u2nv+27rFA==
   dependencies:
-    "@gnosis.pm/safe-apps-provider" "0.9.0"
+    "@gnosis.pm/safe-apps-provider" "0.9.3"
+
+"@gnosis.pm/safe-react-gateway-sdk@^2.5.6":
+  version "2.8.5"
+  resolved "https://registry.yarnpkg.com/@gnosis.pm/safe-react-gateway-sdk/-/safe-react-gateway-sdk-2.8.5.tgz#3b82b993ae64a5fde1a96a4b0c47a97514839055"
+  integrity sha512-lrZ3gXzbNzIjIzYDs21d7I3fwwHi01YFnD+2+5Kuy0+fJAiONYXih2Z9Q4h3RS/AgzTHfL+G7WB6XB0V8GMVCQ==
+  dependencies:
+    isomorphic-unfetch "^3.1.0"
 
 "@graphiql/toolkit@^0.2.0":
   version "0.2.2"
@@ -13106,6 +13121,14 @@ isomorphic-fetch@^3.0.0:
     node-fetch "^2.6.1"
     whatwg-fetch "^3.4.1"
 
+isomorphic-unfetch@^3.1.0:
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/isomorphic-unfetch/-/isomorphic-unfetch-3.1.0.tgz#87341d5f4f7b63843d468438128cb087b7c3e98f"
+  integrity sha512-geDJjpoZ8N0kWexiwkX8F9NkTsXhetLPVbZFQ+JTW239QNOwvB0gniuR1Wc6f0AMTn7/mFGyXvHTifrCp/GH8Q==
+  dependencies:
+    node-fetch "^2.6.1"
+    unfetch "^4.2.0"
+
 isomorphic-ws@^4.0.1:
   version "4.0.1"
   resolved "https://registry.yarnpkg.com/isomorphic-ws/-/isomorphic-ws-4.0.1.tgz#55fd4cd6c5e6491e76dc125938dd863f5cd4f2dc"
@@ -21681,6 +21704,11 @@ undertaker@^1.2.1:
     object.defaults "^1.0.0"
     object.reduce "^1.0.0"
     undertaker-registry "^1.0.0"
+
+unfetch@^4.2.0:
+  version "4.2.0"
+  resolved "https://registry.yarnpkg.com/unfetch/-/unfetch-4.2.0.tgz#7e21b0ef7d363d8d9af0fb929a5555f6ef97a3be"
+  integrity sha512-F9p7yYCn6cIW9El1zi0HI6vqpeIvBsr3dSuRO6Xuppb1u5rXpCPmMvLSyECLhybr9isec8Ohl0hPekMVrEinDA==
 
 unicode-canonical-property-names-ecmascript@^1.0.4:
   version "1.0.4"
