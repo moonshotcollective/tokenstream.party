@@ -20,3 +20,4 @@ export { default as L2Bridge } from "./L2Bridge";
 export { default as QRBlockie } from "./QRBlockie";
 export { default as QRPunkBlockie } from "./QRPunkBlockie";
 export { default as PayButton } from "./PayButton";
+export { default as ProgressComponent } from "./Progress";
