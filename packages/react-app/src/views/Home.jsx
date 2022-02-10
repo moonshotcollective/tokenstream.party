@@ -7,6 +7,8 @@ import {
   Radio,
   InputNumber,
   List,
+  Row,
+  Col,
   Progress,
   Spin,
 } from "antd";
@@ -193,46 +195,61 @@ export default function Home({
             bordered
             dataSource={sData}
             renderItem={(item) => (
-              <List.Item key={item[1]}>
+              <Row>
                 <div
-                  style={{
-                    width: "110%",
-                    position: "relative",
-                    display: "flex",
-                    flex: 1,
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                  }}
-                >{"  "}
-                  <Address
-                    value={item[1]}
-                    ensProvider={mainnetProvider}
-                    fontSize={18}
-                    style={{ display: "flex", flex: 1, alignItems: "center" }}
-                  />{"  "}
-                  <Link to={`/user/${item[1]}`}>View Stream</Link>{"  "}
-                  <Address
-                    value={item[2]}
-                    ensProvider={mainnetProvider}
-                    fontSize={10}
                     style={{
-                      paddingLeft: 30,
-                      paddingRight: 30,
-                      flex: 0.3,
+                      width: "110%",
+                      position: "relative",
+                      display: "flex",
+                      flex: 1,
+                      padding: 15,
+                      justifyContent: "space-between",
                       alignItems: "center",
                     }}
-                  />{"  "}
-                  <Progress
-                    style={{ alignItems: "right" }}
-                    type="dashboard"
-                    showInfo={true}
-                    width={40}
-                    fontSize={1}
-                    percent={item.percent}
-                    format={(percent) => `${percent.toFixed(0)}%`}
-                  />
+                >{"  "}
+                  <Col span={10} >
+                    <div
+                      style={{
+                        display: "flex",
+                      }}
+                    >
+                      <Address
+                        value={item[1]}
+                        ensProvider={mainnetProvider}
+                        fontSize={18}
+                        style={{ display: "flex", flex: 1, alignItems: "center" }}
+                      />{"  "}
+                    </div>
+                  </Col>
+                  <Col span={4}>
+                    <Link to={`/user/${item[1]}`}>View Stream</Link>{"  "}
+                  </Col>
+                  <Col span={5}>
+                    <Address
+                      value={item[2]}
+                      ensProvider={mainnetProvider}
+                      fontSize={10}
+                      style={{
+                        paddingLeft: 30,
+                        paddingRight: 30,
+                        flex: 0.3,
+                        alignItems: "center",
+                      }}
+                    />{"  "}
+                  </Col>
+                  <Col span={3}>
+                    <Progress
+                      style={{ alignItems: "right" }}
+                      type="dashboard"
+                      showInfo={true}
+                      width={40}
+                      fontSize={1}
+                      percent={item.percent}
+                      format={(percent) => `${percent.toFixed(0)}%`}
+                    />
+                  </Col>
                 </div>
-              </List.Item>
+              </Row>
             )}
           />
         </div>
