@@ -11,11 +11,14 @@ import {
   Col,
   Progress,
   Spin,
+  Popover,
 } from "antd";
-import { AddressInput, Address, Balance } from "../components";
+import { AddressInput, Address, Balance, TokenSelect } from "../components";
+import { InfoCircleOutlined } from "@ant-design/icons";
 import { SimpleStreamABI } from "../contracts/external_ABI";
 import { useHistory } from "react-router";
 import { Link } from "react-router-dom";
+import axios from "axios";
 
 export default function Home({
   mainnetProvider,
@@ -35,10 +38,20 @@ export default function Home({
 
   const [sData, setData] = useState([]);
 
+  const [tokenAddress, setTokenAddress] = useState("0xde30da39c46104798bb5aa3fe8b9e0e1f348163f");
+  const [tokenPrice, setTokenPrice] = useState(0);
+
   let copy = JSON.parse(JSON.stringify(streams));
+
+  const getTokenPrice = async (address) => {
+    const res = await axios.get(`https://api.coingecko.com/api/v3/simple/token_price/ethereum?contract_addresses=${address}&vs_currencies=usd`);
+    const price = res.data[address]['usd'];
+    setTokenPrice(price);
+  }
 
   useEffect(async () => {
     // Get an instance for each Stream contract
+    getTokenPrice(tokenAddress);
     for (let b in streams) {
       if (streams)
         var contract = new ethers.Contract(
@@ -75,8 +88,6 @@ export default function Home({
       "604800"
     );
     const _startFull = startFull === 1;
-    const GTCContractAddress = readContracts && readContracts.GTC.address;
-
     const result = tx(
       writeContracts &&
         writeContracts.StreamFactory.createStreamFor(
@@ -84,7 +95,7 @@ export default function Home({
           capFormatted,
           frequencyFormatted,
           _startFull,
-          GTCContractAddress
+          tokenAddress
         ),
       async (update) => {
         console.log("📡 Transaction Update:", update);
@@ -121,6 +132,18 @@ export default function Home({
     console.log(await result);
   };
 
+  const setToAddress = (address) => {
+    setTokenAddress(address);
+    getTokenPrice(address);
+  }
+
+  const minimumAmount = () => {
+    // Minimum 10 USD for a stream
+    return parseFloat(10/tokenPrice).toFixed(2);
+  }
+
+  const content = (<p>Default Token: GTC</p>);
+
   return (
     <div
       style={{
@@ -152,12 +175,25 @@ export default function Home({
             onChange={(a) => setUserAddress(a)}
           />
           <div style={{ marginBottom: 25 }} />
+            <div style={{ marginBottom: 5 }}>
+              Token: 
+              <Popover placement="bottomLeft" content={content} arrowPointAtCenter>
+                <InfoCircleOutlined style={{ marginLeft: 5 }} />
+              </Popover>
+            </div>
+            <TokenSelect
+              chainId={1}
+              onChange={setToAddress}
+              localProvider={mainnetProvider}
+              nativeToken={{ name: 'Native token', symbol: 'ETH' }}
+            />
+            <div style={{ marginBottom: 25 }} />
           <div style={{ display: "flex", flex: 1, flexDirection: "row" }}>
             <div style={{ flex: 1, flexDirection: "column" }}>
-              <div style={{ marginBottom: 5 }}>GTC Amount:</div>
+              <div style={{ marginBottom: 5 }}>Amount:</div>
               <InputNumber
                 placeholder="Amount"
-                min={1}
+                min={minimumAmount()}
                 value={amount}
                 onChange={(v) => setAmount(v)}
                 style={{ width: "100%" }}
