@@ -38,7 +38,9 @@ export default function Home({
   let copy = JSON.parse(JSON.stringify(streams));
 
   useEffect(async () => {
+    console.log("streams object", streams);
     // Get an instance for each Stream contract
+
     for (let b in streams) {
       if (streams)
         var contract = new ethers.Contract(
@@ -59,11 +61,16 @@ export default function Home({
         .streamBalance()
         .then(
           (result) =>
-            (copy[b].percent =
-              ((Number(result._hex) * 0.000000000000000001) / copy[b][3]) * 100)
+            copy[b].push(
+              (Number(result._hex) * 0.000000000000000001) / copy[b][3]
+            ) * 100
         );
     }
+    //const saved = localStorage.getItem("stream");
+    //console.log("storage", JSON.parse(saved));
     setData(copy);
+    localStorage.setItem("stream", JSON.stringify(copy));
+    //JSON.parse(localStorage.getItem("stream"));
 
     // Wait until list is almost fully loaded to render
     if (copy.length >= 18) setReady(true);
@@ -193,21 +200,22 @@ export default function Home({
         <div style={{ marginTop: 30 }}>
           <List
             bordered
-            dataSource={sData}
+            dataSource={JSON.parse(localStorage.getItem("stream"))}
             renderItem={(item) => (
               <Row>
                 <div
-                    style={{
-                      width: "110%",
-                      position: "relative",
-                      display: "flex",
-                      flex: 1,
-                      padding: 15,
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                    }}
-                >{"  "}
-                  <Col span={10} >
+                  style={{
+                    width: "110%",
+                    position: "relative",
+                    display: "flex",
+                    flex: 1,
+                    padding: 15,
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  {"  "}
+                  <Col span={10}>
                     <div
                       style={{
                         display: "flex",
@@ -217,12 +225,18 @@ export default function Home({
                         value={item[1]}
                         ensProvider={mainnetProvider}
                         fontSize={18}
-                        style={{ display: "flex", flex: 1, alignItems: "center" }}
-                      />{"  "}
+                        style={{
+                          display: "flex",
+                          flex: 1,
+                          alignItems: "center",
+                        }}
+                      />
+                      {"  "}
                     </div>
                   </Col>
                   <Col span={4}>
-                    <Link to={`/user/${item[1]}`}>View Stream</Link>{"  "}
+                    <Link to={`/user/${item[1]}`}>View Stream</Link>
+                    {"  "}
                   </Col>
                   <Col span={5}>
                     <Address
@@ -235,7 +249,8 @@ export default function Home({
                         flex: 0.3,
                         alignItems: "center",
                       }}
-                    />{"  "}
+                    />
+                    {"  "}
                   </Col>
                   <Col span={3}>
                     <Progress
@@ -244,7 +259,7 @@ export default function Home({
                       showInfo={true}
                       width={40}
                       fontSize={1}
-                      percent={item.percent}
+                      percent={item[4] * 100}
                       format={(percent) => `${percent.toFixed(0)}%`}
                     />
                   </Col>
