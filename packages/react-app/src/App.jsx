@@ -417,17 +417,6 @@ function App(props) {
     );
   }
 
-  const homeScreen = React.useMemo(() => <Home
-    mainnetProvider={mainnetProvider}
-    localProvider={localProvider}
-    address={address}
-    tx={tx}
-    userSigner={userSigner}
-    writeContracts={writeContracts}
-    readContracts={readContracts}
-    streams={streams}
-  />, [streams]);
-
   return (
     <div className="App">
       {/* ✏️ Edit the header and change the title to your project name */}
@@ -460,7 +449,16 @@ function App(props) {
 
         <Switch>
           <Route exact path="/">
-            {homeScreen}
+          <Home
+            mainnetProvider={mainnetProvider}
+            localProvider={localProvider}
+            address={address}
+            tx={tx}
+            userSigner={userSigner}
+            writeContracts={writeContracts}
+            readContracts={readContracts}
+            streams={streams}
+          />
           </Route>
           <Route path="/user/:address">
             <UserStream
