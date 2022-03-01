@@ -19,7 +19,7 @@ import { Link } from "react-router-dom";
 
 const streamsCache = {};
 
-async function resolveStreamSummary(streamAddress) {
+async function resolveStreamSummary(streamAddress, mainnetProvider) {
   if (streamsCache[streamAddress]) {
     return streamsCache[streamAddress];
   }
@@ -75,7 +75,7 @@ export default function Home({
   useEffect(async () => {
     // Get an instance for each Stream contract
     for (let b in streams) {
-      const summary = resolveStreamSummary(streams[b].stream);
+      const summary = resolveStreamSummary(streams[b].stream, mainnetProvider);
       copy[b].push(summary.cap);
       copy[b].percent = summary.percent;
     }
