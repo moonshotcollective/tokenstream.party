@@ -449,16 +449,16 @@ function App(props) {
 
         <Switch>
           <Route exact path="/">
-          <Home
-            mainnetProvider={mainnetProvider}
-            localProvider={localProvider}
-            address={address}
-            tx={tx}
-            userSigner={userSigner}
-            writeContracts={writeContracts}
-            readContracts={readContracts}
-            streams={streams}
-          />
+            <Home
+              mainnetProvider={mainnetProvider}
+              localProvider={localProvider}
+              address={address}
+              tx={tx}
+              userSigner={userSigner}
+              writeContracts={writeContracts}
+              readContracts={readContracts}
+              streams={streams}
+            />
           </Route>
           <Route path="/user/:address">
             <UserStream
