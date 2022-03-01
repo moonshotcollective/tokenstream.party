@@ -81,7 +81,7 @@ export default function Home({
     }
     setData(copy);
 
-    // Wait until list is almost fully loaded to renderø
+    // Wait until list is almost fully loaded to render
     if (copy.length >= 18) setReady(true);
   }, [streams]);
 
