@@ -75,7 +75,7 @@ export default function Home({
   useEffect(async () => {
     // Get an instance for each Stream contract
     for (let b in streams) {
-      const summary = resolveStreamSummary(streams[b].stream, mainnetProvider);
+      const summary = await resolveStreamSummary(streams[b].stream, mainnetProvider);
       copy[b].push(summary.cap);
       copy[b].percent = summary.percent;
     }
