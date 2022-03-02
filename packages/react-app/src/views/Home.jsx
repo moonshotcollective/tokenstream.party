@@ -70,19 +70,21 @@ export default function Home({
 
   const [sData, setData] = useState([]);
 
-  let copy = JSON.parse(JSON.stringify(streams));
-
   useEffect(async () => {
-    // Get an instance for each Stream contract
-    for (let b in streams) {
-      const summary = await resolveStreamSummary(streams[b].stream, mainnetProvider);
-      copy[b].push(summary.cap);
-      copy[b].percent = summary.percent;
-    }
-    setData(copy);
+    // parallely load all available streams data
+    Promise.all(
+      streams.map(async (stream) => {
+        const summary = await resolveStreamSummary(stream.stream, mainnetProvider);
+        return {...stream, 3: summary.cap, percent: summary.percent};
+      })
+    ).then(results => {
+      setData(results);
 
-    // Wait until list is almost fully loaded to render
-    if (copy.length >= 18) setReady(true);
+      // Wait until list is almost fully loaded to render
+      if (results.length >= 18) {
+        setReady(true);
+      }
+    });
   }, [streams]);
 
   const createNewStream = async () => {
