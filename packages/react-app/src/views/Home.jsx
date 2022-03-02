@@ -17,6 +17,41 @@ import { SimpleStreamABI } from "../contracts/external_ABI";
 import { useHistory } from "react-router";
 import { Link } from "react-router-dom";
 
+const streamsCache = {};
+
+async function resolveStreamSummary(streamAddress, mainnetProvider) {
+  if (streamsCache[streamAddress]) {
+    return streamsCache[streamAddress];
+  }
+
+  var contract = new ethers.Contract(
+    streamAddress,
+    SimpleStreamABI,
+    mainnetProvider
+  );
+
+  var data = {};
+
+  // Call it's cap function
+  await contract
+    .cap()
+    .then((result) =>
+      data.cap = Number(result._hex) * 0.000000000000000001
+    );
+
+  // Call it's Balance function, calculate the current percentage
+  await contract
+    .streamBalance()
+    .then(
+      (result) =>
+      (data.percent =
+        ((Number(result._hex) * 0.000000000000000001) / data.cap) * 100)
+    );
+
+  streamsCache[streamAddress] = data;
+  return data;
+}
+
 export default function Home({
   mainnetProvider,
   tx,
@@ -40,28 +75,9 @@ export default function Home({
   useEffect(async () => {
     // Get an instance for each Stream contract
     for (let b in streams) {
-      if (streams)
-        var contract = new ethers.Contract(
-          streams[b].stream,
-          SimpleStreamABI,
-          mainnetProvider
-        );
-
-      // Call it's cap function
-      const cap = await contract
-        .cap()
-        .then((result) =>
-          copy[b].push(Number(result._hex) * 0.000000000000000001)
-        );
-
-      // Call it's Balance function, calculate the current percentage
-      const balance = await contract
-        .streamBalance()
-        .then(
-          (result) =>
-            (copy[b].percent =
-              ((Number(result._hex) * 0.000000000000000001) / copy[b][3]) * 100)
-        );
+      const summary = await resolveStreamSummary(streams[b].stream, mainnetProvider);
+      copy[b].push(summary.cap);
+      copy[b].percent = summary.percent;
     }
     setData(copy);
 
