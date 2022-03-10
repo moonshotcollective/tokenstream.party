@@ -17,11 +17,25 @@ import { SimpleStreamABI } from "../contracts/external_ABI";
 import { useHistory } from "react-router";
 import { Link } from "react-router-dom";
 
+const STREAMS_CACHE_TTL_MILLIS=Number.parseInt(process.env.REACT_APP_STREAMS_CACHE_TTL_MILLIS) || 43200000; // 12h ttl by default
+// the actual cache
 const streamsCache = {};
 
+class CachedValue {
+  constructor(value) {
+    this.value = value;
+    this.updatedAt = Date.now();
+  }
+
+  isStale = () => {
+    return (this.updatedAt + STREAMS_CACHE_TTL_MILLIS) <= Date.now();
+  }
+}
+
 async function resolveStreamSummary(streamAddress, mainnetProvider) {
-  if (streamsCache[streamAddress]) {
-    return streamsCache[streamAddress];
+  const cachedStream = streamsCache[streamAddress];
+  if (cachedStream && cachedStream instanceof CachedValue && !cachedStream.isStale()) {
+    return cachedStream.value;
   }
 
   var contract = new ethers.Contract(
@@ -48,7 +62,7 @@ async function resolveStreamSummary(streamAddress, mainnetProvider) {
         ((Number(result._hex) * 0.000000000000000001) / data.cap) * 100)
     );
 
-  streamsCache[streamAddress] = data;
+  streamsCache[streamAddress] = new CachedValue(data);
   return data;
 }
 
