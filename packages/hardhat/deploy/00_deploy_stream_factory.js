@@ -6,18 +6,17 @@ module.exports = async ({ getNamedAccounts, getChainId, deployments }) => {
   const { deployer } = await getNamedAccounts();
   const chainId = await getChainId();
 
-  const admins = [];
   const GTC = { address: "0xde30da39c46104798bb5aa3fe8b9e0e1f348163f" };
 
-  admins[0] = process.env.MANAGER1;
-  admins[1] = process.env.MANAGER2;
-  admins[2] = process.env.MANAGER3;
+  const owner = process.env.STREAM_FACTORY_OWNER;
+  const admins = JSON.parse(process.env.STREAM_FACTORY_ADMINS);
+  admins.push(owner); // the owner is also an admin
 
   // // deploy dummy GTC on non-mainnet networks
   // if (chainId !== "1") {
   //   GTC = await deploy("GTC", {
   //     from: deployer,
-  //     args: [admins[2]],
+  //     args: [admins],
   //     log: true,
   //   });
   // }
@@ -25,7 +24,7 @@ module.exports = async ({ getNamedAccounts, getChainId, deployments }) => {
   // deploy the stream factory
   const streamFactory = await deploy("StreamFactory", {
     from: deployer,
-    args: [admins[1], admins],
+    args: [owner, admins],
     log: true,
   });
 
@@ -39,7 +38,7 @@ module.exports = async ({ getNamedAccounts, getChainId, deployments }) => {
     await run("verify:verify", {
       address: streamFactory.address,
       contract: "contracts/StreamFactory.sol:StreamFactory",
-      constructorArguments: [admins[1], admins],
+      constructorArguments: [owner, admins],
     });
   }
 };

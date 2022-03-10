@@ -475,20 +475,25 @@
       }
     }
   },
-  "42": {
-    "kovan": {
-      "name": "kovan",
-      "chainId": "42",
+  "4": {
+    "rinkeby": {
+      "name": "rinkeby",
+      "chainId": "4",
       "contracts": {
-        "GTC": {
-          "address": "0xCE8B9A8bf0c578380bf8BfeA15dE81fe7ffD8155",
+        "StreamFactory": {
+          "address": "0xDD72eCeC91cE12de1482c6e245514fCc2840611F",
           "abi": [
             {
               "inputs": [
                 {
                   "internalType": "address",
-                  "name": "admin",
+                  "name": "owner",
                   "type": "address"
+                },
+                {
+                  "internalType": "address[]",
+                  "name": "admins",
+                  "type": "address[]"
                 }
               ],
               "stateMutability": "nonpayable",
@@ -500,23 +505,17 @@
                 {
                   "indexed": true,
                   "internalType": "address",
-                  "name": "owner",
+                  "name": "previousOwner",
                   "type": "address"
                 },
                 {
                   "indexed": true,
                   "internalType": "address",
-                  "name": "spender",
+                  "name": "newOwner",
                   "type": "address"
-                },
-                {
-                  "indexed": false,
-                  "internalType": "uint256",
-                  "name": "value",
-                  "type": "uint256"
                 }
               ],
-              "name": "Approval",
+              "name": "OwnershipTransferred",
               "type": "event"
             },
             {
@@ -524,45 +523,122 @@
               "inputs": [
                 {
                   "indexed": true,
+                  "internalType": "bytes32",
+                  "name": "role",
+                  "type": "bytes32"
+                },
+                {
+                  "indexed": true,
+                  "internalType": "bytes32",
+                  "name": "previousAdminRole",
+                  "type": "bytes32"
+                },
+                {
+                  "indexed": true,
+                  "internalType": "bytes32",
+                  "name": "newAdminRole",
+                  "type": "bytes32"
+                }
+              ],
+              "name": "RoleAdminChanged",
+              "type": "event"
+            },
+            {
+              "anonymous": false,
+              "inputs": [
+                {
+                  "indexed": true,
+                  "internalType": "bytes32",
+                  "name": "role",
+                  "type": "bytes32"
+                },
+                {
+                  "indexed": true,
                   "internalType": "address",
-                  "name": "from",
+                  "name": "account",
                   "type": "address"
                 },
                 {
                   "indexed": true,
                   "internalType": "address",
-                  "name": "to",
+                  "name": "sender",
+                  "type": "address"
+                }
+              ],
+              "name": "RoleGranted",
+              "type": "event"
+            },
+            {
+              "anonymous": false,
+              "inputs": [
+                {
+                  "indexed": true,
+                  "internalType": "bytes32",
+                  "name": "role",
+                  "type": "bytes32"
+                },
+                {
+                  "indexed": true,
+                  "internalType": "address",
+                  "name": "account",
+                  "type": "address"
+                },
+                {
+                  "indexed": true,
+                  "internalType": "address",
+                  "name": "sender",
+                  "type": "address"
+                }
+              ],
+              "name": "RoleRevoked",
+              "type": "event"
+            },
+            {
+              "anonymous": false,
+              "inputs": [
+                {
+                  "indexed": false,
+                  "internalType": "address",
+                  "name": "creator",
                   "type": "address"
                 },
                 {
                   "indexed": false,
-                  "internalType": "uint256",
-                  "name": "value",
-                  "type": "uint256"
-                }
-              ],
-              "name": "Transfer",
-              "type": "event"
-            },
-            {
-              "inputs": [
-                {
                   "internalType": "address",
-                  "name": "owner",
+                  "name": "user",
                   "type": "address"
                 },
                 {
+                  "indexed": false,
                   "internalType": "address",
-                  "name": "spender",
+                  "name": "stream",
                   "type": "address"
                 }
               ],
-              "name": "allowance",
+              "name": "StreamAdded",
+              "type": "event"
+            },
+            {
+              "inputs": [],
+              "name": "DEFAULT_ADMIN_ROLE",
               "outputs": [
                 {
-                  "internalType": "uint256",
+                  "internalType": "bytes32",
                   "name": "",
-                  "type": "uint256"
+                  "type": "bytes32"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [],
+              "name": "FACTORY_MANAGER",
+              "outputs": [
+                {
+                  "internalType": "bytes32",
+                  "name": "",
+                  "type": "bytes32"
                 }
               ],
               "stateMutability": "view",
@@ -572,21 +648,62 @@
               "inputs": [
                 {
                   "internalType": "address",
-                  "name": "spender",
+                  "name": "_newFactoryManager",
+                  "type": "address"
+                }
+              ],
+              "name": "addFactoryManager",
+              "outputs": [],
+              "stateMutability": "nonpayable",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "contract SimpleStream",
+                  "name": "stream",
+                  "type": "address"
+                }
+              ],
+              "name": "addStreamForUser",
+              "outputs": [],
+              "stateMutability": "nonpayable",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "address payable",
+                  "name": "_toAddress",
                   "type": "address"
                 },
                 {
                   "internalType": "uint256",
-                  "name": "amount",
+                  "name": "_cap",
                   "type": "uint256"
-                }
-              ],
-              "name": "approve",
-              "outputs": [
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "_frequency",
+                  "type": "uint256"
+                },
                 {
                   "internalType": "bool",
-                  "name": "",
+                  "name": "_startsFull",
                   "type": "bool"
+                },
+                {
+                  "internalType": "contract IERC20",
+                  "name": "_gtc",
+                  "type": "address"
+                }
+              ],
+              "name": "createStreamFor",
+              "outputs": [
+                {
+                  "internalType": "address",
+                  "name": "streamAddress",
+                  "type": "address"
                 }
               ],
               "stateMutability": "nonpayable",
@@ -594,31 +711,79 @@
             },
             {
               "inputs": [
+                {
+                  "internalType": "bytes32",
+                  "name": "role",
+                  "type": "bytes32"
+                }
+              ],
+              "name": "getRoleAdmin",
+              "outputs": [
+                {
+                  "internalType": "bytes32",
+                  "name": "",
+                  "type": "bytes32"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "address payable",
+                  "name": "user",
+                  "type": "address"
+                }
+              ],
+              "name": "getStreamForUser",
+              "outputs": [
+                {
+                  "internalType": "address",
+                  "name": "streamAddress",
+                  "type": "address"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "bytes32",
+                  "name": "role",
+                  "type": "bytes32"
+                },
                 {
                   "internalType": "address",
                   "name": "account",
                   "type": "address"
                 }
               ],
-              "name": "balanceOf",
-              "outputs": [
-                {
-                  "internalType": "uint256",
-                  "name": "",
-                  "type": "uint256"
-                }
-              ],
-              "stateMutability": "view",
+              "name": "grantRole",
+              "outputs": [],
+              "stateMutability": "nonpayable",
               "type": "function"
             },
             {
-              "inputs": [],
-              "name": "decimals",
+              "inputs": [
+                {
+                  "internalType": "bytes32",
+                  "name": "role",
+                  "type": "bytes32"
+                },
+                {
+                  "internalType": "address",
+                  "name": "account",
+                  "type": "address"
+                }
+              ],
+              "name": "hasRole",
               "outputs": [
                 {
-                  "internalType": "uint8",
+                  "internalType": "bool",
                   "name": "",
-                  "type": "uint8"
+                  "type": "bool"
                 }
               ],
               "stateMutability": "view",
@@ -628,16 +793,98 @@
               "inputs": [
                 {
                   "internalType": "address",
-                  "name": "spender",
+                  "name": "user",
                   "type": "address"
                 },
                 {
                   "internalType": "uint256",
-                  "name": "subtractedValue",
+                  "name": "increase",
                   "type": "uint256"
                 }
               ],
-              "name": "decreaseAllowance",
+              "name": "increaseUserStreamCap",
+              "outputs": [],
+              "stateMutability": "nonpayable",
+              "type": "function"
+            },
+            {
+              "inputs": [],
+              "name": "owner",
+              "outputs": [
+                {
+                  "internalType": "address",
+                  "name": "",
+                  "type": "address"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "address",
+                  "name": "user",
+                  "type": "address"
+                }
+              ],
+              "name": "releaseUserStream",
+              "outputs": [],
+              "stateMutability": "nonpayable",
+              "type": "function"
+            },
+            {
+              "inputs": [],
+              "name": "renounceOwnership",
+              "outputs": [],
+              "stateMutability": "nonpayable",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "bytes32",
+                  "name": "role",
+                  "type": "bytes32"
+                },
+                {
+                  "internalType": "address",
+                  "name": "account",
+                  "type": "address"
+                }
+              ],
+              "name": "renounceRole",
+              "outputs": [],
+              "stateMutability": "nonpayable",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "bytes32",
+                  "name": "role",
+                  "type": "bytes32"
+                },
+                {
+                  "internalType": "address",
+                  "name": "account",
+                  "type": "address"
+                }
+              ],
+              "name": "revokeRole",
+              "outputs": [],
+              "stateMutability": "nonpayable",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "bytes4",
+                  "name": "interfaceId",
+                  "type": "bytes4"
+                }
+              ],
+              "name": "supportsInterface",
               "outputs": [
                 {
                   "internalType": "bool",
@@ -645,12 +892,18 @@
                   "type": "bool"
                 }
               ],
-              "stateMutability": "nonpayable",
+              "stateMutability": "view",
               "type": "function"
             },
             {
-              "inputs": [],
-              "name": "faucetMint",
+              "inputs": [
+                {
+                  "internalType": "address",
+                  "name": "newOwner",
+                  "type": "address"
+                }
+              ],
+              "name": "transferOwnership",
               "outputs": [],
               "stateMutability": "nonpayable",
               "type": "function"
@@ -659,60 +912,16 @@
               "inputs": [
                 {
                   "internalType": "address",
-                  "name": "spender",
+                  "name": "",
                   "type": "address"
-                },
-                {
-                  "internalType": "uint256",
-                  "name": "addedValue",
-                  "type": "uint256"
                 }
               ],
-              "name": "increaseAllowance",
+              "name": "userStreams",
               "outputs": [
                 {
-                  "internalType": "bool",
+                  "internalType": "address",
                   "name": "",
-                  "type": "bool"
-                }
-              ],
-              "stateMutability": "nonpayable",
-              "type": "function"
-            },
-            {
-              "inputs": [],
-              "name": "name",
-              "outputs": [
-                {
-                  "internalType": "string",
-                  "name": "",
-                  "type": "string"
-                }
-              ],
-              "stateMutability": "view",
-              "type": "function"
-            },
-            {
-              "inputs": [],
-              "name": "symbol",
-              "outputs": [
-                {
-                  "internalType": "string",
-                  "name": "",
-                  "type": "string"
-                }
-              ],
-              "stateMutability": "view",
-              "type": "function"
-            },
-            {
-              "inputs": [],
-              "name": "totalSupply",
-              "outputs": [
-                {
-                  "internalType": "uint256",
-                  "name": "",
-                  "type": "uint256"
+                  "type": "address"
                 }
               ],
               "stateMutability": "view",
@@ -722,59 +931,33 @@
               "inputs": [
                 {
                   "internalType": "address",
-                  "name": "recipient",
+                  "name": "",
                   "type": "address"
-                },
-                {
-                  "internalType": "uint256",
-                  "name": "amount",
-                  "type": "uint256"
                 }
               ],
-              "name": "transfer",
+              "name": "users",
               "outputs": [
                 {
                   "internalType": "bool",
-                  "name": "",
+                  "name": "hasStream",
                   "type": "bool"
                 }
               ],
-              "stateMutability": "nonpayable",
-              "type": "function"
-            },
-            {
-              "inputs": [
-                {
-                  "internalType": "address",
-                  "name": "sender",
-                  "type": "address"
-                },
-                {
-                  "internalType": "address",
-                  "name": "recipient",
-                  "type": "address"
-                },
-                {
-                  "internalType": "uint256",
-                  "name": "amount",
-                  "type": "uint256"
-                }
-              ],
-              "name": "transferFrom",
-              "outputs": [
-                {
-                  "internalType": "bool",
-                  "name": "",
-                  "type": "bool"
-                }
-              ],
-              "stateMutability": "nonpayable",
+              "stateMutability": "view",
               "type": "function"
             }
           ]
-        },
+        }
+      }
+    }
+  },
+  "31337": {
+    "localhost": {
+      "name": "localhost",
+      "chainId": "31337",
+      "contracts": {
         "StreamFactory": {
-          "address": "0x3Ba3F6d5F9d0c821c9511b4a85C9a8397bc67195",
+          "address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
           "abi": [
             {
               "inputs": [
