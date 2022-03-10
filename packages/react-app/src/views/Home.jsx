@@ -95,7 +95,7 @@ export default function Home({
       setData(results);
 
       // Wait until list is almost fully loaded to render
-      if (results.length >= 18) {
+      if (results.length >= 24) {
         setReady(true);
       }
     });
