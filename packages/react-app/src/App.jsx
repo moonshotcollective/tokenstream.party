@@ -52,8 +52,8 @@ const mainnetInfura = navigator.onLine
 
 // 🏠 Your local provider is usually pointed at your local blockchain
 const localProviderUrl = targetNetwork.rpcUrl;
-// as you deploy to other networks you can set REACT_APP_PROVIDER=https://dai.poa.network in packages/react-app/.env
-const localProviderUrlFromEnv = process.env.REACT_APP_PROVIDER ? process.env.REACT_APP_PROVIDER : localProviderUrl;
+// as you deploy to other networks you can set REACT_APP_RINKEBY_PROVIDER=https://dai.poa.network in packages/react-app/.env
+const localProviderUrlFromEnv = process.env.REACT_APP_RINKEBY_PROVIDER ? process.env.REACT_APP_RINKEBY_PROVIDER : localProviderUrl;
 if (DEBUG) console.log("🏠 Connecting to provider:", localProviderUrlFromEnv);
 const localProvider = new ethers.providers.StaticJsonRpcProvider(localProviderUrlFromEnv);
 
