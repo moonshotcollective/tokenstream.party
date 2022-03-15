@@ -18,6 +18,7 @@ import { useHistory } from "react-router";
 import { Link } from "react-router-dom";
 
 export default function Home({
+  provider,
   mainnetProvider,
   tx,
   writeContracts,
@@ -44,7 +45,7 @@ export default function Home({
         var contract = new ethers.Contract(
           streams[b].stream,
           SimpleStreamABI,
-          props.localProvider
+          provider
         );
 
       // Call it's cap function
