@@ -18,6 +18,7 @@ import { useHistory } from "react-router";
 import { Link } from "react-router-dom";
 
 export default function Home({
+  provider,
   mainnetProvider,
   tx,
   writeContracts,
@@ -44,7 +45,7 @@ export default function Home({
         var contract = new ethers.Contract(
           streams[b].stream,
           SimpleStreamABI,
-          mainnetProvider
+          provider
         );
 
       // Call it's cap function
@@ -66,7 +67,8 @@ export default function Home({
     setData(copy);
 
     // Wait until list is almost fully loaded to render
-    if (copy.length >= 18) setReady(true);
+    // very few streams for stage/rinkeby
+    if (copy.length > 0) setReady(true);
   }, [streams]);
 
   const createNewStream = async () => {

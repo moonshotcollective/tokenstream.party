@@ -16,7 +16,7 @@ module.exports = async ({ getNamedAccounts, getChainId, deployments }) => {
   // if (chainId !== "1") {
   //   GTC = await deploy("GTC", {
   //     from: deployer,
-  //     args: [admins],
+  //     args: [owner],
   //     log: true,
   //   });
   // }

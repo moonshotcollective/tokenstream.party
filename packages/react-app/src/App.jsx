@@ -452,7 +452,7 @@ function App(props) {
           <Route exact path="/">
             <Home
               mainnetProvider={mainnetProvider}
-              localProvider={localProvider}
+              provider={injectedProvider || localProvider}
               address={address}
               tx={tx}
               userSigner={userSigner}
