@@ -8,10 +8,7 @@ module.exports = async ({ getNamedAccounts, getChainId, deployments }) => {
 
   const GTC = { address: "0xde30da39c46104798bb5aa3fe8b9e0e1f348163f" };
 
-  const owner = process.env.STREAM_FACTORY_OWNER;
-  const admins = JSON.parse(process.env.STREAM_FACTORY_ADMINS);
-  admins.push(owner); // the owner is also an admin
-
+  //const owner = process.env.STREAM_FACTORY_OWNER;
   // // deploy dummy GTC on non-mainnet networks
   // if (chainId !== "1") {
   //   GTC = await deploy("GTC", {
@@ -21,26 +18,25 @@ module.exports = async ({ getNamedAccounts, getChainId, deployments }) => {
   //   });
   // }
 
-  // deploy the stream factory
-  const streamFactory = await deploy("StreamFactory", {
+  // deploy the Org Factory 
+  const orgFactory = await deploy("OrgFactoryDeployer", {
     from: deployer,
-    args: [owner, admins],
     log: true,
   });
 
-  // log the GTC and StreamFactory addresses
+  // log the GTC and orgFactoryDeployer addresses
   console.log({
     GTC: GTC.address,
-    streamFactory: streamFactory.address,
+    orgFactory: orgFactory.address,
   });
 
   if (chainId !== "31337") {
     await run("verify:verify", {
-      address: streamFactory.address,
-      contract: "contracts/StreamFactory.sol:StreamFactory",
-      constructorArguments: [owner, admins],
+      address: orgFactory.address,
+      contract: "contracts/OrgFactoryDeployer.sol:OrgFactoryDeployer",
+      
     });
   }
 };
 
-module.exports.tags = ["GTC", "StreamFactory", "SimpleStream"];
+module.exports.tags = ["GTC", "OrgFactoryDeployer"];

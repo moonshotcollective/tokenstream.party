@@ -20,6 +20,24 @@ contract StreamFactory is AccessControl, Ownable {
         bool hasStream;
     }
 
+    /// @dev name of organization
+    string public orgName;
+    /// @dev discription of the organization
+    string public orgDescription;
+    /// @dev github URI of organization
+    string public orgGithubURI;
+    /// @dev twitter URI of the organization
+    string public orgTwitterURI;
+    /// @dev the website URI of organization
+    string public orgWebURI;
+    /// @dev discord URI organization
+    string public orgDiscordURI;
+    /// @dev URI to the logo of organization
+    string public logoURI;
+    /// @dev total streams in organization
+    uint256 public streamsCount;
+    /// @dev total amount paid out by organization
+    uint256 public totalPaidOut;
     /// @dev StreamAdded event to track the streams after creation
     event StreamAdded(address creator, address user, address stream);
 
@@ -34,11 +52,20 @@ contract StreamFactory is AccessControl, Ownable {
         _;
     }
 
-    constructor(address owner, address[] memory admins) {
+    constructor(
+        string memory _orgName,
+        string memory _logoURI,
+        string memory _orgDescription,
+        address owner,
+        address[] memory admins
+    ) {
         for (uint256 i = 0; i < admins.length; i++) {
             _setupRole(DEFAULT_ADMIN_ROLE, admins[i]);
             _setupRole(FACTORY_MANAGER, admins[i]);
         }
+        orgName = _orgName;
+        logoURI = _logoURI;
+        orgDescription = _orgDescription;
         transferOwnership(owner);
     }
 
@@ -72,6 +99,7 @@ contract StreamFactory is AccessControl, Ownable {
         // map user to new stream
         userStreams[_toAddress] = streamAddress;
 
+        streamsCount++;
         emit StreamAdded(msg.sender, _toAddress, streamAddress);
     }
 
@@ -115,6 +143,8 @@ contract StreamFactory is AccessControl, Ownable {
     }
 
     function releaseUserStream(address user) public isPermittedFactoryManager {
+
         SimpleStream(userStreams[user]).transferOwnership(user);
+        streamsCount--;
     }
 }
