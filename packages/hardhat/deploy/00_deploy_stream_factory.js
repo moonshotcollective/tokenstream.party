@@ -34,7 +34,6 @@ module.exports = async ({ getNamedAccounts, getChainId, deployments }) => {
     await run("verify:verify", {
       address: orgFactory.address,
       contract: "contracts/OrgFactoryDeployer.sol:OrgFactoryDeployer",
-      
     });
   }
 };
