@@ -17,6 +17,55 @@ import { SimpleStreamABI } from "../contracts/external_ABI";
 import { useHistory } from "react-router";
 import { Link } from "react-router-dom";
 
+const STREAMS_CACHE_TTL_MILLIS=Number.parseInt(process.env.REACT_APP_STREAMS_CACHE_TTL_MILLIS) || 43200000; // 12h ttl by default
+// the actual cache
+const streamsCache = {};
+
+class CachedValue {
+  constructor(value) {
+    this.value = value;
+    this.updatedAt = Date.now();
+  }
+
+  isStale = () => {
+    return (this.updatedAt + STREAMS_CACHE_TTL_MILLIS) <= Date.now();
+  }
+}
+
+async function resolveStreamSummary(streamAddress, mainnetProvider) {
+  const cachedStream = streamsCache[streamAddress];
+  if (cachedStream && cachedStream instanceof CachedValue && !cachedStream.isStale()) {
+    return cachedStream.value;
+  }
+
+  var contract = new ethers.Contract(
+    streamAddress,
+    SimpleStreamABI,
+    mainnetProvider
+  );
+
+  var data = {};
+
+  // Call it's cap function
+  await contract
+    .cap()
+    .then((result) =>
+      data.cap = Number(result._hex) * 0.000000000000000001
+    );
+
+  // Call it's Balance function, calculate the current percentage
+  await contract
+    .streamBalance()
+    .then(
+      (result) =>
+      (data.percent =
+        ((Number(result._hex) * 0.000000000000000001) / data.cap) * 100)
+    );
+
+  streamsCache[streamAddress] = new CachedValue(data);
+  return data;
+}
+
 export default function Home({
   provider,
   mainnetProvider,
@@ -36,39 +85,21 @@ export default function Home({
 
   const [sData, setData] = useState([]);
 
-  let copy = JSON.parse(JSON.stringify(streams));
-
   useEffect(async () => {
-    // Get an instance for each Stream contract
-    for (let b in streams) {
-      if (streams)
-        var contract = new ethers.Contract(
-          streams[b].stream,
-          SimpleStreamABI,
-          provider
-        );
+    // parallely load all available streams data
+    Promise.all(
+      streams.map(async (stream) => {
+        const summary = await resolveStreamSummary(stream.stream, mainnetProvider);
+        return {...stream, 3: summary.cap, percent: summary.percent};
+      })
+    ).then(results => {
+      setData(results);
 
-      // Call it's cap function
-      const cap = await contract
-        .cap()
-        .then((result) =>
-          copy[b].push(Number(result._hex) * 0.000000000000000001)
-        );
-
-      // Call it's Balance function, calculate the current percentage
-      const balance = await contract
-        .streamBalance()
-        .then(
-          (result) =>
-            (copy[b].percent =
-              ((Number(result._hex) * 0.000000000000000001) / copy[b][3]) * 100)
-        );
-    }
-    setData(copy);
-
-    // Wait until list is almost fully loaded to render
-    // very few streams for stage/rinkeby
-    if (copy.length > 0) setReady(true);
+      // Wait until list is almost fully loaded to render
+      if (results.length >= 18) {
+        setReady(true);
+      }
+    });
   }, [streams]);
 
   const createNewStream = async () => {
