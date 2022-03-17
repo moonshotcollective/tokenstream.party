@@ -20,24 +20,29 @@ contract StreamFactory is AccessControl, Ownable {
         bool hasStream;
     }
 
-    /// @dev name of organization
-    string public orgName;
-    /// @dev discription of the organization
-    string public orgDescription;
-    /// @dev github URI of organization
-    string public orgGithubURI;
-    /// @dev twitter URI of the organization
-    string public orgTwitterURI;
-    /// @dev the website URI of organization
-    string public orgWebURI;
-    /// @dev discord URI organization
-    string public orgDiscordURI;
-    /// @dev URI to the logo of organization
-    string public logoURI;
-    /// @dev total streams in organization
-    uint256 public streamsCount;
-    /// @dev total amount paid out by organization
-    uint256 public totalPaidOut;
+    struct OrgInfo {
+        /// @dev name of organization
+        string orgName;
+        /// @dev discription of the organization
+        string orgDescription;
+        /// @dev github URI of organization
+        string orgGithubURI;
+        /// @dev twitter URI of the organization
+        string orgTwitterURI;
+        /// @dev the website URI of organization
+        string orgWebURI;
+        /// @dev discord URI organization
+        string orgDiscordURI;
+        /// @dev URI to the logo of organization
+        string logoURI;
+        /// @dev total streams in organization
+        uint256 streamsCount;
+        /// @dev total amount paid out by organization
+        uint256 totalPaidOut;
+    }
+
+    OrgInfo public orgInfo;
+
     /// @dev StreamAdded event to track the streams after creation
     event StreamAdded(address creator, address user, address stream);
 
@@ -63,9 +68,17 @@ contract StreamFactory is AccessControl, Ownable {
             _setupRole(DEFAULT_ADMIN_ROLE, admins[i]);
             _setupRole(FACTORY_MANAGER, admins[i]);
         }
-        orgName = _orgName;
-        logoURI = _logoURI;
-        orgDescription = _orgDescription;
+        orgInfo = OrgInfo(
+            _orgName,
+            _orgDescription,
+            '', // github URI
+            '', // twitter URI
+            '', // website URI
+            '', // discord URI
+            _logoURI,
+            0, // streams count
+            0  // total paid out
+        );
         transferOwnership(owner);
     }
 
@@ -99,7 +112,7 @@ contract StreamFactory is AccessControl, Ownable {
         // map user to new stream
         userStreams[_toAddress] = streamAddress;
 
-        streamsCount++;
+        orgInfo.streamsCount++;
         emit StreamAdded(msg.sender, _toAddress, streamAddress);
     }
 
@@ -145,6 +158,6 @@ contract StreamFactory is AccessControl, Ownable {
     function releaseUserStream(address user) public isPermittedFactoryManager {
 
         SimpleStream(userStreams[user]).transferOwnership(user);
-        streamsCount--;
+        orgInfo.streamsCount--;
     }
 }

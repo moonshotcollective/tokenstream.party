@@ -6,7 +6,6 @@ import Authereum from "authereum";
 import { useBalance, useContractLoader, useContractReader, useGasPrice, useOnBlock } from "eth-hooks";
 // import useEventListener from "./hooks/oldEventListener";
 import { useExchangeEthPrice } from "eth-hooks/dapps/dex";
-import { useEventListener } from "eth-hooks/events";
 import Fortmatic from "fortmatic";
 import React, { useCallback, useEffect, useState } from "react";
 import { BrowserRouter, Link, Route, Switch } from "react-router-dom";
@@ -16,14 +15,14 @@ import { SafeAppWeb3Modal } from "@gnosis.pm/safe-apps-web3modal";
 import "./App.css";
 import { Account, Contract, Faucet, GasGauge, Header, Ramp, ThemeSwitch } from "./components";
 import { INFURA_ID, NETWORK, NETWORKS } from "./constants";
-import { Transactor, filterStreamsThatAreHidden } from "./helpers";
+import { Transactor } from "./helpers";
 import { useContractConfig, useUserSigner } from "./hooks";
 import { OrganizationHome, UserStream, OrganizationBrowsePage } from "./views";
 
 const { ethers } = require("ethers");
 
 /// 📡 What chain are your contracts deployed to?
-const targetNetwork = NETWORKS.mainnet; // <------- select your target frontend network (localhost, rinkeby, xdai, mainnet)
+const targetNetwork = (process.env.REACT_APP_NETWORK && NETWORKS[process.env.REACT_APP_NETWORK]) || NETWORKS.mainnet; // <------- select your target frontend network (localhost, rinkeby, xdai, mainnet)
 
 // 😬 Sorry for all the console logging
 const DEBUG = false;
@@ -205,12 +204,6 @@ function App(props) {
 
   // If you want to make 🔐 write transactions to your contracts, use the userSigner:
   const writeContracts = useContractLoader(userSigner, contractConfig);
-
-  const rawStreams = useEventListener(readContracts, "StreamFactory", "StreamAdded", localProvider)
-  const streams = React.useMemo(() => rawStreams
-      .map(s => s.decode(s.data))
-      .filter(filterStreamsThatAreHidden),
-    [rawStreams]);
 
   // EXTERNAL CONTRACT EXAMPLE:
   //
@@ -450,11 +443,13 @@ function App(props) {
         <Switch>
           <Route exact path="/">
             <OrganizationBrowsePage
+                tx={tx}
+                writeContracts={writeContracts}
                 provider={injectedProvider || localProvider}
                 readContracts={readContracts}
             />
           </Route>
-          <Route path="/organizations/:orgname">
+          <Route path="/organizations/:orgaddress">
             <OrganizationHome
               mainnetProvider={mainnetProvider}
               provider={injectedProvider || localProvider}
@@ -463,7 +458,6 @@ function App(props) {
               userSigner={userSigner}
               writeContracts={writeContracts}
               readContracts={readContracts}
-              streams={streams}
             />
           </Route>
           <Route path="/user/:address">
@@ -487,15 +481,7 @@ function App(props) {
                 and give you a form to interact with it locally
             */}
             <Contract
-              name="SimpleStream"
-              signer={userSigner}
-              provider={localProvider}
-              address={"0xb219e66bf9092eafc84ed3fd28d896bf121d9bae"}
-              blockExplorer={blockExplorer}
-              contractConfig={contractConfig}
-            />
-            <Contract
-              name="StreamFactory"
+              name="OrgFactoryDeployer"
               signer={userSigner}
               provider={localProvider}
               address={address}
