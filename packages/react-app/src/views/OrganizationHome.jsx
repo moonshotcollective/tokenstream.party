@@ -66,7 +66,7 @@ async function resolveStreamSummary(streamAddress, mainnetProvider) {
   return data;
 }
 
-export default function Home({
+export default function OrganizationHome({
   provider,
   mainnetProvider,
   tx,

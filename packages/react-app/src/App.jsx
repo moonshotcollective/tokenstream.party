@@ -18,7 +18,7 @@ import { Account, Contract, Faucet, GasGauge, Header, Ramp, ThemeSwitch } from "
 import { INFURA_ID, NETWORK, NETWORKS } from "./constants";
 import { Transactor, filterStreamsThatAreHidden } from "./helpers";
 import { useContractConfig, useUserSigner } from "./hooks";
-import { Home, UserStream } from "./views";
+import { OrganizationHome, UserStream, OrganizationBrowsePage } from "./views";
 
 const { ethers } = require("ethers");
 
@@ -449,7 +449,13 @@ function App(props) {
 
         <Switch>
           <Route exact path="/">
-            <Home
+            <OrganizationBrowsePage
+                provider={injectedProvider || localProvider}
+                readContracts={readContracts}
+            />
+          </Route>
+          <Route path="/organizations/:orgname">
+            <OrganizationHome
               mainnetProvider={mainnetProvider}
               provider={injectedProvider || localProvider}
               address={address}
