@@ -20,6 +20,29 @@ contract StreamFactory is AccessControl, Ownable {
         bool hasStream;
     }
 
+    struct OrgInfo {
+        /// @dev name of organization
+        string orgName;
+        /// @dev discription of the organization
+        string orgDescription;
+        /// @dev github URI of organization
+        string orgGithubURI;
+        /// @dev twitter URI of the organization
+        string orgTwitterURI;
+        /// @dev the website URI of organization
+        string orgWebURI;
+        /// @dev discord URI organization
+        string orgDiscordURI;
+        /// @dev URI to the logo of organization
+        string logoURI;
+        /// @dev total streams in organization
+        uint256 streamsCount;
+        /// @dev total amount paid out by organization
+        uint256 totalPaidOut;
+    }
+
+    OrgInfo public orgInfo;
+
     /// @dev StreamAdded event to track the streams after creation
     event StreamAdded(address creator, address user, address stream);
 
@@ -34,11 +57,28 @@ contract StreamFactory is AccessControl, Ownable {
         _;
     }
 
-    constructor(address owner, address[] memory admins) {
+    constructor(
+        string memory _orgName,
+        string memory _logoURI,
+        string memory _orgDescription,
+        address owner,
+        address[] memory admins
+    ) {
         for (uint256 i = 0; i < admins.length; i++) {
             _setupRole(DEFAULT_ADMIN_ROLE, admins[i]);
             _setupRole(FACTORY_MANAGER, admins[i]);
         }
+        orgInfo = OrgInfo(
+            _orgName,
+            _orgDescription,
+            '', // github URI
+            '', // twitter URI
+            '', // website URI
+            '', // discord URI
+            _logoURI,
+            0, // streams count
+            0  // total paid out
+        );
         transferOwnership(owner);
     }
 
@@ -72,6 +112,7 @@ contract StreamFactory is AccessControl, Ownable {
         // map user to new stream
         userStreams[_toAddress] = streamAddress;
 
+        orgInfo.streamsCount++;
         emit StreamAdded(msg.sender, _toAddress, streamAddress);
     }
 
@@ -115,6 +156,8 @@ contract StreamFactory is AccessControl, Ownable {
     }
 
     function releaseUserStream(address user) public isPermittedFactoryManager {
+
         SimpleStream(userStreams[user]).transferOwnership(user);
+        orgInfo.streamsCount--;
     }
 }
