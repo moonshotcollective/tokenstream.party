@@ -7,7 +7,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "./SimpleStream.sol";
 
 /// @title Stream Factory Contract
-/// @author ghostffcode
+/// @author ghostffcode, jaxcoder
 /// @notice Creates instances of SimpleStream for users
 contract StreamFactory is AccessControl, Ownable {
     /// @dev user address to stream address mapping
@@ -15,6 +15,8 @@ contract StreamFactory is AccessControl, Ownable {
 
     /// @dev keep track if user has a stream or not
     mapping(address => User) public users;
+
+    mapping(address => OrgInfo) public orgs;
 
     struct User {
         bool hasStream;
@@ -46,12 +48,12 @@ contract StreamFactory is AccessControl, Ownable {
     /// @dev StreamAdded event to track the streams after creation
     event StreamAdded(address creator, address user, address stream);
 
-    bytes32 public constant FACTORY_MANAGER = keccak256("FACTORY_MANAGER");
+    bytes32 public constant OPERATOR = keccak256("OPERATOR");
 
     /// @dev modifier for the factory manager role
     modifier isPermittedFactoryManager() {
         require(
-            hasRole(FACTORY_MANAGER, msg.sender),
+            hasRole(OPERATOR, msg.sender),
             "Not an approved factory manager"
         );
         _;
@@ -66,7 +68,7 @@ contract StreamFactory is AccessControl, Ownable {
     ) {
         for (uint256 i = 0; i < admins.length; i++) {
             _setupRole(DEFAULT_ADMIN_ROLE, admins[i]);
-            _setupRole(FACTORY_MANAGER, admins[i]);
+            _setupRole(OPERATOR, admins[i]);
         }
         orgInfo = OrgInfo(
             _orgName,
@@ -79,7 +81,22 @@ contract StreamFactory is AccessControl, Ownable {
             0, // streams count
             0  // total paid out
         );
+        // map the org the the owner so we can update later
+        orgs[owner] = orgInfo;
+
         transferOwnership(owner);
+    }
+
+    /// @dev update organization profile info
+    function updateOrgProfile(string[] memory props) public onlyOwner {
+        OrgInfo storage org = orgs[msg.sender];
+        org.orgName = props[0];
+        org.orgDescription = props[1];
+        org.orgGithubURI = props[2];
+        org.orgTwitterURI = props[3];
+        org.orgWebURI = props[4];
+        org.orgDiscordURI = props[5];
+        org.logoURI = props[6];
     }
 
     /// @notice Creates a new stream
@@ -94,7 +111,11 @@ contract StreamFactory is AccessControl, Ownable {
         uint256 _frequency,
         bool _startsFull,
         IERC20 _gtc
-    ) public isPermittedFactoryManager returns (address streamAddress) {
+    )
+        public
+        isPermittedFactoryManager
+        returns (address streamAddress) 
+    {
         User storage user = users[_toAddress];
         require(user.hasStream == false, "User already has a stream!");
         user.hasStream = true;
@@ -145,14 +166,18 @@ contract StreamFactory is AccessControl, Ownable {
     /// @notice Adds a new Factory Manager
     /// @param _newFactoryManager the address of the person you are adding
     function addFactoryManager(address _newFactoryManager) public onlyOwner {
-        grantRole(FACTORY_MANAGER, _newFactoryManager);
+        grantRole(OPERATOR, _newFactoryManager);
     }
 
-    function increaseUserStreamCap(address user, uint256 increase)
+    function updateStreamCap(address user, uint256 newCap)
         public
         isPermittedFactoryManager
     {
-        SimpleStream(userStreams[user]).increaseCap(increase);
+        SimpleStream(userStreams[user]).increaseCap(newCap);
+    }
+
+    function updateFrequency(address user, uint256 newTime) public {
+        SimpleStream(userStreams[user]).updateFrequency(newTime);
     }
 
     function releaseUserStream(address user) public isPermittedFactoryManager {

@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
 /// @title Simple Stream Contract
-/// @author ghostffcode
+/// @author ghostffcode, jaxcoder
 /// @notice the meat and potatoes of the stream
 contract SimpleStream is Ownable {
     using SafeMath for uint256;
@@ -79,8 +79,17 @@ contract SimpleStream is Ownable {
         emit Deposit(msg.sender, value, reason);
     }
 
+    /// @dev Increase the cap of the stream
+    /// @param _increase how much to increase the cap
     function increaseCap(uint256 _increase) public onlyOwner {
         require(_increase > 0, "Increase cap by more than 0");
         cap = cap.add(_increase);
+    }
+
+    /// @dev Update the frequency of a stream
+    /// @param _frequency the new frequency
+    function updateFrequency(uint256 _frequency) public onlyOwner {
+        require(_frequency > 0, "Must be greater than 0");
+        frequency = _frequency;
     }
 }
