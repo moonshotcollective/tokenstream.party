@@ -84,21 +84,33 @@ export default function Home({
 
   const [sData, setData] = useState([]);
 
-  useEffect(async () => {
-    // parallely load all available streams data
-    Promise.all(
-      streams.map(async (stream) => {
-        const summary = await resolveStreamSummary(stream.stream, mainnetProvider);
-        return {...stream, 3: summary.cap, percent: summary.percent};
-      })
-    ).then(results => {
-      setData(results);
+  useEffect(() => {
+    let shouldCancel = false;
+    const fetchStreams = async () => {
+      // parallely load all available streams data
+      Promise.all(
+        streams.map(async (stream) => {
+          const summary = await resolveStreamSummary(stream.stream, mainnetProvider);
+          return { ...stream, 3: summary.cap, percent: summary.percent };
+        })
+      ).then(results => {
+        // process promised streams only when this effect call is not cancelled.
+        if (!shouldCancel) {
+          setData(results);
 
-      // Wait until list is almost fully loaded to render
-      if (results.length >= 20) {
-        setReady(true);
-      }
-    });
+          // Wait until list is almost fully loaded to render
+          if (results.length >= 18) {
+            setReady(true);
+          }
+        }
+      });
+    }
+
+    fetchStreams()
+      .catch(console.error);
+
+    // cleanup callback
+    return () => shouldCancel = true;
   }, [streams]);
 
   const createNewStream = async () => {
