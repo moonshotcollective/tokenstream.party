@@ -51,7 +51,7 @@ contract SimpleStream is Ownable {
     /// @param amount amount of withdraw
     /// @param reason reason for withdraw
     function streamWithdraw(uint256 amount, string memory reason, address beneficiary) external {
-        require(msg.sender == toAddress, "this stream is not for you ser");
+        require(_msgSender() == toAddress, "this stream is not for you ser");
         require(beneficiary != address(0), "cannot send to zero address");
         uint256 totalAmountCanWithdraw = streamBalance();
         require(totalAmountCanWithdraw >= amount, "not enough in the stream");
@@ -73,10 +73,10 @@ contract SimpleStream is Ownable {
     function streamDeposit(string memory reason, uint256 value) external {
         require(value >= cap / 10, "Not big enough, sorry.");
         require(
-            gtc.transferFrom(msg.sender, address(this), value),
+            gtc.transferFrom(_msgSender(), address(this), value),
             "Transfer of tokens is not approved or insufficient funds"
         );
-        emit Deposit(msg.sender, value, reason);
+        emit Deposit(_msgSender(), value, reason);
     }
 
     /// @dev Increase the cap of the stream

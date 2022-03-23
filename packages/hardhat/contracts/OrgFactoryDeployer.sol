@@ -1,12 +1,11 @@
 //SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0 <0.9.0;
 
-import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./StreamFactory.sol";
 import "./SimpleStream.sol";
 
-contract OrgFactoryDeployer is Ownable, AccessControl {
+contract OrgFactoryDeployer is Ownable {
 
     /// @dev emitted when a new org is created.
     event OrganizationsDeployed(
@@ -18,19 +17,8 @@ contract OrgFactoryDeployer is Ownable, AccessControl {
 
     address[] public organizations;
 
-    /// roles
-    bytes32 public constant OPERATOR_ROLE = keccak256("OPERATOR_ROLE");
-
     constructor (address _owner) public {
         transferOwnership(_owner);
-    }
-
-    function addOperator(address _newOperator) public onlyOwner {
-        grantRole(OPERATOR_ROLE, _newOperator);
-    }
-
-    function removeOperator(address _operator) public onlyOwner {
-        revokeRole(OPERATOR_ROLE, _operator);
     }
 
     /// @dev deploys a stream factory contract for a specified organization.
@@ -41,7 +29,6 @@ contract OrgFactoryDeployer is Ownable, AccessControl {
         address owner,
         address[] calldata admins
     ) public {
-        require(hasRole(OPERATOR_ROLE, _msgSender()), "must be operator role");
         StreamFactory deployedOrganization = new StreamFactory(
             _orgName,
             _logoURI,

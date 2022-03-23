@@ -48,12 +48,12 @@ contract StreamFactory is AccessControl, Ownable {
     /// @dev StreamAdded event to track the streams after creation
     event StreamAdded(address creator, address user, address stream);
 
-    bytes32 public constant OPERATOR = keccak256("OPERATOR");
+    bytes32 public constant OPERATOR_ROLE = keccak256("OPERATOR");
 
     /// @dev modifier for the factory manager role
-    modifier isPermittedFactoryManager() {
+    modifier isPermittedOperator() {
         require(
-            hasRole(OPERATOR, msg.sender),
+            hasRole(OPERATOR_ROLE, msg.sender),
             "Not an approved factory manager"
         );
         _;
@@ -68,7 +68,7 @@ contract StreamFactory is AccessControl, Ownable {
     ) {
         for (uint256 i = 0; i < admins.length; i++) {
             _setupRole(DEFAULT_ADMIN_ROLE, admins[i]);
-            _setupRole(OPERATOR, admins[i]);
+            _setupRole(OPERATOR_ROLE, admins[i]);
         }
         orgInfo = OrgInfo(
             _orgName,
@@ -89,7 +89,7 @@ contract StreamFactory is AccessControl, Ownable {
 
     /// @dev update organization profile info
     function updateOrgProfile(string[] memory props) public onlyOwner {
-        OrgInfo storage org = orgs[msg.sender];
+        OrgInfo storage org = orgs[_msgSender()];
         org.orgName = props[0];
         org.orgDescription = props[1];
         org.orgGithubURI = props[2];
@@ -113,7 +113,7 @@ contract StreamFactory is AccessControl, Ownable {
         IERC20 _gtc
     )
         public
-        isPermittedFactoryManager
+        isPermittedOperator
         returns (address streamAddress) 
     {
         User storage user = users[_toAddress];
@@ -134,14 +134,14 @@ contract StreamFactory is AccessControl, Ownable {
         userStreams[_toAddress] = streamAddress;
 
         orgInfo.streamsCount++;
-        emit StreamAdded(msg.sender, _toAddress, streamAddress);
+        emit StreamAdded(_msgSender(), _toAddress, streamAddress);
     }
 
     /// @notice Add a existing stream to the factory
     /// @param stream the stream contract address
     function addStreamForUser(SimpleStream stream)
         public
-        isPermittedFactoryManager
+        isPermittedOperator
     {
         User storage user = users[stream.toAddress()];
         require(user.hasStream == false, "User already has a stream!");
@@ -150,7 +150,7 @@ contract StreamFactory is AccessControl, Ownable {
 
         userStreams[_toAddress] = streamAddress;
 
-        emit StreamAdded(msg.sender, _toAddress, streamAddress);
+        emit StreamAdded(_msgSender(), _toAddress, streamAddress);
     }
 
     /// @notice returns a stream for a specified user
@@ -163,15 +163,18 @@ contract StreamFactory is AccessControl, Ownable {
         streamAddress = userStreams[user];
     }
 
-    /// @notice Adds a new Factory Manager
-    /// @param _newFactoryManager the address of the person you are adding
-    function addFactoryManager(address _newFactoryManager) public onlyOwner {
-        grantRole(OPERATOR, _newFactoryManager);
+    
+    function addOperator(address _newOperator) public onlyOwner {
+        grantRole(OPERATOR_ROLE, _newOperator);
+    }
+
+    function removeOperator(address _operator) public onlyOwner {
+        revokeRole(OPERATOR_ROLE, _operator);
     }
 
     function updateStreamCap(address user, uint256 newCap)
         public
-        isPermittedFactoryManager
+        isPermittedOperator
     {
         SimpleStream(userStreams[user]).increaseCap(newCap);
     }
@@ -180,7 +183,7 @@ contract StreamFactory is AccessControl, Ownable {
         SimpleStream(userStreams[user]).updateFrequency(newTime);
     }
 
-    function releaseUserStream(address user) public isPermittedFactoryManager {
+    function releaseUserStream(address user) public isPermittedOperator {
 
         SimpleStream(userStreams[user]).transferOwnership(user);
         orgInfo.streamsCount--;
