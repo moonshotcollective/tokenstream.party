@@ -3,23 +3,61 @@ schema:
   file: ./src/schema.graphql
 dataSources:
   - kind: ethereum/contract
-    name: YourContract
-    network: localhost
+    name: OrgFactoryDeployer
+    network: {{network}}
     source:
-      address: "{{localhost_YourContractAddress}}"
-      abi: YourContract
+      address: "{{rinkeby_OrgFactoryDeployerAddress}}"
+      abi: OrgFactoryDeployer
       startBlock: 1
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
       language: wasm/assemblyscript
       entities:
-        - Purpose
-        - Sender
+        - Organization
       abis:
-        - name: YourContract
-          file: ./abis/localhost_YourContract.json
+        - name: OrgFactoryDeployer
+          file: ./abis/{{network}}_OrgFactoryDeployer.json
       eventHandlers:
-        - event: SetPurpose(address,string)
-          handler: handleSetPurpose
+        - event: OrganizationsDeployed(indexed address,indexed address,string)
+          handler: handleOrganizationDeployed
       file: ./src/mapping.ts
+templates:
+  - kind: ethereum/contract
+    name: StreamFactory
+    network: {{network}}
+    source:
+      abi: StreamFactory
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      file: ./src/mapping.ts
+      entities:
+        - StreamFactory
+      abis:
+        - name: StreamFactory
+          file: ./abis/StreamFactory.json
+      eventHandlers:
+        - event: StreamAdded(address,address,address)
+          handler: handleStreamAdded
+  - kind: ethereum/contract
+    name: Stream
+    network: {{network}}
+    source:
+      abi: Stream
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      file: ./src/mapping.ts
+      entities:
+        - Stream
+      abis:
+        - name: Stream
+          file: ./abis/SimpleStreams.json
+      eventHandlers:
+        - event: Withdraw(indexed address,uint256,string)
+          handler: handleWithdraw
+        - event: Deposit(indexed address,uint256,string)
+          handler: handleDeposit

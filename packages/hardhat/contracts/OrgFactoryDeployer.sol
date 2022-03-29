@@ -17,7 +17,7 @@ contract OrgFactoryDeployer is Ownable {
 
     address[] public organizations;
 
-    constructor (address _owner) public {
+    constructor (address _owner) {
         transferOwnership(_owner);
     }
 

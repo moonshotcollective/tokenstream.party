@@ -21,3 +21,8 @@ export { default as QRBlockie } from "./QRBlockie";
 export { default as QRPunkBlockie } from "./QRPunkBlockie";
 export { default as PayButton } from "./PayButton";
 export { default as ProgressComponent } from "./Progress";
+export { OrgStreamsActivityFeed } from "./OrgStreamsActivityFeed";
+export { DepositIcon } from "./DepositIcon";
+export { WithdrawIcon } from "./WithdrawIcon";
+export { GitcoinDAOBadge } from "./GitcoinDAOBadge";
+export { TokenStreamLogo } from "./TokenStreamLogo";

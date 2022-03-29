@@ -1,9 +1,11 @@
 @import "~antd/lib/style/color/colorPalette.less";
 @import "~antd/dist/antd.less";
 @import "~antd/lib/style/themes/dark.less";
+@import "./common.less";
 
 // These are shared variables that can be extracted to their own file
-@primary-color: #6F3FF5;
+@primary-color: #FEDB46;
+@btn-primary-color: #110440;
 @border-radius-base: 4px;
 
 @component-background: #0B0228;
@@ -15,7 +17,13 @@
 @card-skeleton-bg: #0B0228;
 @skeleton-color: #0B0228;
 @table-header-sort-active-bg: #0B0228;
+@heading-color: #F2B705;
 
 .highlight {
   background-color: #0B0228;
+}
+
+.App {
+  background-image: radial-gradient(#701bad, #110440 70%);
+  height: 100vh;
 }

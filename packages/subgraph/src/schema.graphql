@@ -1,15 +1,30 @@
-type Purpose @entity {
-  id: ID!
-  sender: Sender!
-  purpose: String!
-  createdAt: BigInt!
-  transactionHash: String!
+enum ActivityEventType {
+  StreamWithdrawEvent,
+  StreamDepositEvent
 }
 
-type Sender @entity {
+type Organization @entity {
   id: ID!
-  address: Bytes!
-  purposes: [Purpose!] @derivedFrom(field: "sender")
+  owner: Bytes!
+  orgName: String!
   createdAt: BigInt!
-  purposeCount: BigInt!
+  streamActivities: [StreamActivity!]! @derivedFrom(field: "organization")
+  streams: [Stream!]! @derivedFrom(field: "organization")
+}
+
+type Stream @entity {
+  id: ID!
+  user: Bytes!
+  createdAt: BigInt!
+  organization: Organization!
+}
+
+type StreamActivity @entity {
+  id: ID!
+  organization: Organization!
+  eventType: ActivityEventType!
+  user: Bytes!
+  amount: BigInt!
+  info: String!
+  createdAt: BigInt!
 }

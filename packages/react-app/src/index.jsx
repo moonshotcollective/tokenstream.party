@@ -12,7 +12,7 @@ const themes = {
 
 const prevTheme = window.localStorage.getItem("theme");
 
-const subgraphUri = "http://localhost:8000/subgraphs/name/scaffold-eth/your-contract";
+const subgraphUri = process.env.REACT_APP_SUBGRAPH_ENDPOINT || "http://localhost:8000/subgraphs/name/tokenstreams/org-factory";
 
 const client = new ApolloClient({
   uri: subgraphUri,
