@@ -83,6 +83,7 @@
     "less-plugin-npm-import": "^2.1.0",
     "prettier": "^2.0.5",
     "s3-folder-upload": "^2.3.1",
+    "source-map-explorer": "^2.5.2",
     "surge": "^0.21.5"
   },
   "eslintConfig": {
@@ -97,7 +98,7 @@
     "lint": "eslint --config ./.eslintrc.js --ignore-path ./.eslintignore ./src/**/*",
     "ipfs": "node ./scripts/ipfs.js",
     "surge": "cp build/index.html build/200.html && surge ./build --domain tokenstream.party",
-    "staging:surge": "cp build/index.html build/200.html && surge ./build --domain tokenstream-rinkeby-af.surge.sh",
+    "staging:surge": "cp build/index.html build/200.html && surge ./build --domain tokenstream-rinkeby-customtokens.surge.sh",
     "s3": "node ./scripts/s3.js",
     "ship": "yarn surge",
     "theme": "npx gulp less",

@@ -4,12 +4,13 @@ import { loadAppContracts } from "../helpers/loadAppContracts";
 export const useContractConfig = () => {
   const [contractsConfig, setContractsConfig] = useState({});
 
+  const loadFunc = async () => {
+    const result = await loadAppContracts();
+    setContractsConfig(result);
+  };
   useEffect(() => {
-    const loadFunc = async () => {
-      const result = await loadAppContracts();
-      setContractsConfig(result);
-    };
-    void loadFunc();
+    loadFunc()
+      .catch(console.error);
   }, []);
   return contractsConfig;
 };

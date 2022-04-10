@@ -3,8 +3,11 @@ pragma solidity >=0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
-contract GTC is ERC20 {
-    constructor(address admin) ERC20("Gitcoin", "GTC") {
+/**
+ * A test custom token.
+ */
+contract SupCoin is ERC20 {
+    constructor(address admin) ERC20("SupCoin", "SMC") {
         _mint(admin, 1000 ether);
     }
 

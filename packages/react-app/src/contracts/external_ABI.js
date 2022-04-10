@@ -23,7 +23,7 @@ export const SimpleStreamABI = [
       },
       {
         internalType: "contract IERC20",
-        name: "_gtc",
+        name: "_token",
         type: "address",
       },
     ],
@@ -127,7 +127,7 @@ export const SimpleStreamABI = [
   },
   {
     inputs: [],
-    name: "gtc",
+    name: "token",
     outputs: [
       {
         internalType: "contract IERC20",
@@ -277,7 +277,7 @@ export const SimpleStreamABI = [
     stateMutability: "nonpayable",
     type: "function",
   },
-];
+]; 
 
 export const StreamFactoryABI = [
   {
@@ -296,6 +296,11 @@ export const StreamFactoryABI = [
         "internalType": "string",
         "name": "_orgDescription",
         "type": "string"
+      },
+      {
+        "internalType": "address",
+        "name": "_paymentTokenAddress",
+        "type": "address"
       },
       {
         "internalType": "address",
@@ -503,11 +508,6 @@ export const StreamFactoryABI = [
         "internalType": "bool",
         "name": "_startsFull",
         "type": "bool"
-      },
-      {
-        "internalType": "contract IERC20",
-        "name": "_gtc",
-        "type": "address"
       }
     ],
     "name": "createStreamFor",
@@ -667,6 +667,11 @@ export const StreamFactoryABI = [
         "internalType": "uint256",
         "name": "totalPaidOut",
         "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "tokenAddress",
+        "type": "address"
       }
     ],
     "stateMutability": "view",

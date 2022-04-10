@@ -27,19 +27,19 @@ contract SimpleStream is Ownable {
     uint256 public cap; // = 0.5 ether;
     uint256 public frequency; // 1296000 seconds == 2 weeks;
     uint256 public last; // stream starts empty (last = block.timestamp) or full (block.timestamp - frequency)
-    IERC20 public gtc;
+    IERC20 public token;
 
     constructor(
         address payable _toAddress,
         uint256 _cap,
         uint256 _frequency,
         bool _startsFull,
-        IERC20 _gtc
+        IERC20 _token
     ) {
         toAddress = _toAddress;
         cap = _cap;
         frequency = _frequency;
-        gtc = _gtc;
+        token = _token;
         if (_startsFull) {
             last = block.timestamp - frequency;
         } else {
@@ -72,7 +72,7 @@ contract SimpleStream is Ownable {
             last +
             (((block.timestamp - last) * amount) / totalAmountCanWithdraw);
         emit Withdraw(beneficiary, amount, reason);
-        require(gtc.transfer(beneficiary, amount), "Transfer failed");
+        require(token.transfer(beneficiary, amount), "Transfer failed");
     }
 
     /// @notice Explain to an end user what this does
@@ -82,7 +82,7 @@ contract SimpleStream is Ownable {
     function streamDeposit(string memory reason, uint256 value) external {
         require(value >= cap / 10, "Not big enough, sorry.");
         require(
-            gtc.transferFrom(_msgSender(), address(this), value),
+            token.transferFrom(_msgSender(), address(this), value),
             "Transfer of tokens is not approved or insufficient funds"
         );
         emit Deposit(_msgSender(), value, reason);

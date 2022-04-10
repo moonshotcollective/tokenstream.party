@@ -5,19 +5,21 @@ import AddOrganizationSummary from './AddOrganizationSummary';
 
 const { Step } = Steps;
 
-export default function AddOrganizationWizard({ tx, writeContracts, showWizard, onCancelHandler, onDeployHandler, ...props }) {
+export default function AddOrganizationWizard({ tx, writeContracts, showWizard, onCancelHandler, onDeployHandler, chainId, provider }) {
     const [currentStep, setCurrentStep] = useState(0);
     const [organizationDetails, setOrganizationDetails] = useState({});
     const [isDeploying, setIsDeploying] = useState(false);
 
     const CurrentStepView = (viewProps) => {
-        if (viewProps.currentStep == 0) {
+        if (viewProps.currentStep === 0) {
             return <AddOrganizationForm values={organizationDetails} onFinishCallback={values => {
                 setOrganizationDetails(values);
                 setCurrentStep(1);
-            }} />;
-        } else if (viewProps.currentStep == 1) {
-            return <AddOrganizationSummary organizationDetails={organizationDetails} />
+            }} chainId={viewProps.chainId} provider={viewProps.provider} />;
+        } else if (viewProps.currentStep === 1) {
+            return <AddOrganizationSummary
+                        organizationDetails={organizationDetails}
+                        provider={viewProps.provider} />
         }
     }
 
@@ -35,8 +37,8 @@ export default function AddOrganizationWizard({ tx, writeContracts, showWizard, 
             return;
         }
         console.log("Launching!");
-        const { orgName, orgLogoURI, orgDescription, ownerAddress } = organizationDetails;
-        let calldata = [orgName, orgLogoURI, orgDescription, ownerAddress, [ownerAddress]];
+        const { orgName, orgLogoURI, orgDescription, ownerAddress, token } = organizationDetails;
+        let calldata = [orgName, orgLogoURI, orgDescription, token, ownerAddress, [ownerAddress]];
 
         try {
             const result = tx(writeContracts.OrgFactoryDeployer.deployOrganization(...calldata), update => {
@@ -87,13 +89,13 @@ export default function AddOrganizationWizard({ tx, writeContracts, showWizard, 
                     </Col>
 
                     <Col span={24} style={{ marginTop: "1em" }}>
-                        {CurrentStepView({ currentStep })}
+                        {CurrentStepView({ currentStep, chainId, provider })}
                     </Col>
 
                     {currentStep > 0 &&
                         <>
                             <Col span={2}>
-                                <Button onClick={goBack} disabled={!isDeploying}>Back</Button>
+                                <Button onClick={goBack} disabled={isDeploying}>Back</Button>
                             </Col>
                             {isLastStep() &&
                                 <Col offset={18} span={2}>

@@ -41,6 +41,9 @@ contract StreamFactory is AccessControl, Ownable {
         uint256 streamsCount;
         /// @dev total amount paid out by organization
         uint256 totalPaidOut;
+
+        /// @dev the token to transact with
+        address tokenAddress;
     }
 
     OrgInfo public orgInfo;
@@ -63,6 +66,7 @@ contract StreamFactory is AccessControl, Ownable {
         string memory _orgName,
         string memory _logoURI,
         string memory _orgDescription,
+        address _paymentTokenAddress,
         address owner,
         address[] memory admins
     ) {
@@ -79,7 +83,8 @@ contract StreamFactory is AccessControl, Ownable {
             '', // discord URI
             _logoURI,
             0, // streams count
-            0  // total paid out
+            0,  // total paid out
+            _paymentTokenAddress
         );
         // map the org the the owner so we can update later
         orgs[owner] = orgInfo;
@@ -104,13 +109,11 @@ contract StreamFactory is AccessControl, Ownable {
     /// @param _cap the stream max balance for the period of time
     /// @param _frequency the frequency of the stream
     /// @param _startsFull does the stream start full?
-    /// @param _gtc the GTC token address
     function createStreamFor(
         address payable _toAddress,
         uint256 _cap,
         uint256 _frequency,
-        bool _startsFull,
-        IERC20 _gtc
+        bool _startsFull
     )
         public
         isPermittedOperator
@@ -125,7 +128,7 @@ contract StreamFactory is AccessControl, Ownable {
             _cap,
             _frequency,
             _startsFull,
-            _gtc
+            IERC20(orgInfo.tokenAddress)
         );
 
         streamAddress = address(newStream);

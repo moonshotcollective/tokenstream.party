@@ -1,4 +1,5 @@
 import { Form, Input, Button, Select, Space } from 'antd';
+import TokenSelect from './TokenSelect';
 
 const { Option } = Select;
 const { TextArea } = Input;
@@ -13,7 +14,7 @@ const tailLayout = {
 };
 
 
-export default function AddOrganizationForm({ values, onFinishCallback }) {
+export default function AddOrganizationForm({ values, onFinishCallback, chainId, provider }) {
     const [form] = Form.useForm();
 
     const onReset = () => {
@@ -42,6 +43,15 @@ export default function AddOrganizationForm({ values, onFinishCallback }) {
                 { required: true, message: 'Please enter the DAO owner address!' }
             ]}>
                 <Input placeholder="Address (0x000...)" />
+            </Form.Item>
+            <Form.Item name="token" label="Token" rules={[
+                { required: true, message: 'Please specify a token' }
+            ]} hasFeedback>
+                <TokenSelect
+                    chainId={chainId}
+                    localProvider={provider}
+                    nativeToken={{ name: 'Native token', symbol: 'GTC' }}
+                />
             </Form.Item>
 
             <Form.Item {...tailLayout}>

@@ -26,6 +26,7 @@ contract OrgFactoryDeployer is Ownable {
         string memory _orgName,
         string memory _logoURI,
         string memory _orgDescription,
+        address _paymentTokenAddress,
         address owner,
         address[] calldata admins
     ) public {
@@ -33,6 +34,7 @@ contract OrgFactoryDeployer is Ownable {
             _orgName,
             _logoURI,
             _orgDescription,
+            _paymentTokenAddress,
             owner,
             admins
         );

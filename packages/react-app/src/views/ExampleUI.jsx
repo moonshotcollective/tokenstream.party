@@ -1,3 +1,4 @@
+import { LeftOutlined } from "@ant-design/icons";
 import { formatEther, parseEther } from "@ethersproject/units";
 import {
   Button,
@@ -9,10 +10,11 @@ import {
   Progress,
 } from "antd";
 import axios from "axios";
-import { useContractReader } from "eth-hooks";
+import { useTokenBalance } from "eth-hooks/erc/erc-20/useTokenBalance";
 import { ethers } from "ethers";
 import pretty from "pretty-time";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
+import { useHistory } from "react-router-dom";
 import {
   Address,
   AddressInput,
@@ -20,6 +22,9 @@ import {
   PayButton,
   QRPunkBlockie,
 } from "../components";
+import {
+  TokensContext
+} from "../context";
 
 export default function ExampleUI({
   SimpleStream,
@@ -29,13 +34,12 @@ export default function ExampleUI({
   depositEvents,
   withdrawEvents,
   streamBalance,
+  tokenInfo = {},
   address,
   stream,
   mainnetProvider,
   price,
   tx,
-  readContracts,
-  writeContracts,
 }) {
   const [amount, setAmount] = useState();
   const [reason, setReason] = useState();
@@ -44,27 +48,29 @@ export default function ExampleUI({
   const [depositAmount, setDepositAmount] = useState();
   const [depositReason, setDepositReason] = useState();
 
+  const history = useHistory();
+
   console.log("streamCap", streamCap);
   console.log("streamBalance", streamBalance);
   const percent =
     streamCap &&
     streamBalance &&
     streamBalance.mul(100).div(streamCap).toNumber();
-
-  const myMainnetGTCBalance = useContractReader(
-    readContracts,
-    "GTC",
-    "balanceOf",
-    [stream]
+  
+  const { listedTokens } = useContext(TokensContext);
+  const myTokenBalance = useTokenBalance(
+    tokenInfo.tokenContract,
+    stream,
+    45000
   );
 
-  if (myMainnetGTCBalance)
-    console.log("my mainnet gtc balance", formatEther(myMainnetGTCBalance));
+  if (myTokenBalance)
+    console.log("my token balance", formatEther(myTokenBalance));
 
   const streamNetPercentSeconds =
-    myMainnetGTCBalance &&
+    myTokenBalance &&
     streamCap &&
-    myMainnetGTCBalance.mul(100).div(streamCap);
+    myTokenBalance.mul(100).div(streamCap);
 
   console.log(
     "streamNetPercentSeconds",
@@ -96,9 +102,10 @@ export default function ExampleUI({
   const [quoteRate, setQuoteRate] = useState(0);
 
   useEffect(() => {
+    const tokenId = (listedTokens.filter(token => token.name === tokenInfo.name).map(token => token.id)[0]) || 'unknown';
     axios
       .get(
-        "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=gitcoin"
+        `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${tokenId}`
       )
       .then((response) => {
         if (response && response.data[0] && response.data[0].current_price) {
@@ -106,7 +113,7 @@ export default function ExampleUI({
           console.log("quoteRate price", response.data[0].current_price, price);
         }
       });
-  }, []);
+  });
 
   // console.log("WWUOTE", formatEther(streamBalance).toString())
   // const quote = quoteRate * formatEther(streamBalance)
@@ -202,9 +209,12 @@ export default function ExampleUI({
   return (
     <div style={{ paddingBotton: "25px" }}>
       <div style={{ padding: 16, width: WIDTH, margin: "auto" }}>
+        <Button onClick={history.goBack}>
+          <LeftOutlined /> Back
+        </Button>
         <div style={{ padding: 32 }}>
           <div style={{ padding: 32 }}>
-            <Balance value={myMainnetGTCBalance} price={quoteRate} />
+            <Balance value={myTokenBalance} price={quoteRate} />
             <span style={{ opacity: 0.5 }}>
               {" "}
               @ <Balance value={streamCap} price={quoteRate} /> /{" "}
@@ -275,11 +285,11 @@ export default function ExampleUI({
           />
           <Input
             style={{ marginBottom: 8 }}
-            autofocus
+            autoFocus
             price={quoteRate}
             value={amount}
             placeholder="Withdraw Amount"
-            addonAfter="GTC"
+            addonAfter={tokenInfo.symbol}
             onChange={(e) => setAmount(e.target.value)}
           />
           <AddressInput
@@ -355,25 +365,21 @@ export default function ExampleUI({
           price={quoteRate}
           value={depositAmount}
           placeholder="Deposit amount"
-          addonAfter="GTC"
+          addonAfter={tokenInfo.symbol}
           onChange={(e) => setDepositAmount(e.target.value)}
         />
 
-        {readContracts.GTC && (
-          <PayButton
-            tx={tx}
-            style={{ marginTop: 8 }}
-            token="GTC"
-            appName="GTCStream"
-            callerAddress={address}
-            maxApproval={depositAmount}
-            amount={depositAmount}
-            spender={SimpleStream.address}
-            readContracts={readContracts}
-            writeContracts={writeContracts}
-            tokenPayHandler={tokenPayHandler}
-          />
-        )}
+        {tokenInfo.address && (<PayButton
+          tx={tx}
+          style={{ marginTop: 8 }}
+          token={tokenInfo}
+          appName="Tokenstream"
+          callerAddress={address}
+          maxApproval={depositAmount}
+          amount={depositAmount}
+          spender={SimpleStream.address}
+          tokenPayHandler={tokenPayHandler}
+        />)}
       </div>
 
       <div style={{ paddingBottom: 256 }} />

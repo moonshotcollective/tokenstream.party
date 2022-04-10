@@ -19,7 +19,8 @@ import { AddressInput, Address, Balance, OrgStreamsActivityFeed } from "../compo
 import { SimpleStreamABI, StreamFactoryABI } from "../contracts/external_ABI";
 import { useHistory } from "react-router";
 import { Link, useParams } from "react-router-dom";
-import { CachedValue } from "../helpers";
+import { CachedValue, loadERC20 } from "../helpers";
+import { LeftOutlined } from "@ant-design/icons";
 
 const { Title } = Typography;
 
@@ -106,6 +107,8 @@ export default function OrganizationHome({
     );
   }, [organizationAddress, userSigner]);
 
+  const [tokenInfo, setTokenInfo] = useState({});
+
   const fetchOrgInfo = async () => {
     if (!orgStreamFactoryReadContract) {
       return;
@@ -121,7 +124,8 @@ export default function OrganizationHome({
           discordURI: info[5],
           logoURI: info[6],
           streamsCount: info[7],
-          totalPaidOut: info[8]
+          totalPaidOut: info[8],
+          token: info[9]
         });
       });
   };
@@ -136,12 +140,24 @@ export default function OrganizationHome({
     setStreams(streamData);
   };
 
+  const fetchTokenInfo = async (token) => {
+    const info = await loadERC20(token, provider);
+    setTokenInfo(info);
+  }
+
   useEffect(() => {
     fetchOrgInfo()
       .catch(console.error);
     fetchOrgStreamFactoryStreams()
       .catch(console.error);
-  }, [orgStreamFactoryReadContract])
+  }, [orgStreamFactoryReadContract]);
+
+  useEffect(() => {
+    if (orgInfo && orgInfo.token !== undefined) {
+      fetchTokenInfo(orgInfo.token)
+        .catch(console.error);
+    }
+  }, [orgInfo]);
 
   useEffect(() => {
     let shouldCancel = false;
@@ -178,16 +194,13 @@ export default function OrganizationHome({
       "604800"
     );
     const _startFull = startFull === 1;
-    const GTCContractAddress = readContracts && readContracts.GTC.address;
-
     const result = tx(
       orgStreamFactoryWriteContract &&
       orgStreamFactoryWriteContract.createStreamFor(
         userAddress,
         capFormatted,
         frequencyFormatted,
-        _startFull,
-        GTCContractAddress
+        _startFull
       ),
       async (update) => {
         console.log("📡 Transaction Update:", update);
@@ -213,7 +226,7 @@ export default function OrganizationHome({
 
           // send notification of stream creation
           notification.success({
-            message: "New GTC Stream created",
+            message: "New Token Stream created!",
             description: `Stream is now available for ${userAddress}`,
             placement: "topRight",
           });
@@ -240,8 +253,12 @@ export default function OrganizationHome({
             selectedKeys={[currentView]}
             onSelect={item => setCurrentView(item.key)}
             style={{ textAlign: "center", border: "none", backgroundColor: "transparent" }}>
-            <Menu.Item key="streams">My Streams</Menu.Item>
-            <Menu.Item key="feed">Activity Feed</Menu.Item>
+              <Menu.Item key="back" onClick={history.goBack}>
+                <LeftOutlined />
+                Back
+              </Menu.Item>
+              <Menu.Item key="streams">Streams</Menu.Item>
+              <Menu.Item key="feed">Activity Feed</Menu.Item>
           </Menu>
         </Col>
       </Row>
@@ -278,7 +295,7 @@ export default function OrganizationHome({
             <div style={{ marginBottom: 25 }} />
             <div style={{ display: "flex", flex: 1, flexDirection: "row" }}>
               <div style={{ flex: 1, flexDirection: "column" }}>
-                <div style={{ marginBottom: 5 }}>GTC Amount:</div>
+                <div style={{ marginBottom: 5 }}>{tokenInfo.symbol} Amount:</div>
                 <InputNumber
                   placeholder="Amount"
                   min={1}

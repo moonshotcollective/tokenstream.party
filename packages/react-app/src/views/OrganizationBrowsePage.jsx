@@ -18,7 +18,7 @@ import { GithubOutlined, RightOutlined, TwitterOutlined } from "@ant-design/icon
 import { TokenStreamLogo } from "../components/TokenStreamLogo";
 import { DiscordIcon } from "../components/DiscordIcon";
 import AddOrganizationWizard from "../components/AddOrganizationWizard";
-import { CachedValue } from "../helpers/CachedValue";
+import { CachedValue, loadERC20 } from "../helpers";
 import { useDebounce } from "../hooks";
 import { StreamFactoryABI } from "../contracts/external_ABI";
 
@@ -55,8 +55,13 @@ async function resolveOrgDetails(organizationAddress, provider) {
                     discordURI: info[5],
                     logoURI: info[6],
                     streamsCount: info[7],
-                    totalPaidOut: info[8]
+                    totalPaidOut: info[8],
+                    tokenAddress: info[9],
                 };
+            });
+        await loadERC20(data.tokenAddress, provider)
+            .then(tokenInfo => {
+                data = { ...data, tokenSymbol: tokenInfo.symbol, tokenName: tokenInfo.name };
             });
         orgsCache[organizationAddress] = new CachedValue(data, ORGS_CACHE_TTL_MILLIS);
         return data;
@@ -66,7 +71,7 @@ async function resolveOrgDetails(organizationAddress, provider) {
     }
 }
 
-export default function OrganizationBrowsePage({ tx, writeContracts, provider, localProvider, readContracts, ...props }) {
+export default function OrganizationBrowsePage({ tx, writeContracts, provider, localProvider, readContracts, chainId, ...props }) {
     const [showWizard, setShowWizard] = useState(false);
     const [searchName, setSearchName] = useState("");
     const debouncedSearchName = useDebounce(searchName, 1000);
@@ -106,6 +111,8 @@ export default function OrganizationBrowsePage({ tx, writeContracts, provider, l
                     showWizard={showWizard}
                     onCancelHandler={() => setShowWizard(false)}
                     onDeployHandler={onOrgDeployedHandler}
+                    chainId={chainId}
+                    provider={provider}
                 />
                 <Search placeholder="Search for your favourite DAOs!" size="large"
                     enterButton
@@ -153,7 +160,11 @@ export default function OrganizationBrowsePage({ tx, writeContracts, provider, l
                                                 <Statistic title="#Streams" value={organization.info.streamsCount} prefix={<TokenStreamLogo width="30" height="30" />} />
                                             </Col>
                                             <Col span={14}>
-                                                <Statistic title="Total Paid Out" value={`${organization.info.totalPaidOut}`} prefix={<RightOutlined />} suffix={<Text style={{ fontSize: '0.4em' }} type="secondary">GTC</Text>} />
+                                                <Statistic title="Total Paid Out" value={`${organization.info.totalPaidOut}`}
+                                                    prefix={<RightOutlined />}
+                                                    suffix={<Text style={{ fontSize: '0.4em' }} type="secondary">
+                                                        {organization.info.tokenSymbol}
+                                                    </Text>} />
                                             </Col>
                                         </Row>
                                     </Space>

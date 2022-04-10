@@ -1,6 +1,7 @@
 import { ApolloClient, ApolloProvider, InMemoryCache } from "@apollo/client";
 import React from "react";
 import { ThemeSwitcherProvider } from "react-css-theme-switcher";
+import { TokensContextProvider } from "./components";
 import ReactDOM from "react-dom";
 import App from "./App";
 import "./index.css";
@@ -20,10 +21,12 @@ const client = new ApolloClient({
 });
 
 ReactDOM.render(
-  <ApolloProvider client={client}>
-    <ThemeSwitcherProvider themeMap={themes} defaultTheme={prevTheme || "dark"}>
-      <App subgraphUri={subgraphUri} />
-    </ThemeSwitcherProvider>
-  </ApolloProvider>,
+  <TokensContextProvider>
+    <ApolloProvider client={client}>
+      <ThemeSwitcherProvider themeMap={themes} defaultTheme={prevTheme || "dark"}>
+        <App subgraphUri={subgraphUri} />
+      </ThemeSwitcherProvider>
+    </ApolloProvider>
+  </TokensContextProvider>,
   document.getElementById("root"),
 );

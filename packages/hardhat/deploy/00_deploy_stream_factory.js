@@ -8,11 +8,18 @@ module.exports = async ({ getNamedAccounts, getChainId, deployments }) => {
 
   // Mainnet GTC
   let GTC = { address: "0xde30da39c46104798bb5aa3fe8b9e0e1f348163f" };
+  // Custom token test
+  let SupCoin = { address: "dummy" };
 
   const owner = process.env.DEVELOPER;
   // deploy dummy GTC on non-mainnet networks
   if (chainId !== "1") {
     GTC = await deploy("GTC", {
+      from: deployer,
+      args: [owner],
+      log: true,
+    });
+    SupCoin = await deploy("SupCoin", {
       from: deployer,
       args: [owner],
       log: true,
@@ -29,6 +36,7 @@ module.exports = async ({ getNamedAccounts, getChainId, deployments }) => {
   // log the GTC and orgFactoryDeployer addresses
   console.log({
     GTC: GTC.address,
+    SupCoin: SupCoin.address,
     orgFactory: orgFactory.address,
   });
 
@@ -41,4 +49,4 @@ module.exports = async ({ getNamedAccounts, getChainId, deployments }) => {
   }
 };
 
-module.exports.tags = ["GTC", "OrgFactoryDeployer"];
+module.exports.tags = ["GTC", "SupCoin", "OrgFactoryDeployer"];

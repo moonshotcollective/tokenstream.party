@@ -218,11 +218,6 @@ function App(props) {
     console.log(`⛓ A new mainnet block is here: ${mainnetProvider._lastBlockNumber}`);
   });
 
-  // Then read your DAI balance like:
-  const myMainnetDAIBalance = useContractReader(mainnetContracts, "DAI", "balanceOf", [
-    "0x34aA3F359A9D614239015126635CE7732c18fDF3",
-  ]);
-
   /*
   const addressFromENS = useResolveName(mainnetProvider, "austingriffith.eth");
   console.log("🏷 Resolved austingriffith.eth as:",addressFromENS)
@@ -345,7 +340,7 @@ function App(props) {
     }
   } else {
     networkDisplay = (
-      <div style={{ zIndex: -1, position: "absolute", right: 154, top: 28, padding: 16, color: targetNetwork.color }}>
+      <div style={{ zIndex: -1, position: "fixed", right: 154, top: 28, padding: 16, color: targetNetwork.color }}>
         {targetNetwork.name}
       </div>
     );
@@ -471,6 +466,8 @@ function App(props) {
                 writeContracts={writeContracts}
                 provider={injectedProvider || localProvider}
                 readContracts={readContracts}
+                chainId={selectedChainId}
+                mainnetProvider={mainnetProvider}
             />
           </Route>
           <Route path="/organizations/:orgaddress">
@@ -495,8 +492,6 @@ function App(props) {
               tx={tx}
               gasPrice={gasPrice}
               price={price}
-              writeContracts={writeContracts}
-              readContracts={readContracts}
             />
           </Route>
           <Route exact path="/debug">
@@ -515,14 +510,24 @@ function App(props) {
             />
 
             {targetNetwork.name !== "mainnet" && (
-              <Contract
-                name="GTC"
-                signer={userSigner}
-                provider={localProvider}
-                address={address}
-                blockExplorer={blockExplorer}
-                contractConfig={contractConfig}
-              />
+              <>
+                <Contract
+                  name="GTC"
+                  signer={userSigner}
+                  provider={localProvider}
+                  address={address}
+                  blockExplorer={blockExplorer}
+                  contractConfig={contractConfig}
+                />
+                <Contract
+                  name="SupCoin"
+                  signer={userSigner}
+                  provider={localProvider}
+                  address={address}
+                  blockExplorer={blockExplorer}
+                  contractConfig={contractConfig}
+                />
+              </>
             )}
           </Route>
         </Switch>

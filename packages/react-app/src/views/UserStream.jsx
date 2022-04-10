@@ -3,6 +3,7 @@ import { useExternalContractLoader, useEventListener } from "../hooks";
 import { ExampleUI } from ".";
 import { useParams } from "react-router-dom";
 import { SimpleStreamABI } from "../contracts/external_ABI";
+import { loadERC20 } from "../helpers";
 
 function StreamHOC(props) {
   const { address: address } = useParams();
@@ -15,7 +16,7 @@ function StreamHOC(props) {
   );
 }
 
-function UserStream({ stream, provider, localProvider, readContracts, ...props }) {
+function UserStream({ stream, provider, userSigner, localProvider, ...props }) {
   const [data, setData] = useState({});
   const [ready, setReady] = useState(false);
   const SimpleStream = useExternalContractLoader(provider, stream, SimpleStreamABI) || {};
@@ -28,9 +29,13 @@ function UserStream({ stream, provider, localProvider, readContracts, ...props }
     const streamfrequency = await SimpleStream.frequency();
     const streamToAddress = await SimpleStream.toAddress();
     const totalStreamBalance = await provider.getBalance(stream);
+    const token = await SimpleStream.token();
+    const tokenInfo = await loadERC20(token, userSigner);
 
-    setData({ streamBalance, streamCap, streamfrequency, streamToAddress, totalStreamBalance });
-    setReady(true);
+    setData({ streamBalance, tokenInfo, streamCap, streamfrequency, streamToAddress, totalStreamBalance });
+    if (tokenInfo.address) {
+      setReady(true);
+    }
   };
 
   useEffect(() => {
@@ -48,7 +53,6 @@ function UserStream({ stream, provider, localProvider, readContracts, ...props }
         {...props}
         stream={stream}
         SimpleStream={SimpleStream}
-        readContracts={readContracts}
         depositEvents={depositEvents}
         withdrawEvents={withdrawEvents}
       />

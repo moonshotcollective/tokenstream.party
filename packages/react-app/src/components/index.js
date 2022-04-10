@@ -26,3 +26,4 @@ export { DepositIcon } from "./DepositIcon";
 export { WithdrawIcon } from "./WithdrawIcon";
 export { GitcoinDAOBadge } from "./GitcoinDAOBadge";
 export { TokenStreamLogo } from "./TokenStreamLogo";
+export { default as TokensContextProvider } from "./TokensContextProvider";
