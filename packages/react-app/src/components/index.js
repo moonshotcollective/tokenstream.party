@@ -27,3 +27,4 @@ export { WithdrawIcon } from "./WithdrawIcon";
 export { GitcoinDAOBadge } from "./GitcoinDAOBadge";
 export { TokenStreamLogo } from "./TokenStreamLogo";
 export { default as TokensContextProvider } from "./TokensContextProvider";
+export { default as NetworkSwitch } from "./NetworkSwitch";

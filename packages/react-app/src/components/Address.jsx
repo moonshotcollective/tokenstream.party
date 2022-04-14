@@ -48,6 +48,8 @@ export default function Address(props) {
     displayAddress += "..." + address.substr(-4);
   } else if (props.size === "long") {
     displayAddress = address;
+  } else if (props.size === "tiny") {
+    displayAddress = address?.substr(0, 5);
   }
 
   if (!address) {
@@ -79,7 +81,7 @@ export default function Address(props) {
     <span>
       {displayBlockies && 
         <span style={{ verticalAlign: "middle" }}>
-          <Blockies seed={address.toLowerCase()} size={8} scale={props.fontSize ? props.fontSize / 7 : 4} />
+          <Blockies seed={address.toLowerCase()} size={props.blockiesSize ? props.blockiesSize : 8} scale={props.fontSize ? props.fontSize / 7 : 4} />
         </span>
       }
       <span style={{ verticalAlign: "middle", paddingLeft: 5, fontSize: props.fontSize ? props.fontSize : 28 }}>

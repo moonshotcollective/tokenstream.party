@@ -1,9 +1,9 @@
 import Portis from "@portis/web3";
 import WalletConnectProvider from "@walletconnect/web3-provider";
-import { Alert, Button, Col, Menu, Row } from "antd";
+import { Alert, Button, Col, Row } from "antd";
 import "antd/dist/antd.css";
 import Authereum from "authereum";
-import { useBalance, useContractLoader, useContractReader, useGasPrice, useOnBlock } from "eth-hooks";
+import { useBalance, useContractLoader, useGasPrice } from "eth-hooks";
 // import useEventListener from "./hooks/oldEventListener";
 import { useExchangeEthPrice } from "eth-hooks/dapps/dex";
 import Fortmatic from "fortmatic";
@@ -13,17 +13,14 @@ import { BrowserRouter, Link, Route, Switch } from "react-router-dom";
 import WalletLink from "walletlink";
 import { SafeAppWeb3Modal } from "@gnosis.pm/safe-apps-web3modal";
 import "./App.css";
-import { Account, Contract, Faucet, GasGauge, Header, Ramp, ThemeSwitch } from "./components";
+import { Account, Contract, Faucet, GasGauge, Header, Ramp, ThemeSwitch, NetworkSwitch } from "./components";
 import { INFURA_ID, NETWORK, NETWORKS } from "./constants";
 import { Transactor } from "./helpers";
-import { useContractConfig, useUserSigner } from "./hooks";
+import { useContractConfig, useUserSigner, useStaticJsonRPC } from "./hooks";
 import { OrganizationHome, UserStream, OrganizationBrowsePage } from "./views";
 import { LandingPage } from "./views/LandingPage";
 
 const { ethers } = require("ethers");
-
-/// 📡 What chain are your contracts deployed to?
-const targetNetwork = (process.env.REACT_APP_NETWORK && NETWORKS[process.env.REACT_APP_NETWORK]) || NETWORKS.mainnet; // <------- select your target frontend network (localhost, rinkeby, xdai, mainnet)
 
 // 😬 Sorry for all the console logging
 const DEBUG = false;
@@ -32,34 +29,22 @@ const NETWORKCHECK = true;
 // 🛰 providers
 if (DEBUG) console.log("📡 Connecting to Mainnet Ethereum");
 
-const alchemyApiEndpoint = process.env.REACT_APP_MAINNET_RPC_ENDPOINT || "https://eth-mainnet.alchemyapi.io/v2/W0XfQJvBYrDk6wxM2F3VEDns10TBTLzs";
-// const mainnetProvider = getDefaultProvider("mainnet", { infura: INFURA_ID, etherscan: ETHERSCAN_KEY, quorum: 1 });
-// const mainnetProvider = new InfuraProvider("mainnet",INFURA_ID);
-//
-// attempt to connect to our own scaffold eth rpc and if that fails fall back to infura...
-// Using StaticJsonRpcProvider as the chainId won't change see https://github.com/ethers-io/ethers.js/issues/901
-const scaffoldEthProvider = navigator.onLine
-  ? new ethers.providers.StaticJsonRpcProvider(alchemyApiEndpoint)
-  : null;
-const poktMainnetProvider = navigator.onLine
-  ? new ethers.providers.StaticJsonRpcProvider(
-      "https://eth-mainnet.gateway.pokt.network/v1/lb/611156b4a585a20035148406",
-    )
-  : null;
-const mainnetInfura = navigator.onLine
-  ? new ethers.providers.StaticJsonRpcProvider(alchemyApiEndpoint)
-  : null;
-// ( ⚠️ Getting "failed to meet quorum" errors? Check your INFURA_ID
+// 🛰 providers
+const providers = [
+  process.env.REACT_APP_MAINNET_RPC_ENDPOINT,
+  "https://eth-mainnet.alchemyapi.io/v2/W0XfQJvBYrDk6wxM2F3VEDns10TBTLzs",
+  "https://eth-mainnet.gateway.pokt.network/v1/lb/611156b4a585a20035148406",
+];
 
-// 🏠 Your local provider is usually pointed at your local blockchain
-const localProviderUrl = targetNetwork.rpcUrl;
-// as you deploy to other networks you can set REACT_APP_RINKEBY_PROVIDER=https://dai.poa.network in packages/react-app/.env
-const localProviderUrlFromEnv = process.env.REACT_APP_RINKEBY_PROVIDER ? process.env.REACT_APP_RINKEBY_PROVIDER : localProviderUrl;
-if (DEBUG) console.log("🏠 Connecting to provider:", localProviderUrlFromEnv);
-const localProvider = new ethers.providers.StaticJsonRpcProvider(localProviderUrlFromEnv);
+// Supported networks
+const supportedNetworks = ["mainnet", "rinkeby"];
+if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+  supportedNetworks.push("localhost");
+}
 
-// 🔭 block explorer URL
-const blockExplorer = targetNetwork.blockExplorer;
+const cachedNetwork = supportedNetworks.includes(window.localStorage.getItem("network"))
+    ? window.localStorage.getItem("network")
+    : "rinkeby";
 
 // Coinbase walletLink init
 const walletLink = new WalletLink({
@@ -110,19 +95,6 @@ const web3Modal = new SafeAppWeb3Modal({
         key: "pk_live_5A7C91B2FC585A17", // required
       },
     },
-    // torus: {
-    //   package: Torus,
-    //   options: {
-    //     networkParams: {
-    //       host: "https://localhost:8545", // optional
-    //       chainId: 1337, // optional
-    //       networkId: 1337 // optional
-    //     },
-    //     config: {
-    //       buildEnv: "development" // optional
-    //     },
-    //   },
-    // },
     "custom-walletlink": {
       display: {
         logo: "https://play-lh.googleusercontent.com/PjoJoG27miSglVBXoXrxBSLveV6e3EeBPpNY55aiUUBM9Q1RCETKCOqdOkX2ZydqVf0",
@@ -142,15 +114,24 @@ const web3Modal = new SafeAppWeb3Modal({
 });
 
 function App(props) {
-  const mainnetProvider =
-    scaffoldEthProvider && scaffoldEthProvider._network
-      ? scaffoldEthProvider
-      : poktMainnetProvider && poktMainnetProvider._isProvider
-      ? poktMainnetProvider
-      : mainnetInfura;
-
   const [injectedProvider, setInjectedProvider] = useState();
   const [address, setAddress] = useState("0x0000000000000000000000000000000000000000");
+
+  const [selectedNetwork, setSelectedNetwork] = useState(cachedNetwork || supportedNetworks[1]);
+  if (DEBUG) console.log("📡 Connecting to New Cached Network: ", cachedNetwork);
+
+  let targetNetwork = NETWORKS[selectedNetwork];
+
+  if (DEBUG) console.log(`Connecting to ${selectedNetwork}`);
+  if (DEBUG) console.log(`Network info: ${targetNetwork}`);
+
+  // 🔭 block explorer URL
+  const blockExplorer = targetNetwork.blockExplorer;
+
+  const localProvider = useStaticJsonRPC([
+    targetNetwork.rpcUrl,
+  ]);
+  const mainnetProvider = useStaticJsonRPC(providers);
 
   const logoutOfWeb3Modal = async () => {
     await web3Modal.clearCachedProvider();
@@ -212,11 +193,6 @@ function App(props) {
   //
   // If you want to bring in the mainnet DAI contract it would look like:
   const mainnetContracts = useContractLoader(mainnetProvider, contractConfig);
-
-  // If you want to call a function on a new block
-  useOnBlock(mainnetProvider, () => {
-    console.log(`⛓ A new mainnet block is here: ${mainnetProvider._lastBlockNumber}`);
-  });
 
   /*
   const addressFromENS = useResolveName(mainnetProvider, "austingriffith.eth");
@@ -431,30 +407,6 @@ function App(props) {
           </Link>
         }
         {networkDisplay}
-      
-        {/* <Menu style={{ textAlign: "center" }} selectedKeys={[route]} mode="horizontal">
-          <Menu.Item key="/">
-            <Link
-              onClick={() => {
-                setRoute("/");
-              }}
-              to="/"
-            >
-              App
-            </Link>
-          </Menu.Item>
-          <Menu.Item key="/debug">
-            <Link
-              onClick={() => {
-                setRoute("/debug");
-              }}
-              to="/debug"
-            >
-              Debug
-            </Link>
-          </Menu.Item>
-        </Menu> */}
-
 
         <Switch>
           <Route exact path="/">
@@ -534,8 +486,6 @@ function App(props) {
         </Switch>
       </BrowserRouter>
 
-      <ThemeSwitch />
-
       {/* 👨‍💼 Your account is in the top right with a wallet at connect options */}
       {(window.location.pathname !== "/") && 
       <div style={{ position: "fixed", textAlign: "right", right: 0, top: 0, padding: 10 }}>
@@ -550,6 +500,15 @@ function App(props) {
           logoutOfWeb3Modal={logoutOfWeb3Modal}
           blockExplorer={blockExplorer}
           isContract={false}
+          networkSelect={
+            <NetworkSwitch
+              networkOptions={supportedNetworks}
+              selectedNetwork={selectedNetwork}
+              setSelectedNetwork={setSelectedNetwork}
+              NETWORKS={NETWORKS}
+              targetNetwork={targetNetwork}
+            />
+          }
         />
         {faucetHint}
       </div>
