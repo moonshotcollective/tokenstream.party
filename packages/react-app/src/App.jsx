@@ -480,6 +480,7 @@ function App(props) {
               userSigner={userSigner}
               writeContracts={writeContracts}
               readContracts={readContracts}
+              blockExplorer={blockExplorer}
             />
           </Route>
           <Route path="/user/:address">

@@ -15,7 +15,7 @@ import {
   Typography,
   Avatar,
 } from "antd";
-import { AddressInput, Address, Balance, OrgStreamsActivityFeed } from "../components";
+import { AddressInput, Address, Contract, OrgStreamsActivityFeed } from "../components";
 import { SimpleStreamABI, StreamFactoryABI } from "../contracts/external_ABI";
 import { useHistory } from "react-router";
 import { Link, useParams } from "react-router-dom";
@@ -23,6 +23,13 @@ import { CachedValue, loadERC20 } from "../helpers";
 import { LeftOutlined } from "@ant-design/icons";
 
 const { Title } = Typography;
+
+const createRoleHash = (roleName) => {
+  const roleHash = ethers.utils.solidityKeccak256(["string"], [roleName]);
+  return roleHash;
+}
+
+const OPERATOR_ROLE = createRoleHash("OPERATOR");
 
 const LOADING_STREAMS_COUNT = Number.parseInt(process.env.REACT_APP_LOADING_STREAMS_COUNT) || 18;
 const STREAMS_CACHE_TTL_MILLIS = Number.parseInt(process.env.REACT_APP_STREAMS_CACHE_TTL_MILLIS) || 43200000; // 12h ttl by default
@@ -70,6 +77,7 @@ export default function OrganizationHome({
   tx,
   writeContracts,
   readContracts,
+  blockExplorer,
   ...props
 }) {
   const history = useHistory();
@@ -84,6 +92,7 @@ export default function OrganizationHome({
   const [sData, setData] = useState([]);
   const [orgInfo, setOrgInfo] = useState({});
   const [currentView, setCurrentView] = useState("streams");
+  const [account, setAccount] = useState("");
 
   const orgStreamFactoryReadContract = useMemo(() => {
     if (!organizationAddress) {
@@ -110,9 +119,15 @@ export default function OrganizationHome({
   const [tokenInfo, setTokenInfo] = useState({});
 
   const fetchOrgInfo = async () => {
-    if (!orgStreamFactoryReadContract) {
+    if (!orgStreamFactoryReadContract || !userSigner) {
       return;
     }
+
+    const addr = await userSigner.getAddress();
+    setAccount(addr);
+
+    const isOperator = await orgStreamFactoryReadContract.hasRole(OPERATOR_ROLE, addr);
+    console.log(["SHITZU", addr, isOperator]);
     await orgStreamFactoryReadContract.orgInfo()
       .then(info => {
         setOrgInfo({
@@ -125,7 +140,8 @@ export default function OrganizationHome({
           logoURI: info[6],
           streamsCount: info[7],
           totalPaidOut: info[8],
-          token: info[9]
+          token: info[9],
+          isOperator: isOperator
         });
       });
   };
@@ -259,6 +275,9 @@ export default function OrganizationHome({
               </Menu.Item>
               <Menu.Item key="streams">Streams</Menu.Item>
               <Menu.Item key="feed">Activity Feed</Menu.Item>
+              {orgInfo.isOperator && (
+                <Menu.Item key="admin">Admin</Menu.Item>
+              )}
           </Menu>
         </Col>
       </Row>
@@ -412,6 +431,16 @@ export default function OrganizationHome({
       >
         <OrgStreamsActivityFeed orgAddress={organizationAddress} price={props.price} mainnetProvider={mainnetProvider} />
       </div>
+      }
+      {currentView === "admin" &&
+        <Contract
+          name="Organization Administration"
+          signer={userSigner}
+          provider={provider}
+          address={account}
+          blockExplorer={blockExplorer}
+          customContract={orgStreamFactoryWriteContract}
+        />
       }
     </>
   );
