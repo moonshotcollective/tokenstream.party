@@ -517,7 +517,7 @@ function App(props) {
       {/* 🗺 Extra UI like gas price, eth price, faucet, and support: */}
       {(window.location.pathname !== "/" && targetNetwork.name.indexOf("mainnet") === -1) &&
       <div style={{ position: "fixed", textAlign: "left", left: 0, bottom: 20, padding: 10 }}>
-        <Row align="middle" gutter={[4, 4]}>
+        {/* <Row align="middle" gutter={[4, 4]}>
           <Col span={8}>
             <Ramp price={price} address={address} networks={NETWORKS} />
           </Col>
@@ -539,7 +539,7 @@ function App(props) {
               Support
             </Button>
           </Col>
-        </Row>
+        </Row> */}
 
         <Row align="middle" gutter={[4, 4]}>
           <Col span={24}>

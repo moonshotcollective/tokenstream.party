@@ -4,6 +4,7 @@ import { ExampleUI } from ".";
 import { useParams } from "react-router-dom";
 import { SimpleStreamABI } from "../contracts/external_ABI";
 import { loadERC20 } from "../helpers";
+import { Spin } from "antd";
 
 function StreamHOC(props) {
   const { address: address } = useParams();
@@ -57,7 +58,11 @@ function UserStream({ stream, provider, userSigner, localProvider, ...props }) {
         withdrawEvents={withdrawEvents}
       />
     </>
-  ) : null;
+  ) : (
+    <div style={{textAlign: 'center'}}>
+      <Spin tip="Loading Stream..." />
+    </div>
+  );
 }
 
 export default StreamHOC;

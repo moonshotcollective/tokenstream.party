@@ -9,7 +9,8 @@ function NetworkSwitch({ networkOptions, selectedNetwork, setSelectedNetwork, NE
         .filter(i => i !== selectedNetwork)
         .map(i => (
           <Menu.Item key={i}>
-            <button
+            <Button
+              type="text"
               onClick={async () => {
                 if (targetNetwork.chainId !== NETWORKS[i].chainId) {
                   window.localStorage.setItem("network", i);
@@ -43,7 +44,7 @@ function NetworkSwitch({ networkOptions, selectedNetwork, setSelectedNetwork, NE
               }}
             >
               <span style={{ textTransform: "capitalize", color: NETWORKS[i].color }}>{i}</span>
-            </button>
+            </Button>
           </Menu.Item>
         ))}
     </Menu>

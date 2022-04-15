@@ -44,7 +44,7 @@ export function OrgStreamsActivityFeed({orgAddress, price, mainnetProvider}) {
 
     const { loading, error, data } = useQuery(GET_ORG_STREAMS_ACTIVITIES, {
         variables: { orgAddress: orgAddress.toLowerCase() },
-        pollInterval: 120000,
+        pollInterval: 30000,
     });
 
     if (loading) {
