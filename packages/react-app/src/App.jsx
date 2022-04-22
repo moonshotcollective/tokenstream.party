@@ -415,6 +415,7 @@ function App(props) {
           <Route exact path="/app">
             <OrganizationBrowsePage
                 tx={tx}
+                userAddress={address}
                 writeContracts={writeContracts}
                 provider={injectedProvider || localProvider}
                 readContracts={readContracts}

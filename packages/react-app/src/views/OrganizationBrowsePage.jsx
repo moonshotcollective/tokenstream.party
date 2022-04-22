@@ -26,22 +26,51 @@ const { Meta } = Card;
 const { Text } = Typography;
 const { Search } = Input;
 
+const createRoleHash = (roleName) => {
+    const roleHash = ethers.utils.solidityKeccak256(["string"], [roleName]);
+    return roleHash;
+}
+
+const OPERATOR_ROLE = createRoleHash("OPERATOR");
+
 const ORGS_CACHE_TTL_MILLIS = Number.parseInt(process.env.REACT_APP_ORGS_CACHE_TTL_MILLIS) || 1500000; // 25m ttl by default
 // the actual cache
-const orgsCache = {};
+const caches = {
+    orgsCache: {},
+    orgMembershipCache: {},
+};
+
+const getOrgContract = (organizationAddress, provider) => {
+    return new ethers.Contract(
+        organizationAddress,
+        StreamFactoryABI,
+        provider
+    );
+};
+
+async function resolveOrgMembership(organizationAddress, userAddress, provider) {
+    const key = `${organizationAddress}.${userAddress}`;
+    const cachedValue = caches.orgMembershipCache[key];
+    if (cachedValue && cachedValue instanceof CachedValue && !cachedValue.isStale()) {
+        return cachedValue.value;
+    }
+    // resolve details
+    const orgContract = getOrgContract(organizationAddress, provider);
+    const calls = [orgContract.users(userAddress), orgContract.hasRole(OPERATOR_ROLE, userAddress)];
+    const canView = (await Promise.all(calls.map(call => call.catch(() => false))))
+        .reduce((previousValue, currentValue) => previousValue || currentValue, false);
+    caches.orgMembershipCache[key] = new CachedValue(canView, ORGS_CACHE_TTL_MILLIS);
+    return canView;
+}
 
 async function resolveOrgDetails(organizationAddress, provider) {
-    const cachedOrg = orgsCache[organizationAddress];
+    const cachedOrg = caches.orgsCache[organizationAddress];
     if (cachedOrg && cachedOrg instanceof CachedValue && !cachedOrg.isStale()) {
         return cachedOrg.value;
     }
     // resolve org details
     try {
-        var orgContract = new ethers.Contract(
-            organizationAddress,
-            StreamFactoryABI,
-            provider
-        );
+        var orgContract = getOrgContract(organizationAddress, provider);
 
         var data = {};
         await orgContract.orgInfo()
@@ -63,7 +92,7 @@ async function resolveOrgDetails(organizationAddress, provider) {
             .then(tokenInfo => {
                 data = { ...data, tokenSymbol: tokenInfo.symbol, tokenName: tokenInfo.name };
             });
-        orgsCache[organizationAddress] = new CachedValue(data, ORGS_CACHE_TTL_MILLIS);
+        caches.orgsCache[organizationAddress] = new CachedValue(data, ORGS_CACHE_TTL_MILLIS);
         return data;
     } catch (error) {
         console.error("Error getting org data", error);
@@ -71,7 +100,7 @@ async function resolveOrgDetails(organizationAddress, provider) {
     }
 }
 
-export default function OrganizationBrowsePage({ tx, writeContracts, provider, localProvider, readContracts, chainId, ...props }) {
+export default function OrganizationBrowsePage({ tx, userAddress, writeContracts, provider, localProvider, readContracts, chainId, ...props }) {
     const [showWizard, setShowWizard] = useState(false);
     const [searchName, setSearchName] = useState("");
     const debouncedSearchName = useDebounce(searchName, 1000);
@@ -83,6 +112,7 @@ export default function OrganizationBrowsePage({ tx, writeContracts, provider, l
     }
 
     const fetchEvents = async () => {
+        setOrganizations(null);
         const contract = readContracts.OrgFactoryDeployer;
         if (contract) {
             const eventFilter = contract.filters.OrganizationsDeployed();
@@ -90,9 +120,10 @@ export default function OrganizationBrowsePage({ tx, writeContracts, provider, l
             const orgs = events.map(eventLog => ({ ...eventLog.args, info: {} }));
             for (const org of orgs) {
                 org.info = await resolveOrgDetails(org.tokenAddress, provider);
+                org.canView = await resolveOrgMembership(org.tokenAddress, userAddress, provider);
             }
             const selectedOrgs = orgs.filter(
-                org => org.organizationName.toLowerCase().includes(debouncedSearchName),
+                org => org.canView && org.organizationName.toLowerCase().includes(debouncedSearchName),
             );
             setOrganizations(selectedOrgs);
         }
@@ -100,7 +131,7 @@ export default function OrganizationBrowsePage({ tx, writeContracts, provider, l
 
     useEffect(() => {
         fetchEvents();
-    }, [readContracts, debouncedSearchName]);
+    }, [readContracts, userAddress, debouncedSearchName]);
 
     return (
         <>
@@ -133,17 +164,17 @@ export default function OrganizationBrowsePage({ tx, writeContracts, provider, l
                                 <Card style={{ width: 300, marginTop: 16, borderColor: "#6f3ff5" }}
                                     headStyle={{ paddingTop: 0 }}
                                     actions={[
-                                        <a href={organization.info.githubURI}>
-                                            <GithubOutlined />
-                                        </a>,
+                                        // <a href={organization.info.githubURI}>
+                                        //     <GithubOutlined />
+                                        // </a>,
 
-                                        <a href={organization.info.twitterURI}>
-                                            <TwitterOutlined />
-                                        </a>,
+                                        // <a href={organization.info.twitterURI}>
+                                        //     <TwitterOutlined />
+                                        // </a>,
 
-                                        <a href={organization.info.discordURI}>
-                                            <DiscordIcon />
-                                        </a>,
+                                        // <a href={organization.info.discordURI}>
+                                        //     <DiscordIcon />
+                                        // </a>,
                                         <Link to={`/organizations/${organization.tokenAddress}`}>
                                             <Button key="view" type="primary">View</Button>
                                         </Link>,
