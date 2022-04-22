@@ -84,7 +84,7 @@ export default function Address(props) {
           <Blockies seed={address.toLowerCase()} size={props.blockiesSize ? props.blockiesSize : 8} scale={props.fontSize ? props.fontSize / 7 : 4} />
         </span>
       }
-      <span style={{ verticalAlign: "middle", paddingLeft: 5, fontSize: props.fontSize ? props.fontSize : 28 }}>
+      <span style={{ verticalAlign: props.addressAlignment ? props.addressAlignment : "middle", paddingLeft: 5, fontSize: props.fontSize ? props.fontSize : 28 }}>
         {props.onChange ? (
           <Text editable={{ onChange: props.onChange }} copyable={{ text: address }}>
             <a

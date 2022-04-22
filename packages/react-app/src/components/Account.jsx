@@ -96,6 +96,7 @@ export default function Account({
                       size="tiny"
                       fontSize="0.8em"
                       blockiesSize={6}
+                      addressAlignment="top"
                     />
                   </Dropdown.Button>
                   {networkDisplay}

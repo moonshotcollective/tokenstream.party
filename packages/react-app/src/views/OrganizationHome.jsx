@@ -16,7 +16,7 @@ import {
   Avatar,
 } from "antd";
 import { AddressInput, Address, Contract, OrgStreamsActivityFeed } from "../components";
-import { SimpleStreamABI, StreamFactoryABI } from "../contracts/external_ABI";
+import { SimpleStreamABI, StreamFactoryABI, StreamFactoryAdminABI, StreamFactoryOperatorABI } from "../contracts/external_ABI";
 import { useHistory } from "react-router";
 import { Link, useParams } from "react-router-dom";
 import { CachedValue, loadERC20 } from "../helpers";
@@ -30,6 +30,7 @@ const createRoleHash = (roleName) => {
 }
 
 const OPERATOR_ROLE = createRoleHash("OPERATOR");
+const ADMIN_ROLE = "0x0000000000000000000000000000000000000000000000000000000000000000";
 
 const LOADING_STREAMS_COUNT = Number.parseInt(process.env.REACT_APP_LOADING_STREAMS_COUNT) || 18;
 const STREAMS_CACHE_TTL_MILLIS = Number.parseInt(process.env.REACT_APP_STREAMS_CACHE_TTL_MILLIS) || 43200000; // 12h ttl by default
@@ -116,6 +117,28 @@ export default function OrganizationHome({
     );
   }, [organizationAddress, userSigner]);
 
+  const orgStreamFactoryAdminContract = useMemo(() => {
+    if (!organizationAddress) {
+      return;
+    }
+    return new ethers.Contract(
+      organizationAddress,
+      StreamFactoryAdminABI,
+      userSigner
+    );
+  }, [organizationAddress, userSigner]);
+
+  const orgStreamFactoryOperatorContract = useMemo(() => {
+    if (!organizationAddress) {
+      return;
+    }
+    return new ethers.Contract(
+      organizationAddress,
+      StreamFactoryOperatorABI,
+      userSigner
+    );
+  }, [organizationAddress, userSigner]);
+
   const [tokenInfo, setTokenInfo] = useState({});
 
   const fetchOrgInfo = async () => {
@@ -127,6 +150,7 @@ export default function OrganizationHome({
     setAccount(addr);
 
     const isOperator = await orgStreamFactoryReadContract.hasRole(OPERATOR_ROLE, addr);
+    const isAdmin = await orgStreamFactoryReadContract.hasRole(ADMIN_ROLE, addr);
     console.log(["SHITZU", addr, isOperator]);
     await orgStreamFactoryReadContract.orgInfo()
       .then(info => {
@@ -141,7 +165,8 @@ export default function OrganizationHome({
           streamsCount: info[7],
           totalPaidOut: info[8],
           token: info[9],
-          isOperator: isOperator
+          isOperator: isOperator,
+          isAdmin: isAdmin
         });
       });
   };
@@ -255,6 +280,8 @@ export default function OrganizationHome({
     console.log(await result);
   };
 
+  const canAdminister = (orgInfo.isOperator || orgInfo.isAdmin);
+
   return (
     <>
       <Row gutter={[8, 16]} style={{marginTop:"1em"}}>
@@ -275,7 +302,7 @@ export default function OrganizationHome({
               </Menu.Item>
               <Menu.Item key="streams">Streams</Menu.Item>
               <Menu.Item key="feed">Activity Feed</Menu.Item>
-              {orgInfo.isOperator && (
+              {canAdminister && (
                 <Menu.Item key="admin">Admin</Menu.Item>
               )}
           </Menu>
@@ -291,12 +318,12 @@ export default function OrganizationHome({
         }}
       >
         
-        <Button
-          type="primary"
-          onClick={() => setNewStreamModal(true)}
-        >
-          Create New Stream
-        </Button>
+          {canAdminister && (<Button
+            type="primary"
+            onClick={() => setNewStreamModal(true)}
+          >
+            Create New Stream
+          </Button>)}
         {newStreamModal && (
           <Modal
             centered
@@ -439,7 +466,7 @@ export default function OrganizationHome({
           provider={provider}
           address={account}
           blockExplorer={blockExplorer}
-          customContract={orgStreamFactoryWriteContract}
+          customContract={orgInfo.isAdmin ? orgStreamFactoryAdminContract : orgStreamFactoryOperatorContract}
         />
       }
     </>
