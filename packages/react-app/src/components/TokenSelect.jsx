@@ -1,5 +1,5 @@
 import { Select } from "antd";
-import { useState, useMemo, useContext } from "react";
+import { useState, useMemo, useContext, useEffect } from "react";
 import { ethers } from "ethers";
 import { loadERC20 } from "../helpers";
 
@@ -34,10 +34,72 @@ const findMatchingTokens = (term, tokenList) => {
     nativeToken={{ name: 'Native token', symbol: 'ETH' }}
   />
 */
-export default function TokenSelect({ defaultValue, onChange, chainId = 1, nativeToken = {}, localProvider, ...props }) {
-  const [value, setValue] = useState(defaultValue || null);
+export default function TokenSelect({onChange, chainId = 1, nativeToken = {}, localProvider, ...props }) {
+  const [value, setValue] = useState(props.value);
   const { knownTokens } = useContext(TokensContext);
   const [searchResults, setSearchResults] = useState([]);
+
+  const nativeTokenObj = {
+    chainId: chainId,
+    decimals: 18,
+    name: "Default Token",
+    symbol: "GTC",
+    address: "0xdA5B7E522c39d40C32C656bc1b49D4fE4Cb5F328",
+    logoURI: "https://assets.coingecko.com/coins/images/15810/thumb/gitcoin.png?1621992929",
+    ...nativeToken,
+  };
+
+  const optionFragment = i => (
+    <div style={{ display: "flex", alignItems: "center" }}>
+      {i.logoURI && (
+        <div style={{ marginRight: "5px" }}>
+          <img src={i.logoURI} alt={`${i.name} (${i.symbol})`} />
+        </div>
+      )}
+      {i.name} - {i.symbol} {i.address?.substr(0, 5) + "..." + i.address?.substr(-4)}{" "}
+      {i.unlisted && <span style={{ fontStyle: "italic", fontSize: "12px", marginLeft: "3px" }}> (unlisted) </span>}
+    </div>
+  );
+
+  const loadUnlistedToken = async (aTokenAddress) => {
+    try {
+      const checksumAddress = ethers.utils.getAddress(aTokenAddress);
+      const tokenInfo = localProvider ? await loadERC20(checksumAddress, localProvider) : {};
+      return {
+        chainId: chainId,
+        name: null,
+        unlisted: true,
+        symbol: null,
+        address: checksumAddress,
+        logoURI: "",
+        ...tokenInfo,
+      };
+    } catch (error) {
+      console.error("Could not resolve token details! " + error);
+    }
+  };
+
+  const loadTokenDetails = async (aTokenAddress) => {
+    if (!aTokenAddress || aTokenAddress === null || aTokenAddress === "") {
+      return;
+    }
+    let tokenDetails = findMatchingTokens(aTokenAddress, knownTokens).filter(i => i.chainId === chainId)[0];
+    if (!tokenDetails) {
+      if (nativeTokenObj.address === aTokenAddress) {
+        tokenDetails = nativeTokenObj;
+      } else {
+        tokenDetails = await loadUnlistedToken(aTokenAddress);
+      }
+    }
+
+    setSearchResults([tokenDetails]);
+    setValue({value: aTokenAddress, label: optionFragment(tokenDetails)});
+  };
+
+  useEffect(() => {
+    loadTokenDetails(props.value)
+      .catch(console.error);
+  }, [props.value]);
 
   const children = useMemo(() => {
     if (searchResults.length < 1) {
@@ -47,15 +109,7 @@ export default function TokenSelect({ defaultValue, onChange, chainId = 1, nativ
     // use search result to format children
     return searchResults.map(i => (
       <Select.Option key={i.address} style={{ paddingTop: "5px", paddingBottom: "5px" }} value={i.address}>
-        <div style={{ display: "flex", alignItems: "center" }}>
-          {i.logoURI && (
-            <div style={{ marginRight: "5px" }}>
-              <img src={i.logoURI} alt={`${i.name} (${i.symbol})`} />
-            </div>
-          )}
-          {i.name} - {i.symbol} {i.address?.substr(0, 5) + "..." + i.address?.substr(-4)}{" "}
-          {i.unlisted && <span style={{ fontStyle: "italic", fontSize: "12px", marginLeft: "3px" }}> (unlisted) </span>}
-        </div>
+        {optionFragment(i)}
       </Select.Option>
     ));
   }, [searchResults]);
@@ -68,35 +122,12 @@ export default function TokenSelect({ defaultValue, onChange, chainId = 1, nativ
       collectionResult = findMatchingTokens(val, knownTokens).filter(i => i.chainId === chainId);
 
       if (collectionResult.length < 1) {
-        const nativeTokenObj = {
-          chainId: chainId,
-          decimals: 18,
-          name: "Default Token",
-          symbol: "GTC",
-          address: "0xdA5B7E522c39d40C32C656bc1b49D4fE4Cb5F328",
-          logoURI: "https://assets.coingecko.com/coins/images/15810/thumb/gitcoin.png?1621992929",
-          ...nativeToken,
-        };
-
         collectionResult.push(nativeTokenObj);
-
-        try {
-          const checksumAddress = ethers.utils.getAddress(val);
-          // load contract and try to get name and symbol if there's a provider given
-          const tokenInfo = localProvider ? await loadERC20(checksumAddress, localProvider) : {};
+        const tokenDetails = await loadUnlistedToken(val);
+        if (tokenDetails !== undefined) {
           collectionResult = [
-            {
-              chainId: chainId,
-              name: null,
-              unlisted: true,
-              symbol: null,
-              address: checksumAddress,
-              logoURI: "",
-              ...tokenInfo,
-            },
+            tokenDetails
           ];
-        } catch (error) {
-          console.log(`Could not identify this token`);
         }
       }
     }

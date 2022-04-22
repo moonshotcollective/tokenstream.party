@@ -5,7 +5,7 @@ import AddOrganizationSummary from './AddOrganizationSummary';
 
 const { Step } = Steps;
 
-export default function AddOrganizationWizard({ tx, writeContracts, showWizard, onCancelHandler, onDeployHandler, chainId, provider }) {
+export default function AddOrganizationWizard({ tx, writeContracts, showWizard, onCancelHandler, onDeployHandler, chainId, provider, mainnetProvider }) {
     const [currentStep, setCurrentStep] = useState(0);
     const [organizationDetails, setOrganizationDetails] = useState({});
     const [isDeploying, setIsDeploying] = useState(false);
@@ -15,7 +15,7 @@ export default function AddOrganizationWizard({ tx, writeContracts, showWizard, 
             return <AddOrganizationForm values={organizationDetails} onFinishCallback={values => {
                 setOrganizationDetails(values);
                 setCurrentStep(1);
-            }} chainId={viewProps.chainId} provider={viewProps.provider} />;
+            }} chainId={viewProps.chainId} mainnetProvider={viewProps.mainnetProvider} provider={viewProps.provider} />;
         } else if (viewProps.currentStep === 1) {
             return <AddOrganizationSummary
                         organizationDetails={organizationDetails}
@@ -89,7 +89,7 @@ export default function AddOrganizationWizard({ tx, writeContracts, showWizard, 
                     </Col>
 
                     <Col span={24} style={{ marginTop: "1em" }}>
-                        {CurrentStepView({ currentStep, chainId, provider })}
+                        {CurrentStepView({ currentStep, chainId, provider, mainnetProvider })}
                     </Col>
 
                     {currentStep > 0 &&

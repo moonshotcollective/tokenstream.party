@@ -100,7 +100,7 @@ async function resolveOrgDetails(organizationAddress, provider) {
     }
 }
 
-export default function OrganizationBrowsePage({ tx, userAddress, writeContracts, provider, localProvider, readContracts, chainId, ...props }) {
+export default function OrganizationBrowsePage({ tx, userAddress, writeContracts, provider, localProvider, readContracts, chainId, mainnetProvider, ...props }) {
     const [showWizard, setShowWizard] = useState(false);
     const [searchName, setSearchName] = useState("");
     const debouncedSearchName = useDebounce(searchName, 1000);
@@ -144,6 +144,7 @@ export default function OrganizationBrowsePage({ tx, userAddress, writeContracts
                     onDeployHandler={onOrgDeployedHandler}
                     chainId={chainId}
                     provider={provider}
+                    mainnetProvider={mainnetProvider}
                 />
                 <Search placeholder="Search for your favourite DAOs!" size="large"
                     enterButton

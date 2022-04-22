@@ -1,5 +1,6 @@
 import { Form, Input, Button, Select, Space } from 'antd';
 import TokenSelect from './TokenSelect';
+import AddressInput from "./AddressInput";
 
 const { Option } = Select;
 const { TextArea } = Input;
@@ -14,7 +15,7 @@ const tailLayout = {
 };
 
 
-export default function AddOrganizationForm({ values, onFinishCallback, chainId, provider }) {
+export default function AddOrganizationForm({ values, onFinishCallback, chainId, provider, mainnetProvider }) {
     const [form] = Form.useForm();
 
     const onReset = () => {
@@ -42,7 +43,11 @@ export default function AddOrganizationForm({ values, onFinishCallback, chainId,
             <Form.Item name="ownerAddress" label="DAO Owner Address" rules={[
                 { required: true, message: 'Please enter the DAO owner address!' }
             ]}>
-                <Input placeholder="Address (0x000...)" />
+                <AddressInput
+                    autoFocus
+                    ensProvider={mainnetProvider}
+                    placeholder="Address (0x000...)"
+                />
             </Form.Item>
             <Form.Item name="token" label="Token" rules={[
                 { required: true, message: 'Please specify a token' }
