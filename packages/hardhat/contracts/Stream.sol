@@ -23,6 +23,8 @@ contract MultiStream is Ownable, AccessControl, ReentrancyGuard {
     event Withdraw(address indexed to, uint256 amount, string reason);
     event Deposit(address indexed from, uint256 amount);
 
+    bytes32 public constant OPERATOR_ROLE = keccak256("OPERATOR");
+
     mapping(address => uint256) caps;
     mapping(address => uint256) frequencies;
     mapping(address => uint256) last;
@@ -79,11 +81,22 @@ contract MultiStream is Ownable, AccessControl, ReentrancyGuard {
         grantRole(MANAGER_ROLE, _manager);
     }
 
+    function addOperator(address _manager) public onlyRole(DEFAULT_ADMIN_ROLE) {
+        grantRole(OPERATOR_ROLE, _manager);
+    }
+
     function removeManager(address _manager)
         public
         onlyRole(DEFAULT_ADMIN_ROLE)
     {
         revokeRole(MANAGER_ROLE, _manager);
+    }
+
+    function removeOperator(address _manager)
+        public
+        onlyRole(DEFAULT_ADMIN_ROLE)
+    {
+        revokeRole(OPERATOR_ROLE, _manager);
     }
 
     /// @dev add a stream for user
