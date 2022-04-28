@@ -2,17 +2,16 @@
 pragma solidity >=0.8.0 <0.9.0;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "./StreamFactory.sol";
-import "./SimpleStream.sol";
+import "./MultiStream.sol";
 
-contract OrgFactoryDeployer is Ownable {
+/// @title Organization Streams Deployer
+/// @author ghostffcode, jaxcoder, nowonder, supriyaamisshra
+contract OrganizationStreamsDeployer is Ownable {
 
     /// @dev emitted when a new org is created.
     event OrganizationsDeployed(
-
-        address indexed tokenAddress,
-        address indexed ownerAddress,
-        string organizationName
+        address indexed orgAddress,
+        address _tokenAddress
     );
 
     address[] public organizations;
@@ -23,28 +22,29 @@ contract OrgFactoryDeployer is Ownable {
 
     /// @dev deploys a stream factory contract for a specified organization.
     function deployOrganization(
-        string memory _orgName,
-        string memory _logoURI,
-        string memory _orgDescription,
-        address _paymentTokenAddress,
-        address owner,
-        address[] calldata admins
+        string calldata _orgName,
+        address _owner,
+        address[] calldata _addresses,
+        uint256[] calldata _caps,
+        uint256[] calldata _frequency,
+        bool[] calldata _startsFull,
+        address _tokenAddress
     ) public {
-        StreamFactory deployedOrganization = new StreamFactory(
+        MultiStream deployedOrganization = new MultiStream(
             _orgName,
-            _logoURI,
-            _orgDescription,
-            _paymentTokenAddress,
-            owner,
-            admins
+            _owner,
+            _addresses,
+            _caps,
+            _frequency,
+            _startsFull,
+            _tokenAddress
         );
         
-        organizations.push(address(deployedOrganization));
+          organizations.push(address(deployedOrganization));
 
-        emit OrganizationsDeployed(
+         emit OrganizationsDeployed(
             address(deployedOrganization),
-            _msgSender(),
-            string(_orgName)
+            _tokenAddress
         );
 
     }

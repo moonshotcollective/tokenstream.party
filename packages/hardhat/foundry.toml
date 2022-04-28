@@ -1,0 +1,8 @@
+[default]
+src = 'test/foundry/test'
+libs = ['test/foundry/lib', 'artifacts']
+optimizer = true
+optimizer_runs = 20000
+remappings = [
+    "@openzeppelin/=node_modules/@openzeppelin/"
+]
