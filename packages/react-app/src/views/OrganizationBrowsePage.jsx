@@ -12,26 +12,25 @@ import {
     Avatar,
     Statistic,
     Typography,
-    Divider
+    Divider,
 } from "antd";
-import { GithubOutlined, RightOutlined, TwitterOutlined } from "@ant-design/icons";
+import { RightOutlined } from "@ant-design/icons";
 import { TokenStreamLogo } from "../components/TokenStreamLogo";
-import { DiscordIcon } from "../components/DiscordIcon";
 import AddOrganizationWizard from "../components/AddOrganizationWizard";
 import { CachedValue, loadERC20 } from "../helpers";
 import { useDebounce } from "../hooks";
-import { StreamFactoryABI } from "../contracts/external_ABI";
+import { OrganizationStreamsABI } from "../contracts/external_ABI";
 
 const { Meta } = Card;
 const { Text } = Typography;
 const { Search } = Input;
 
 const createRoleHash = (roleName) => {
-    const roleHash = ethers.utils.solidityKeccak256(["string"], [roleName]);
-    return roleHash;
+    return ethers.utils.solidityKeccak256(["string"], [roleName]);
 }
 
-const OPERATOR_ROLE = createRoleHash("OPERATOR");
+const ADMIN_ROLE = "0x0000000000000000000000000000000000000000000000000000000000000000";
+const MANAGER_ROLE = createRoleHash("MANAGER_ROLE");
 
 const ORGS_CACHE_TTL_MILLIS = Number.parseInt(process.env.REACT_APP_ORGS_CACHE_TTL_MILLIS) || 1500000; // 25m ttl by default
 // the actual cache
@@ -43,7 +42,7 @@ const caches = {
 const getOrgContract = (organizationAddress, provider) => {
     return new ethers.Contract(
         organizationAddress,
-        StreamFactoryABI,
+        OrganizationStreamsABI,
         provider
     );
 };
@@ -56,7 +55,7 @@ async function resolveOrgMembership(organizationAddress, userAddress, provider) 
     }
     // resolve details
     const orgContract = getOrgContract(organizationAddress, provider);
-    const calls = [orgContract.users(userAddress), orgContract.hasRole(OPERATOR_ROLE, userAddress)];
+    const calls = [orgContract.hasStream(userAddress), orgContract.hasRole(MANAGER_ROLE, userAddress), orgContract.hasRole(ADMIN_ROLE, userAddress)];
     const canView = (await Promise.all(calls.map(call => call.catch(() => false))))
         .reduce((previousValue, currentValue) => previousValue || currentValue, false);
     caches.orgMembershipCache[key] = new CachedValue(canView, ORGS_CACHE_TTL_MILLIS);
@@ -77,15 +76,11 @@ async function resolveOrgDetails(organizationAddress, provider) {
             .then(info => {
                 data = {
                     name: info[0],
-                    description: info[1],
-                    githubURI: info[2],
-                    twitterURI: info[3],
-                    webURI: info[4],
-                    discordURI: info[5],
-                    logoURI: info[6],
-                    streamsCount: info[7],
-                    totalPaidOut: info[8],
-                    tokenAddress: info[9],
+                    logoURI: info[1],
+                    description: info[2],
+                    streamsCount: info[3],
+                    totalPaidOut: info[4],
+                    tokenAddress: info[5],
                 };
             });
         await loadERC20(data.tokenAddress, provider)
@@ -113,17 +108,17 @@ export default function OrganizationBrowsePage({ tx, userAddress, writeContracts
 
     const fetchEvents = async () => {
         setOrganizations(null);
-        const contract = readContracts.OrgFactoryDeployer;
+        const contract = readContracts.OrganizationStreamsDeployer;
         if (contract) {
             const eventFilter = contract.filters.OrganizationsDeployed();
             const events = await contract.queryFilter(eventFilter);
             const orgs = events.map(eventLog => ({ ...eventLog.args, info: {} }));
             for (const org of orgs) {
-                org.info = await resolveOrgDetails(org.tokenAddress, provider);
-                org.canView = await resolveOrgMembership(org.tokenAddress, userAddress, provider);
+                org.info = await resolveOrgDetails(org.orgAddress, provider);
+                org.canView = await resolveOrgMembership(org.orgAddress, userAddress, provider);
             }
             const selectedOrgs = orgs.filter(
-                org => org.canView && org.organizationName.toLowerCase().includes(debouncedSearchName),
+                org => org.canView && org.info.name.toLowerCase().includes(debouncedSearchName),
             );
             setOrganizations(selectedOrgs);
         }
@@ -161,22 +156,11 @@ export default function OrganizationBrowsePage({ tx, userAddress, writeContracts
                     <Row gutter={[8, 32]}>
 
                         {organizations.map(organization =>
-                            <Col className="gutter-row" span={8}>
-                                <Card style={{ width: 300, marginTop: 16, borderColor: "#6f3ff5" }}
+                            <Col key={`col-${organization.orgAddress}`} className="gutter-row" span={8}>
+                                <Card key={organization.orgAddress} className="org-card"
                                     headStyle={{ paddingTop: 0 }}
                                     actions={[
-                                        // <a href={organization.info.githubURI}>
-                                        //     <GithubOutlined />
-                                        // </a>,
-
-                                        // <a href={organization.info.twitterURI}>
-                                        //     <TwitterOutlined />
-                                        // </a>,
-
-                                        // <a href={organization.info.discordURI}>
-                                        //     <DiscordIcon />
-                                        // </a>,
-                                        <Link to={`/organizations/${organization.tokenAddress}`}>
+                                        <Link to={`/organizations/${organization.orgAddress}`}>
                                             <Button key="view" type="primary">View</Button>
                                         </Link>,
                                     ]}>
@@ -192,11 +176,12 @@ export default function OrganizationBrowsePage({ tx, userAddress, writeContracts
                                                 <Statistic title="#Streams" value={organization.info.streamsCount} prefix={<TokenStreamLogo width="30" height="30" />} />
                                             </Col>
                                             <Col span={14}>
-                                                <Statistic title="Total Paid Out" value={`${organization.info.totalPaidOut}`}
+                                                <Statistic title="Total Paid Out" value={`${ethers.utils.formatEther(organization.info.totalPaidOut)}`}
                                                     prefix={<RightOutlined />}
-                                                    suffix={<Text style={{ fontSize: '0.4em' }} type="secondary">
-                                                        {organization.info.tokenSymbol}
-                                                    </Text>} />
+                                                    />
+                                                <Text style={{ fontSize: '1em', textAlign: 'right' }} type="secondary">
+                                                    {organization.info.tokenSymbol}
+                                                </Text>
                                             </Col>
                                         </Row>
                                     </Space>

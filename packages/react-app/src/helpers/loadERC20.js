@@ -9,6 +9,7 @@ export const loadERC20 = async (address, provider) => {
         const symbol = await tokenContract.symbol?.();
         return { name, symbol, address, tokenContract };
     } catch (error) {
+        console.error("Error loading token!", error);
         return {};
     }
 };

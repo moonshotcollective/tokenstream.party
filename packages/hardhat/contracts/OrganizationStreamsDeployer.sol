@@ -2,7 +2,7 @@
 pragma solidity >=0.8.0 <0.9.0;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "./MultiStream.sol";
+import "./OrganizationStreams.sol";
 
 /// @title Organization Streams Deployer
 /// @author ghostffcode, jaxcoder, nowonder, supriyaamisshra
@@ -22,16 +22,20 @@ contract OrganizationStreamsDeployer is Ownable {
 
     /// @dev deploys a stream factory contract for a specified organization.
     function deployOrganization(
-        string calldata _orgName,
+        string memory _orgName,
+        string memory _orgLogoURI,
+        string memory _orgDescription,
         address _owner,
-        address[] calldata _addresses,
-        uint256[] calldata _caps,
-        uint256[] calldata _frequency,
-        bool[] calldata _startsFull,
+        address[] memory _addresses,
+        uint256[] memory _caps,
+        uint256[] memory _frequency,
+        bool[] memory _startsFull,
         address _tokenAddress
     ) public {
-        MultiStream deployedOrganization = new MultiStream(
+        OrganizationStreams deployedOrganization = new OrganizationStreams(
             _orgName,
+            _orgLogoURI,
+            _orgDescription,
             _owner,
             _addresses,
             _caps,

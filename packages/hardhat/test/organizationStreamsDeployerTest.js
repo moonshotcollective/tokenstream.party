@@ -24,6 +24,8 @@ describe("GTCStream", function () {
       it("Should be able to create a new organization", async function () {
         const req = await myOrganizationStreamsDeployer.deployOrganization(
           "myDAO",
+          "http://some.logo.com",
+          "My DAO description",
           user,
           [],[],[], [],
           myGTC.address

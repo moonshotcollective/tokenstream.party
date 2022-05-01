@@ -87,7 +87,7 @@ export default function Account({
                 </div>
 
                 <div>
-                  <Dropdown.Button overlay={menu} icon={<DownOutlined />} trigger="click">
+                  <Dropdown.Button style={{marginTop: '1.5em'}} overlay={menu} icon={<DownOutlined />} trigger="click">
                     <Address
                       address={address}
                       ensProvider={mainnetProvider}

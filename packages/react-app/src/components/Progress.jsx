@@ -11,7 +11,6 @@ import {
 import axios from "axios";
 import { useContractReader } from "eth-hooks";
 import { ethers } from "ethers";
-import pretty from "pretty-time";
 import React, { useEffect, useState } from "react";
 import {
   Address,

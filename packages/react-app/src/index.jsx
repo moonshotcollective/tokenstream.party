@@ -5,6 +5,7 @@ import { TokensContextProvider } from "./components";
 import ReactDOM from "react-dom";
 import App from "./App";
 import "./index.css";
+import { BrowserRouter } from "react-router-dom";
 
 const themes = {
   dark: `${process.env.PUBLIC_URL}/dark-theme.css`,
@@ -24,7 +25,9 @@ ReactDOM.render(
   <TokensContextProvider>
     <ApolloProvider client={client}>
       <ThemeSwitcherProvider themeMap={themes} defaultTheme={prevTheme || "dark"}>
-        <App subgraphUri={subgraphUri} />
+        <BrowserRouter>
+          <App subgraphUri={subgraphUri} />
+        </BrowserRouter>
       </ThemeSwitcherProvider>
     </ApolloProvider>
   </TokensContextProvider>,

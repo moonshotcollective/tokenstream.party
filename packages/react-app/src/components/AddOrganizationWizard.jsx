@@ -38,10 +38,10 @@ export default function AddOrganizationWizard({ tx, writeContracts, showWizard, 
         }
         console.log("Launching!");
         const { orgName, orgLogoURI, orgDescription, ownerAddress, token } = organizationDetails;
-        let calldata = [orgName, orgLogoURI, orgDescription, token, ownerAddress, [ownerAddress]];
+        let calldata = [orgName, orgLogoURI, orgDescription, ownerAddress, [], [], [], [], token];
 
         try {
-            const result = tx(writeContracts.OrgFactoryDeployer.deployOrganization(...calldata), update => {
+            const result = tx(writeContracts.OrganizationStreamsDeployer.deployOrganization(...calldata), update => {
                 console.log("📡 Transaction Update:", update);
                 if (update && (update.status === "confirmed" || update.status === 1)) {
                     onDeployHandler();

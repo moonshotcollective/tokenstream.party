@@ -22,7 +22,11 @@ export default function PayButton({
   const [status, setStatus] = useState(0); // loading | lowAllowance | approving | ready | distributing | noBalance
 
   const refreshETH = () => {
-    setStatus(yourLocalBalance.gte(ethers.utils.parseEther(amount || "0")) ? 3 : 5);
+    try {
+      setStatus(yourLocalBalance.gte(ethers.utils.parseEther(amount || "0")) ? 3 : 5);
+    } catch (err) {
+      console.err(err);
+    }
   };
 
   const tokenContract = token.tokenContract;
@@ -52,33 +56,48 @@ export default function PayButton({
     }
   };
 
+  const genericErrorHandler = (err) => {
+    console.error(err);
+    notification.error({
+      message: "Token approval unsuccessful",
+      description: `Please retry!`,
+      placement: "topRight",
+    });
+  };
+
   const approveTokenAllowance = async () => {
     setStatus(2);
     const approvalAmount = maxApproval;
     const approvalToken = token.symbol;
     const newAllowance = ethers.utils.parseUnits(maxApproval, tokenInfo[token.symbol].decimals);
 
-    await tx(tokenContract.approve(spender, newAllowance), async update => {
-      console.log("📡 Transaction Update:", update);
-      if (update && (update.status === "confirmed" || update.status === 1)) {
-        console.log(" 🍾 Transaction " + update.hash + " finished!");
-        console.log(
-          " ⛽️ " +
-            update.gasUsed +
-            "/" +
-            (update.gasLimit || update.gas) +
-            " @ " +
-            parseFloat(update.gasPrice) / 1000000000 +
-            " gwei",
-        );
-        notification.success({
-          message: "Token approval successful",
-          description: `${approvalAmount} ${approvalToken} was approved for TokenStream.`,
-          placement: "topRight",
-        });
-        await refreshTokenDetails();
-      }
-    });
+    try {
+      await tx(tokenContract.approve(spender, newAllowance).catch(genericErrorHandler), async update => {
+        console.log("📡 Transaction Update:", update);
+        if (update && (update.status === "confirmed" || update.status === 1)) {
+          console.log(" 🍾 Transaction " + update.hash + " finished!");
+          console.log(
+            " ⛽️ " +
+              update.gasUsed +
+              "/" +
+              (update.gasLimit || update.gas) +
+              " @ " +
+              parseFloat(update.gasPrice) / 1000000000 +
+              " gwei",
+          );
+          notification.success({
+            message: "Token approval successful",
+            description: `${approvalAmount} ${approvalToken} was approved for TokenStream.`,
+            placement: "topRight",
+          });
+          await refreshTokenDetails();
+        } else {
+          setStatus(1);
+        }
+      });
+    } catch (err) {
+      genericErrorHandler(err);
+    }
   };
 
   const isETH = () => {
@@ -99,8 +118,14 @@ export default function PayButton({
         await approveTokenAllowance();
       } else {
         setStatus(4);
-        await tokenPayHandler(payParams);
-        await refreshTokenDetails();
+        await tokenPayHandler(payParams)
+          .then(_ => {
+            refreshTokenDetails();
+          })
+          .catch(err => {
+            genericErrorHandler(err);
+            setStatus(3);
+          });
       }
     }
   };
@@ -109,10 +134,14 @@ export default function PayButton({
     if (isETH()) {
       refreshETH();
     } else if (token.symbol && tokenInfo[token.symbol]) {
-      const adjustedAmount = ethers.utils.parseUnits(amount || "0", tokenInfo[token.symbol].decimals);
-      const hasEnoughAllowance = tokenInfo[token.symbol].allowance.lt(adjustedAmount);
-      const hasEnoughBalance = tokenInfo[token.symbol].balance.gte(adjustedAmount);
-      setStatus(hasEnoughBalance ? (hasEnoughAllowance ? 1 : 3) : 5);
+      try {
+        const adjustedAmount = ethers.utils.parseUnits(amount || "0", tokenInfo[token.symbol].decimals);
+        const hasEnoughAllowance = tokenInfo[token.symbol].allowance.lt(adjustedAmount);
+        const hasEnoughBalance = tokenInfo[token.symbol].balance.gte(adjustedAmount);
+        setStatus(hasEnoughBalance ? (hasEnoughAllowance ? 1 : 3) : 5);
+      } catch (err) {
+        console.error(err);
+      }
     }
   }, [amount]);
 
@@ -126,7 +155,7 @@ export default function PayButton({
   }, [callerAddress]);
 
   const renderButtonText = () => {
-    let text = "Loading...";
+    let text;
 
     switch (status) {
       case 1:
@@ -154,7 +183,7 @@ export default function PayButton({
 
   return (
     <Button
-      disabled={disabledStatus.indexOf(status) >= 0 || !(amount > 0)}
+      disabled={disabledStatus.indexOf(status) >= 0 || amount <= 0}
       loading={loadingStatus.indexOf(status) >= 0}
       style={style}
       onClick={handlePay}
