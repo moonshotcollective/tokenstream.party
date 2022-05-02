@@ -46,12 +46,9 @@ contract OrganizationStreamsTest is Test {
             address(token)
         );
         cheats.prank((address(deployer)));
-        token.transfer(address(stream), 1000000000000000000000);
-    }
-
-    function testInitBalance() public {
-        // Make sure we have an initial balance to test withdraws to authorized users
-        assertEq(token.balanceOf(address(stream)), initAmount);
+        token.transfer(address(me), 1000 ether);
+        cheats.prank((address(me)));
+        token.approve(address(stream), 1000 ether);
     }
 
     function testManagerFunctions(uint256 amount) public {
@@ -68,6 +65,8 @@ contract OrganizationStreamsTest is Test {
             1296000,
             true
         );
+
+        stream.streamDeposit(address(0xb010ca9Be09C382A9f31b79493bb232bCC319f01), "any reason 1", 0.5 ether);
 
         // Withdraw from newly created stream as it has "true" for startsFull
         cheats.prank(address(0xb010ca9Be09C382A9f31b79493bb232bCC319f01));
@@ -93,6 +92,8 @@ contract OrganizationStreamsTest is Test {
         );
 
         cheats.prank(address(0xb010ca9Be09C382A9f31b79493bb232bCC319f01));
+        stream.streamDeposit(address(0xb010ca9Be09C382A9f31b79493bb232bCC319f01), "any reason 2", 0.5 ether + amount);
+
 
         // Withdraw new balance accumulated after stream cap update
         stream.streamWithdraw(0.5 ether + amount, "reason");
@@ -101,6 +102,7 @@ contract OrganizationStreamsTest is Test {
     function testStreamWithdraw(uint256 amount) public {
         // Acting as permitted stream user address 0xa8B3...11e7
         hevm.prank(address(0xa8B3478A436e8B909B5E9636090F2B15f9B311e7));
+        stream.streamDeposit(address(0xb010ca9Be09C382A9f31b79493bb232bCC319f01), "any reason wd", 0.5 ether);
 
         // Fuzz test all viable amounts, > would fail here..
         cheats.assume(amount < 0.5 ether);
@@ -114,6 +116,7 @@ contract OrganizationStreamsTest is Test {
         /* try withdrawing again almost 2 weeks into the future, when stream should be full */
         hevm.prank(address(0xa8B3478A436e8B909B5E9636090F2B15f9B311e7));
         cheats.warp(1642366800);
+        stream.streamDeposit(address(0xb010ca9Be09C382A9f31b79493bb232bCC319f01), "any reason wd", 0.5 ether);
         stream.streamWithdraw(0.5 ether, "reason");
     }
 
@@ -151,6 +154,7 @@ contract OrganizationStreamsTest is Test {
         );
 
         cheats.prank(address(0xb010ca9Be09C382A9f31b79493bb232bCC319f01));
+        stream.streamDeposit(address(0xb010ca9Be09C382A9f31b79493bb232bCC319f01), "a reason", 0.5 ether);
         stream.streamWithdraw(0.5 ether, "reason");
         // Make sure balance is updating properly
         assertEq(
