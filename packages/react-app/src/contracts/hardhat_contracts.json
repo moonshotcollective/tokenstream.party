@@ -1534,7 +1534,7 @@
           ]
         },
         "OrganizationStreamsDeployer": {
-          "address": "0x610178dA211FEF7D417bC0e6FeD39F05609AD788",
+          "address": "0x9A9f2CCfdE556A7E9Ff0848998Aa4a0CFD8863AE",
           "abi": [
             {
               "inputs": [
@@ -1557,10 +1557,16 @@
                   "type": "address"
                 },
                 {
-                  "indexed": false,
+                  "indexed": true,
                   "internalType": "address",
-                  "name": "_tokenAddress",
+                  "name": "ownerAddress",
                   "type": "address"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "string",
+                  "name": "organizationName",
+                  "type": "string"
                 }
               ],
               "name": "OrganizationsDeployed",

@@ -11,7 +11,8 @@ contract OrganizationStreamsDeployer is Ownable {
     /// @dev emitted when a new org is created.
     event OrganizationsDeployed(
         address indexed orgAddress,
-        address _tokenAddress
+        address indexed ownerAddress,
+        string organizationName
     );
 
     address[] public organizations;
@@ -48,7 +49,8 @@ contract OrganizationStreamsDeployer is Ownable {
 
          emit OrganizationsDeployed(
             address(deployedOrganization),
-            _tokenAddress
+            _owner,
+            _orgName
         );
 
     }

@@ -3,11 +3,11 @@ schema:
   file: ./src/schema.graphql
 dataSources:
   - kind: ethereum/contract
-    name: OrgFactoryDeployer
+    name: OrganizationStreamsDeployer
     network: {{network}}
     source:
-      address: "{{rinkeby_OrgFactoryDeployerAddress}}"
-      abi: OrgFactoryDeployer
+      address: "{{localhost_OrganizationStreamsDeployerAddress}}"
+      abi: OrganizationStreamsDeployer
       startBlock: 1
     mapping:
       kind: ethereum/events
@@ -16,48 +16,32 @@ dataSources:
       entities:
         - Organization
       abis:
-        - name: OrgFactoryDeployer
-          file: ./abis/{{network}}_OrgFactoryDeployer.json
+        - name: OrganizationStreamsDeployer
+          file: ./abis/{{network}}_OrganizationStreamsDeployer.json
       eventHandlers:
         - event: OrganizationsDeployed(indexed address,indexed address,string)
           handler: handleOrganizationDeployed
       file: ./src/mapping.ts
 templates:
   - kind: ethereum/contract
-    name: StreamFactory
+    name: OrganizationStreams
     network: {{network}}
     source:
-      abi: StreamFactory
+      abi: OrganizationStreams
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
       language: wasm/assemblyscript
       file: ./src/mapping.ts
       entities:
-        - StreamFactory
+        - OrganizationStreams
       abis:
-        - name: StreamFactory
-          file: ./abis/StreamFactory.json
+        - name: OrganizationStreams
+          file: ./abis/OrganizationStreams.json
       eventHandlers:
-        - event: StreamAdded(address,address,address)
+        - event: StreamAdded(address,address)
           handler: handleStreamAdded
-  - kind: ethereum/contract
-    name: Stream
-    network: {{network}}
-    source:
-      abi: Stream
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.4
-      language: wasm/assemblyscript
-      file: ./src/mapping.ts
-      entities:
-        - Stream
-      abis:
-        - name: Stream
-          file: ./abis/SimpleStreams.json
-      eventHandlers:
         - event: Withdraw(indexed address,uint256,string)
           handler: handleWithdraw
-        - event: Deposit(indexed address,uint256,string)
+        - event: Deposit(indexed address,indexed address,uint256,string)
           handler: handleDeposit

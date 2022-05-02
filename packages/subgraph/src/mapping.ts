@@ -1,21 +1,19 @@
 import {
   OrganizationsDeployed
-} from "../generated/OrgFactoryDeployer/OrgFactoryDeployer";
+} from "../generated/OrganizationStreamsDeployer/OrganizationStreamsDeployer";
 import {
-  StreamFactory as StreamFactoryTemplate,
-  Stream as StreamTemplate
+  OrganizationStreams as OrganizationStreamsTemplate
 } from "../generated/templates";
 import {
-  StreamAdded
-} from "../generated/templates/StreamFactory/StreamFactory";
-import {
+  StreamAdded,
   Withdraw,
   Deposit
-} from "../generated/templates/Stream/Stream";
+} from "../generated/templates/OrganizationStreams/OrganizationStreams";
+
 import { Organization, Stream, StreamActivity } from "../generated/schema"
 
 export function handleOrganizationDeployed(event: OrganizationsDeployed): void {
-  let orgAddress = event.params.tokenAddress.toHex();
+  let orgAddress = event.params.orgAddress.toHex();
   let org = Organization.load(orgAddress);
 
   if (!org) {
@@ -25,7 +23,7 @@ export function handleOrganizationDeployed(event: OrganizationsDeployed): void {
     org.orgName = event.params.organizationName;
   }
 
-  StreamFactoryTemplate.create(event.params.tokenAddress);
+  OrganizationStreamsTemplate.create(event.params.orgAddress);
 
   org.save();
 }
@@ -33,18 +31,17 @@ export function handleOrganizationDeployed(event: OrganizationsDeployed): void {
 export function handleStreamAdded(event: StreamAdded): void {
   let orgAddress = event.address.toHex();
 
-  let stream = new Stream(event.params.stream.toHex());
+  let stream = new Stream(event.params.user.toHex());
   stream.user = event.params.user;
+  stream.creator = event.params.creator;
   stream.createdAt = event.block.timestamp;
   stream.organization = orgAddress;
-
-  StreamTemplate.create(event.params.stream);
 
   stream.save();
 }
 
 export function handleWithdraw(event: Withdraw): void {
-  let stream = Stream.load(event.address.toHex());
+  let stream = Stream.load(event.params.to.toHex());
   if (stream) {
     let id = event.transaction.hash.toHex();
 
@@ -60,7 +57,7 @@ export function handleWithdraw(event: Withdraw): void {
 }
 
 export function handleDeposit(event: Deposit): void {
-  let stream = Stream.load(event.address.toHex());
+  let stream = Stream.load(event.params.stream.toHex());
   if (stream) {
     let id = event.transaction.hash.toHex();
 

@@ -154,6 +154,7 @@ contract OrganizationStreams is Ownable, AccessControl, ReentrancyGuard {
         Stream memory stream = Stream(_cap, _frequency, last, 0);
         streams[_beneficiary] = stream;
         orgInfo.totalStreams += 1;
+        emit StreamAdded(_msgSender(), _beneficiary);
     }
 
     /// @dev Transfers remaining balance and disables stream

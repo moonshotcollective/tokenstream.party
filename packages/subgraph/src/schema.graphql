@@ -15,6 +15,7 @@ type Organization @entity {
 type Stream @entity {
   id: ID!
   user: Bytes!
+  creator: Bytes!
   createdAt: BigInt!
   organization: Organization!
 }
