@@ -26,8 +26,8 @@ module.exports = async ({ getNamedAccounts, getChainId, deployments }) => {
     });
   }
 
-  // deploy the Org Factory
-  const orgFactory = await deploy("OrganizationStreamsDeployer", {
+  // deploy the Org
+  const orgFactory = await deploy("StreamDeployer", {
     from: deployer,
     log: true,
     args: [owner],
@@ -44,9 +44,9 @@ module.exports = async ({ getNamedAccounts, getChainId, deployments }) => {
     await run("verify:verify", {
       address: orgFactory.address,
       constructorArguments: [owner],
-      contract: "contracts/OrganizationStreamsDeployer.sol:OrganizationStreamsDeployer",
+      contract: "contracts/StreamDeployer.sol:StreamDeployer",
     });
   }
 };
 
-module.exports.tags = ["GTC", "SupCoin", "OrganizationStreamsDeployer"];
+module.exports.tags = ["GTC", "SupCoin", "StreamDeployer"];
