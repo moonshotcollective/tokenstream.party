@@ -10,7 +10,7 @@ import {
   Deposit
 } from "../generated/templates/OrganizationStreams/OrganizationStreams";
 
-import { Organization, Stream, StreamActivity } from "../generated/schema"
+import { Organization, User, UserOrganization, StreamActivity } from "../generated/schema"
 
 export function handleOrganizationDeployed(event: OrganizationsDeployed): void {
   let orgAddress = event.params.orgAddress.toHex();
@@ -30,44 +30,54 @@ export function handleOrganizationDeployed(event: OrganizationsDeployed): void {
 
 export function handleStreamAdded(event: StreamAdded): void {
   let orgAddress = event.address.toHex();
+  let userAddress = event.params.user.toHex();
 
-  let stream = new Stream(event.params.user.toHex());
-  stream.user = event.params.user;
-  stream.creator = event.params.creator;
-  stream.createdAt = event.block.timestamp;
-  stream.organization = orgAddress;
+  let user = User.load(userAddress);
 
-  stream.save();
+  if (!user) {
+    user = new User(userAddress);
+    user.user = event.params.user;
+    user.createdAt = event.block.timestamp;
+    user.save();
+  }
+
+  let userOrgAddress = userAddress.concat(orgAddress);
+  let userOrg = UserOrganization.load(userOrgAddress)
+  if (!userOrg) {
+    userOrg = new UserOrganization(userOrgAddress);
+    userOrg.user = userAddress;
+    userOrg.organization = orgAddress;
+    userOrg.creator = event.params.creator;
+    userOrg.save();
+  }
 }
 
 export function handleWithdraw(event: Withdraw): void {
-  let stream = Stream.load(event.params.to.toHex());
-  if (stream) {
-    let id = event.transaction.hash.toHex();
+  let orgAddress = event.address.toHex();
+  let id = event.transaction.hash.toHex();
 
-    let activity = new StreamActivity(id);
-    activity.eventType = "StreamWithdrawEvent";
-    activity.amount = event.params.amount;
-    activity.organization = stream.organization;
-    activity.user = event.params.to;
-    activity.info = event.params.reason;
-    activity.createdAt = event.block.timestamp;
-    activity.save();
-  }
+  let activity = new StreamActivity(id);
+  activity.user = event.params.to.toHex();
+  activity.eventType = "StreamWithdrawEvent";
+  activity.amount = event.params.amount;
+  activity.organization = orgAddress;
+  activity.actor = event.params.to;
+  activity.info = event.params.reason;
+  activity.createdAt = event.block.timestamp;
+  activity.save();
 }
 
 export function handleDeposit(event: Deposit): void {
-  let stream = Stream.load(event.params.stream.toHex());
-  if (stream) {
-    let id = event.transaction.hash.toHex();
+  let orgAddress = event.address.toHex();
+  let id = event.transaction.hash.toHex();
 
-    let activity = new StreamActivity(id);
-    activity.eventType = "StreamDepositEvent";
-    activity.amount = event.params.amount;
-    activity.organization = stream.organization;
-    activity.user = event.params.from;
-    activity.info = event.params.reason;
-    activity.createdAt = event.block.timestamp;
-    activity.save();
-  }
+  let activity = new StreamActivity(id);
+  activity.user = event.params.stream.toHex();
+  activity.eventType = "StreamDepositEvent";
+  activity.amount = event.params.amount;
+  activity.organization = orgAddress;
+  activity.actor = event.params.from;
+  activity.info = event.params.reason;
+  activity.createdAt = event.block.timestamp;
+  activity.save();
 }

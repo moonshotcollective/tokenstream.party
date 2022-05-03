@@ -12,11 +12,11 @@ const GET_ORG_STREAMS_ACTIVITIES = gql`
     
     organization(id: $orgAddress) {
         streamActivities(orderBy: createdAt, orderDirection: desc) {
-        user
-        amount
-        eventType
-        info
-        createdAt
+            actor
+            amount
+            eventType
+            info
+            createdAt
         }
     }
   }
@@ -67,11 +67,11 @@ export function OrgStreamsActivityFeed({orgAddress, price, mainnetProvider}) {
             >
                  <Row>
                     <Col span={2}>
-                        <Blockies seed={item.user.toLowerCase()} />
+                        <Blockies seed={item.actor.toLowerCase()} />
                     </Col>
                     <Col span={6}>
                         <div>
-                            <Address value={item.user} hideBlockies={true} fontSize="1em" ensProvider={mainnetProvider} />
+                            <Address value={item.actor} hideBlockies={true} fontSize="1em" ensProvider={mainnetProvider} />
                         </div>
                         <RelativeTime iso8601DateTime={new Date(item.createdAt * 1000).toISOString()} />
                     </Col>

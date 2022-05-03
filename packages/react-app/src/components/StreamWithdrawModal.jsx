@@ -15,22 +15,18 @@ export default function StreamWithdrawModal({
 
     const withdrawFromStream = async (values) => {
         const { reason, amount } = values;
-        if (!reason || reason.length < 6) {
-            message.error("Please provide a longer reason / work / length");
-        } else {
-            tx(
-                orgStreamsWriteContract.streamWithdraw(ethers.utils.parseEther("" + amount), reason),
-                handleStreamWithMessage(
-                    {
-                        message: "Withdrawal successful",
-                        description: "Your withdrawal from this stream has been processed.",
-                    },
-                    () => {
-                        onSuccess();
-                    }
-                )
-            );
-        }
+        tx(
+            orgStreamsWriteContract.streamWithdraw(ethers.utils.parseEther("" + amount), reason),
+            handleStreamWithMessage(
+                {
+                    message: "Withdrawal successful",
+                    description: "Your withdrawal from this stream has been processed.",
+                },
+                () => {
+                    onSuccess();
+                }
+            )
+        );
     };
 
     return (
@@ -43,7 +39,10 @@ export default function StreamWithdrawModal({
                 <Form.Item
                     label="Reason"
                     name="reason"
-                    rules={[{ required: true, message: 'Please add a reason!' }]}
+                    rules={[
+                        { required: true, message: 'Please add a reason!' },
+                        {pattern: new RegExp(/^.{6,}$/), required: true, message: "Reason must be 6 or more characters!"}
+                    ]}
                 >
                     <TextArea rows={4} placeholder="reason / guidance / north star" />
                 </Form.Item>

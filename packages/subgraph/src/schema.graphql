@@ -9,22 +9,29 @@ type Organization @entity {
   orgName: String!
   createdAt: BigInt!
   streamActivities: [StreamActivity!]! @derivedFrom(field: "organization")
-  streams: [Stream!]! @derivedFrom(field: "organization")
+  streams: [UserOrganization!]! @derivedFrom(field: "organization")
 }
 
-type Stream @entity {
+type User @entity {
   id: ID!
   user: Bytes!
-  creator: Bytes!
   createdAt: BigInt!
+  organizations: [UserOrganization!] @derivedFrom(field: "user")
+}
+
+type UserOrganization @entity {
+  id: ID! # set to `user.id.concat(organization.id)`
+  user: User!
   organization: Organization!
+  creator: Bytes!
 }
 
 type StreamActivity @entity {
   id: ID!
+  user: User!
   organization: Organization!
   eventType: ActivityEventType!
-  user: Bytes!
+  actor: Bytes!
   amount: BigInt!
   info: String!
   createdAt: BigInt!

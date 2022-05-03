@@ -1,18 +1,31 @@
 import { useHistory } from "react-router";
 import { useParams } from "react-router-dom";
-import { Col, Row, Button, Space, Divider, Spin, Timeline, notification, Tooltip } from "antd";
+import { Col, Row, Button, Space, Divider, Spin, Timeline, notification, Tooltip, Skeleton } from "antd";
 import { LeftOutlined } from "@ant-design/icons";
+import { gql, useQuery } from "@apollo/client";
 import { Blockie, Address, Balance, WithdrawIcon, DepositIcon, StreamDepositModal, StreamWithdrawModal } from "../components";
 import { useEffect, useState, useContext } from "react";
 import axios from "axios";
 import pretty from "pretty-time";
 import { ethers } from "ethers";
 import { TokensContext } from "../context";
-import { useEventListener } from "../hooks";
 import StreamProgress from "../components/StreamProgress";
 
+const GET_USER_STREAMS_ACTIVITIES = gql`
+  query GetActivitiesForStream($streamAddress: String!, $orgAddress: String!) {
+    
+    streamActivities(where: {organization_in: [$orgAddress], user_in: [$streamAddress]}, orderBy: createdAt, orderDirection: desc) {
+        actor
+        amount
+        eventType
+        info
+        createdAt
+    }
+  }
+
+`;
+
 export default function UserStream({
-    provider,
     orgStreamsReadContract,
     orgStreamsWriteContract,
     mainnetProvider,
@@ -25,10 +38,9 @@ export default function UserStream({
     const { orgaddress: organizationAddress, address: userAddress } = useParams();
     const [info, setInfo] = useState({});
     const [quoteRate, setQuoteRate] = useState(0);
-    const [withdrawEvents, createWithdrawEvents] = useEventListener();
-    const [depositEvents, createDepositEvents] = useEventListener();
     const [ready, setReady] = useState(false);
     const [error, setError] = useState(false);
+    const [ expectedEventCount, setExpectedEventCount ] = useState();
     const [showDepositForm, setShowDepositForm] = useState(false);
     const [showWithdrawForm, setShowWithdrawForm] = useState(false);
     const { listedTokens } = useContext(TokensContext);
@@ -45,6 +57,24 @@ export default function UserStream({
                 }
             });
     });
+
+    const streamActivityResult = useQuery(GET_USER_STREAMS_ACTIVITIES, {
+        variables: {
+            streamAddress: userAddress.toLowerCase(),
+            orgAddress: organizationAddress.toLowerCase()
+        },
+        onCompleted: (data) => {
+            if (data?.streamActivities) {
+                setExpectedEventCount(data.streamActivities?.length);
+            }
+        }
+    });
+
+    const refreshStreamActivity = () => {
+        setExpectedEventCount(expectedEventCount + 1);
+        streamActivityResult.startPolling(150);
+        setTimeout(streamActivityResult.stopPolling, 30000);
+    };
 
     const getHasStream = async () => {
         const hasStream = await orgStreamsReadContract.hasStream(userAddress);
@@ -67,8 +97,6 @@ export default function UserStream({
             balance: infoResult[4],
             pledged: infoResult[5]
         });
-        createWithdrawEvents({ "OrganizationStreams": orgStreamsReadContract }, "OrganizationStreams", "Withdraw", provider, 1);
-        createDepositEvents({ "OrganizationStreams": orgStreamsReadContract }, "OrganizationStreams", "Deposit", provider, 1);
         setReady(true);
     };
 
@@ -87,6 +115,7 @@ export default function UserStream({
     const reloadStream = () => {
         getStreamBalanceAndInfo()
             .catch(console.error);
+        refreshStreamActivity();
     };
 
     const displayStreamDetails = ready && !error;
@@ -102,41 +131,26 @@ export default function UserStream({
         <Balance value={wprops.value} price={quoteRate} breakLine={true} tokenSymbol={tokenSymbol} size="1.1em" padding={4} />
     </div>;
 
+    const loadingStreamActivity = streamActivityResult.loading;
+    const errorStreamActivity = streamActivityResult.error;
+
     const getTimelineEvents = () => {
-        const events = [];
-        withdrawEvents
-            .filter(item => item.to === userAddress)
-            .map(item => {
-                return {
-                    type: 'withdraw',
-                    key: `w-${item.blockNumber}-${item.timestamp}-${item.to}`,
-                    timestamp: item.timestamp,
-                    from: item.from,
-                    amount: item.amount,
-                    reason: item.reason
-                };
-            })
-            .forEach(item => events.push(item));
-        depositEvents
-            .filter(item => {
-                return item.stream === userAddress;
-            })
-            .map(item => {
-                return {
-                    type: 'deposit',
-                    key: `d-${item.blockNumber}-${item.timestamp}-${item.from}`,
-                    timestamp: item.timestamp,
-                    from: item.from,
-                    amount: item.amount,
-                    reason: item.reason
-                };
-            })
-            .forEach(item => events.push(item));
-        return events
-            .filter((value, idx, self) => self.findIndex(otherValue => (otherValue.key === value.key)) === idx)
-            .sort((lhs, rhs) => {
-                return rhs.timestamp - lhs.timestamp;
-            });
+        const streamEvents = streamActivityResult.data?.streamActivities;
+        const events = !streamEvents ? [] : streamEvents.map(item => {
+            return {
+                type: item.eventType === 'StreamWithdrawEvent' ? 'withdraw' : 'deposit',
+                key: `${item.eventType === 'StreamWithdrawEvent' ? 'w' : 'd'}-${item.createdAt}-${item.user}`,
+                timestamp: item.createdAt,
+                from: item.actor,
+                amount: item.amount,
+                reason: item.info
+            }
+        });
+        if (expectedEventCount && expectedEventCount != events.length) {
+            console.log(["SHITZU", streamActivityResult.data?.streamActivities?.length, expectedEventCount, events.length]);
+            events.splice(0, 0, {type: "loading"});
+        }
+        return events;
     };
 
     const isOwnStream = () => {
@@ -228,8 +242,16 @@ export default function UserStream({
                     </Col>
                     <Col key="timeline-section" span={18}>
                         <Timeline className="user-stream-timeline">
-                        {getTimelineEvents().map(event => {
-                            if (event.type === "withdraw") {
+                        {loadingStreamActivity && <Spin tip="Loading stream events..." />}
+                        {errorStreamActivity && <p>Error loading stream events!</p>}
+                        {!loadingStreamActivity && !errorStreamActivity && getTimelineEvents().map(event => {
+                            if (event.type === "loading") {
+                                return (<Timeline.Item color="gray">
+                                    <p>
+                                        Loading...
+                                    </p>
+                                </Timeline.Item>);
+                            } else if (event.type === "withdraw") {
                                 return (<Timeline.Item key={event.key} dot={<WithdrawDot value={event.amount} />} color="yellow">
                                             <div className="event-prefix">
                                                 <small>withdrew {pretty(instantToDeltaNsFromNow(event.timestamp))} ago</small>
