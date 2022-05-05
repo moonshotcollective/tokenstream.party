@@ -29,6 +29,8 @@ const createRoleHash = (roleName) => {
     return ethers.utils.solidityKeccak256(["string"], [roleName]);
 }
 
+const NUMBER_FORMATTER = Intl.NumberFormat('en', { notation: 'compact' });
+
 const ADMIN_ROLE = "0x0000000000000000000000000000000000000000000000000000000000000000";
 const MANAGER_ROLE = createRoleHash("MANAGER_ROLE");
 
@@ -128,9 +130,13 @@ export default function OrganizationBrowsePage({ tx, userAddress, writeContracts
         fetchEvents();
     }, [readContracts, userAddress, debouncedSearchName]);
 
+    const getFormattedAmount = (amount) => {
+        return NUMBER_FORMATTER.format(ethers.utils.formatEther(amount));
+    }
+
     return (
         <>
-            <div style={{ width: "80%", position: 'relative', margin: "auto" }}>
+            <div style={{ width: '80%', position: 'relative', margin: "auto" }}>
                 <AddOrganizationWizard
                     tx={tx}
                     writeContracts={writeContracts}
@@ -145,7 +151,7 @@ export default function OrganizationBrowsePage({ tx, userAddress, writeContracts
                     enterButton
                     onChange={e => setSearchName(e.target.value)}
                     value={searchName}
-                    style={{ marginTop: "1.6em", marginBottom: "1em", width: "60%" }}
+                    style={{ marginTop: "1.6em", marginBottom: "1em", width: '80%'}}
                 />
                 <Divider orientation="right">
                     <Button type="primary" onClick={() => setShowWizard(true)}>Launch DAO Streams</Button>
@@ -153,10 +159,17 @@ export default function OrganizationBrowsePage({ tx, userAddress, writeContracts
             </div>
             {organizations &&
                 <div style={{ width: "80%", position: 'relative', margin: "auto" }}>
-                    <Row gutter={[8, 32]}>
+                    <Row gutter={[{ xs: 8, sm: 16, md: 24, lg: 32 }, 32]}>
 
                         {organizations.map(organization =>
-                            <Col key={`col-${organization.orgAddress}`} className="gutter-row" span={8}>
+                            <Col key={`col-${organization.orgAddress}`} className="gutter-row"
+                                xs={{ span: 24 }}
+                                sm={{ span: 24 }}
+                                md={{ span: 12 }}
+                                lg={{ span: 8 }}
+                                xl={{ span: 8 }}
+                                xxl={{ span: 6 }}
+                            >
                                 <Card key={organization.orgAddress} className="org-card"
                                     headStyle={{ paddingTop: 0 }}
                                     actions={[
@@ -176,7 +189,7 @@ export default function OrganizationBrowsePage({ tx, userAddress, writeContracts
                                                 <Statistic title="#Streams" value={organization.info.streamsCount} prefix={<TokenStreamLogo width="30" height="30" />} />
                                             </Col>
                                             <Col span={14}>
-                                                <Statistic title="Total Paid Out" value={`${ethers.utils.formatEther(organization.info.totalPaidOut)}`}
+                                                <Statistic title="Total Paid Out" value={`${getFormattedAmount(organization.info.totalPaidOut)}`}
                                                     prefix={<RightOutlined />}
                                                     />
                                                 <Text style={{ fontSize: '1em', textAlign: 'right' }} type="secondary">

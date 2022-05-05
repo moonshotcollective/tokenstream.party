@@ -239,13 +239,27 @@ export default function OrganizationHome({
 
   return ready ? (
     <>
-      <Row gutter={[8, 16]}>
-        <Col span={16} offset={4}>
+      <Row style={{width: '100%', marginTop: '2em'}} gutter={[{ xs: 2, sm: 4, md: 6, lg: 8 }, 16]}>
+        <Col
+          xs={{ span: 24, offset: 0 }}
+          sm={{ span: 24, offset: 0 }}
+          md={{ span: 20, offset: 2 }}
+          lg={{ span: 16, offset: 4 }}
+          xl={{ span: 16, offset: 4 }}
+          xxl={{ span: 16, offset: 4 }}
+        >
           <Avatar size="large" src={`${orgInfo.logoURI}`} />
           <Title>{orgInfo.name}</Title>
           <p>{orgInfo.description}</p>
         </Col>
-        <Col span={16} offset={4}>
+        <Col
+          xs={{ span: 24, offset: 0 }}
+          sm={{ span: 24, offset: 0 }}
+          md={{ span: 20, offset: 2 }}
+          lg={{ span: 16, offset: 4 }}
+          xl={{ span: 16, offset: 4 }}
+          xxl={{ span: 16, offset: 4 }}
+        >
           <Switch>
             <Route exact path="/organizations/:orgaddress/user/:address">
                 <UserStream
@@ -319,6 +333,8 @@ export default function OrganizationHome({
       )}
     </>
   ) : (
-    <Spin tip="Loading DAO..." />
+    <div style={{textAlign: 'center', width:'60%', margin: '2em auto 0'}}>
+      <Spin tip="Loading DAO..." />
+    </div>
   );
 }

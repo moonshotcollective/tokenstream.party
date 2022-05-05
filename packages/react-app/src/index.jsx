@@ -12,8 +12,6 @@ const themes = {
   light: `${process.env.PUBLIC_URL}/light-theme.css`,
 };
 
-const prevTheme = window.localStorage.getItem("theme");
-
 const subgraphUri = process.env.REACT_APP_SUBGRAPH_ENDPOINT || "http://localhost:8000/subgraphs/name/tokenstreams/org-factory";
 
 const client = new ApolloClient({
@@ -24,7 +22,7 @@ const client = new ApolloClient({
 ReactDOM.render(
   <TokensContextProvider>
     <ApolloProvider client={client}>
-      <ThemeSwitcherProvider themeMap={themes} defaultTheme={prevTheme || "dark"}>
+      <ThemeSwitcherProvider themeMap={themes} defaultTheme={"dark"}>
         <BrowserRouter>
           <App subgraphUri={subgraphUri} />
         </BrowserRouter>

@@ -1,3 +1,7 @@
+.layout {
+    background: transparent;
+}
+
 .centered-text {
     text-align: center;
 }
@@ -40,15 +44,21 @@
 }
 
 .ts-footer {
-    background: transparent;
+    background: rgba(11, 2, 40, 0.15);
     text-align: center;
+    position: fixed;
+    z-index: 1;
+    width: 100%;
+    bottom: 0;
 }
 
 .App .footer-menu {
-    float: right;
-    min-width: 720px;
+    position: relative;
+    display: flex;
+    justify-content: center;
     background-color: transparent;
     border: none;
+    font-size: 1em;
 }
 
 .App .content-breadcrumbs {
@@ -60,8 +70,7 @@
 }
 
 .App .org-card {
-    width: 320px;
-    margin-top: 16px;
+    margin-top: 2em;
     backdrop-filter: blur(5em);
     background-image: radial-gradient(rgba(112, 27, 173, 0.1), rgba(11, 2, 40, 0.4) 70%);
 }
@@ -76,7 +85,7 @@
 
 .user-stream-timeline {
     margin-top: 1.4em;
-    margin-left: 2em;
+    margin-left: 4.2em;
 }
 
 .user-stream-timeline .ant-timeline-item-head-custom:first-child {

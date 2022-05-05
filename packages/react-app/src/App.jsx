@@ -8,7 +8,7 @@ import { useBalance, useContractLoader, useGasPrice } from "eth-hooks";
 import { useExchangeEthPrice } from "eth-hooks/dapps/dex";
 import Fortmatic from "fortmatic";
 import React, { useCallback, useEffect, useState } from "react";
-import { BrowserRouter, Link, Route, Switch, useLocation } from "react-router-dom";
+import { Link, Route, Switch, useLocation } from "react-router-dom";
 //import Torus from "@toruslabs/torus-embed"
 import WalletLink from "walletlink";
 import { SafeAppWeb3Modal } from "@gnosis.pm/safe-apps-web3modal";
@@ -17,7 +17,7 @@ import { Account, Contract, Faucet, GitcoinDAOBadge, TokenStreamLogo, NetworkSwi
 import { INFURA_ID, NETWORK, NETWORKS } from "./constants";
 import { Transactor } from "./helpers";
 import { useContractConfig, useUserSigner, useStaticJsonRPC } from "./hooks";
-import { OrganizationHome, UserStream, OrganizationBrowsePage } from "./views";
+import { OrganizationHome, OrganizationBrowsePage } from "./views";
 import { LandingPage } from "./views/LandingPage";
 import { GithubOutlined } from "@ant-design/icons";
 
@@ -533,7 +533,9 @@ function App(props) {
               className="footer-menu"
             >
               <Menu.Item key="gc-dao">
-                <GitcoinDAOBadge width={71} height={17} />
+                <a href="https://moonshotcollective.space/" target="_blank">
+                  <GitcoinDAOBadge width={128} height={32} />
+                </a>
               </Menu.Item>
               <Menu.Item key="gh-link">
                 <a href="https://github.com/moonshotcollective/tokenstream.party" target="_blank">
