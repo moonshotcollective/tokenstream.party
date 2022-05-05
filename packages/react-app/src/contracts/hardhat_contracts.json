@@ -5,7 +5,7 @@
       "chainId": "4",
       "contracts": {
         "GTC": {
-          "address": "0xdA5B7E522c39d40C32C656bc1b49D4fE4Cb5F328",
+          "address": "0x1BD6Cd87CF668228c15c4b32A01beDE14248B582",
           "abi": [
             {
               "inputs": [
