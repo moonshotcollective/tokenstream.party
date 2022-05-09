@@ -13,6 +13,7 @@ error IncreaseByMore();
 error IncreasedByTooMuch();
 error CantWithdrawToBurnAddress();
 error StreamDisabled();
+error StreamDoesNotExist();
 
 /// @title Simple Stream Contract
 /// @author ghostffcode, jaxcoder, nowonder
