@@ -117,6 +117,10 @@ contract MultiStream is Ownable, AccessControl, ReentrancyGuard {
         }
     }
 
+    function closeStreamAndWithdrawRemaining() public onlyRole(DEFAULT_ADMIN_ROLE) {
+        // todo: 
+    }
+
     /// @dev Transfers remaining balance and disables stream
     function disableStream(address _beneficiary) public onlyRole(MANAGER_ROLE) {
         uint256 totalAmount = streamBalance(_beneficiary);
