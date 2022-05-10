@@ -31,6 +31,7 @@
     "ipfs": "yarn workspace @scaffold-eth/react-app ipfs",
     "surge": "yarn workspace @scaffold-eth/react-app surge",
     "staging:surge": "yarn workspace @scaffold-eth/react-app staging:surge",
+    "goerli:surge": "yarn workspace @scaffold-eth/react-app goerli:surge",
     "s3": "yarn workspace @scaffold-eth/react-app s3",
     "ship": "yarn workspace @scaffold-eth/react-app ship",
     "generate": "yarn workspace @scaffold-eth/hardhat generate",
@@ -52,6 +53,8 @@
     "graph-ship-local": "yarn graph-prepare && yarn graph-codegen && yarn graph-deploy-local",
     "graph-deploy-staging": "yarn workspace @scaffold-eth/subgraph deploy:staging",
     "graph-ship-staging": "yarn graph-prepare && yarn graph-codegen && yarn graph-deploy-staging",
+    "graph-deploy-goerli": "yarn workspace @scaffold-eth/subgraph deploy:goerli",
+    "graph-ship-goerli": "yarn graph-prepare && yarn graph-codegen && yarn graph-deploy-goerli",
     "deploy-and-graph": "yarn deploy && yarn graph-ship-local",
     "theme": "yarn workspace @scaffold-eth/react-app theme",
     "watch-theme": "yarn workspace @scaffold-eth/react-app watch"

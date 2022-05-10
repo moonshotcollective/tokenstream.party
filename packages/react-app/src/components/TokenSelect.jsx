@@ -44,7 +44,7 @@ export default function TokenSelect({onChange, chainId = 1, nativeToken = {}, lo
     decimals: 18,
     name: "Default Token",
     symbol: "GTC",
-    address: "0xdA5B7E522c39d40C32C656bc1b49D4fE4Cb5F328",
+    address: "0xfC3871cdB186996c6cad6629EEb4439DF8ebBbA6",
     logoURI: "https://assets.coingecko.com/coins/images/15810/thumb/gitcoin.png?1621992929",
     ...nativeToken,
   };

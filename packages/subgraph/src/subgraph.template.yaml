@@ -6,7 +6,7 @@ dataSources:
     name: OrganizationStreamsDeployer
     network: {{network}}
     source:
-      address: "{{rinkeby_OrganizationStreamsDeployerAddress}}"
+      address: "{{goerli_OrganizationStreamsDeployerAddress}}"
       abi: OrganizationStreamsDeployer
       startBlock: 1
     mapping:
