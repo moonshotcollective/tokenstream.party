@@ -4,7 +4,6 @@ pragma solidity ^0.8.4;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 error NotYourStream();
 error NotEnoughBalance();
@@ -19,7 +18,7 @@ error TransferFailed();
 /// @title Simple Stream Contract
 /// @author ghostffcode, jaxcoder, nowonder
 /// @notice the meat and potatoes of the stream
-contract MultiStream is Ownable, AccessControl, ReentrancyGuard {
+contract MultiStream is Ownable, AccessControl {
     bytes32 public constant MANAGER_ROLE = keccak256("MANAGER_ROLE");
     bytes32 public constant OPERATOR_ROLE = keccak256("OPERATOR");
 
@@ -146,6 +145,15 @@ contract MultiStream is Ownable, AccessControl, ReentrancyGuard {
         delete caps[_beneficiary];
         delete last[_beneficiary];
         delete disabled[_beneficiary];
+
+        for (uint256 i = 0; i < users.length - 1; i++) { // iterate till second last index
+            if (users[i] == _beneficiary) {
+                users[i] = users[users.length - 1]; // copy last to current
+                break;
+            }
+            // if user at last index, we just delete it
+        }
+        delete users[users.length - 1]; // delete last index
     }
 
     /// @dev Reactivates a stream for user

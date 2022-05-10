@@ -8,9 +8,9 @@ import "./Stream.sol";
 contract StreamDeployer is Ownable {
 
     /// @dev emitted when a new org is created.
-    event OrganizationsDeployed(
+    event OrganizationDeployed(
         address indexed orgAddress,
-        address _tokenAddress
+        address indexed tokenAddress
     );
 
     address[] public organizations;
@@ -41,7 +41,7 @@ contract StreamDeployer is Ownable {
         
         organizations.push(address(deployedOrganization));
 
-        emit OrganizationsDeployed(
+        emit OrganizationDeployed(
             address(deployedOrganization),
             address(_tokenAddress)
         );
