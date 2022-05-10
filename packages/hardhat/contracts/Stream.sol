@@ -1,4 +1,5 @@
 //SPDX-License-Identifier: MIT
+// solhint-disable not-rely-on-time
 pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -9,35 +10,34 @@ error NotYourStream();
 error NotEnoughBalance();
 error SendMore();
 error IncreaseByMore();
-error IncreasedByTooMuch();
 error CantWithdrawToBurnAddress();
 error StreamDisabled();
 error StreamDoesNotExist();
 error TransferFailed();
 
 /// @title Simple Stream Contract
-/// @author ghostffcode, jaxcoder, nowonder
+/// @author ghostffcode, jaxcoder, nowonder, qedk
 /// @notice the meat and potatoes of the stream
 contract MultiStream is Ownable, AccessControl {
     bytes32 public constant MANAGER_ROLE = keccak256("MANAGER_ROLE");
     bytes32 public constant OPERATOR_ROLE = keccak256("OPERATOR");
 
     /// @dev track total payouts for UI
-    uint256 public total_paid;
+    uint256 public totalPaid;
     IERC20 public dToken;
 
-    string orgName;
+    string public orgName;
 
     /// @dev So we can return user params for UI
     address[] public users;
 
-    mapping(address => uint256) caps;
-    mapping(address => uint256) frequencies;
-    mapping(address => uint256) last;
-    mapping(address => bool) disabled;
+    mapping(address => uint256) public caps;
+    mapping(address => uint256) public frequencies;
+    mapping(address => uint256) public last;
+    mapping(address => bool) public disabled;
 
-    event Withdraw(address indexed to, uint256 amount, string reason);
-    event Deposit(address indexed from, uint256 amount);
+    event Withdraw(address indexed to, uint256 indexed amount, string reason);
+    event Deposit(address indexed from, uint256 indexed amount);
 
     constructor(
         string memory _orgName,
@@ -128,17 +128,15 @@ contract MultiStream is Ownable, AccessControl {
             (((block.timestamp - last[_beneficiary]) * totalAmount) /
                 totalAmount);
 
-        if(!dToken.transfer(msg.sender, totalAmount)) revert TransferFailed();
-
         disabled[_beneficiary] = true;
         caps[_beneficiary] = 0;
+
+        if(!dToken.transfer(msg.sender, totalAmount)) revert TransferFailed();
     }
 
     /// @dev Transfers remaining balance and deletes stream
     function deleteStream(address _beneficiary) external onlyRole(MANAGER_ROLE) {
         uint256 totalAmount = streamBalance(_beneficiary);
-
-        if(!dToken.transfer(msg.sender, totalAmount)) revert TransferFailed();
 
         // Trigger gas refunds
         delete disabled[_beneficiary];
@@ -154,6 +152,8 @@ contract MultiStream is Ownable, AccessControl {
             // if user at last index, we just delete it
         }
         delete users[users.length - 1]; // delete last index
+
+        if(!dToken.transfer(msg.sender, totalAmount)) revert TransferFailed();
     }
 
     /// @dev Reactivates a stream for user
@@ -205,11 +205,20 @@ contract MultiStream is Ownable, AccessControl {
             last[msg.sender] +
             (((block.timestamp - last[msg.sender]) * amount) /
                 totalAmountCanWithdraw);
-        total_paid += amount;
+        totalPaid += amount;
 
         if(!dToken.transfer(msg.sender, amount)) revert TransferFailed();
 
         emit Withdraw(msg.sender, amount, reason);
+    }
+
+    /// @dev Update the cap of the stream
+    /// @param _newCap new cap of the stream
+    function updateCap(uint256 _newCap, address beneficiary)
+        external
+        onlyRole(MANAGER_ROLE)
+    {
+        caps[beneficiary] = _newCap;
     }
 
     /// @dev Increase the cap of the stream
@@ -219,9 +228,7 @@ contract MultiStream is Ownable, AccessControl {
         onlyRole(MANAGER_ROLE)
     {
         if (_increase == 0) revert IncreaseByMore();
-        if ((caps[beneficiary] + _increase) >= 1 ether)
-            revert IncreasedByTooMuch();
-        caps[beneficiary] = caps[beneficiary] + _increase;
+        caps[beneficiary] += _increase;
     }
 
     /// @dev Update the frequency of a stream
