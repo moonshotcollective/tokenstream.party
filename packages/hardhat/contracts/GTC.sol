@@ -4,7 +4,7 @@ pragma solidity >=0.8.0;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 contract GTC is ERC20 {
-    constructor(address admin) ERC20("GTC", "GTC") {
+    constructor(address admin) ERC20("Gitcoin", "GTC") {
         _mint(admin, 1000 ether);
     }
 

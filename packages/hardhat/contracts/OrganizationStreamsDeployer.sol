@@ -1,48 +1,57 @@
 //SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0 <0.9.0;
 
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "./StreamFactory.sol";
-import "./SimpleStream.sol";
+import "./OrganizationStreams.sol";
 
-contract OrgFactoryDeployer is Ownable {
+/// @title Organization Streams Deployer
+/// @author ghostffcode, jaxcoder, nowonder, supriyaamisshra
+contract OrganizationStreamsDeployer is Ownable {
 
     /// @dev emitted when a new org is created.
     event OrganizationsDeployed(
-
-        address indexed tokenAddress,
+        address indexed orgAddress,
         address indexed ownerAddress,
         string organizationName
     );
 
     address[] public organizations;
 
-    constructor (address _owner) public {
+    constructor (address _owner) {
         transferOwnership(_owner);
     }
 
     /// @dev deploys a stream factory contract for a specified organization.
     function deployOrganization(
         string memory _orgName,
-        string memory _logoURI,
+        string memory _orgLogoURI,
         string memory _orgDescription,
-        address owner,
-        address[] calldata admins
-    ) public {
-        StreamFactory deployedOrganization = new StreamFactory(
+        address _owner,
+        address[] memory _addresses,
+        uint256[] memory _caps,
+        uint256[] memory _frequency,
+        bool[] memory _startsFull,
+        IERC20 _tokenAddress
+    ) external {
+        OrganizationStreams deployedOrganization = new OrganizationStreams(
             _orgName,
-            _logoURI,
+            _orgLogoURI,
             _orgDescription,
-            owner,
-            admins
+            _owner,
+            _addresses,
+            _caps,
+            _frequency,
+            _startsFull,
+            address(_tokenAddress)
         );
         
-        organizations.push(address(deployedOrganization));
+          organizations.push(address(deployedOrganization));
 
-        emit OrganizationsDeployed(
+         emit OrganizationsDeployed(
             address(deployedOrganization),
-            _msgSender(),
-            string(_orgName)
+            _owner,
+            _orgName
         );
 
     }

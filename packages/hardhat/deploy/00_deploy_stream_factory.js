@@ -8,6 +8,8 @@ module.exports = async ({ getNamedAccounts, getChainId, deployments }) => {
 
   // Mainnet GTC
   let GTC = { address: "0xde30da39c46104798bb5aa3fe8b9e0e1f348163f" };
+  // Custom token test
+  let SupCoin = { address: "dummy" };
 
   const owner = process.env.DEVELOPER;
   // deploy dummy GTC on non-mainnet networks
@@ -17,16 +19,15 @@ module.exports = async ({ getNamedAccounts, getChainId, deployments }) => {
       args: [owner],
       log: true,
     });
+    SupCoin = await deploy("SupCoin", {
+      from: deployer,
+      args: [owner],
+      log: true,
+    });
   }
 
-  // deploy the Org Factory
-  // const orgFactory = await deploy("OrgFactoryDeployer", {
-  //   from: deployer,
-  //   log: true,
-  //   args: [owner],
-  // });
-
-  const orgFactory = await deploy("StreamDeployer", {
+  // deploy the Org
+  const orgFactory = await deploy("OrganizationStreamsDeployer", {
     from: deployer,
     log: true,
     args: [owner],
@@ -35,16 +36,17 @@ module.exports = async ({ getNamedAccounts, getChainId, deployments }) => {
   // log the GTC and orgFactoryDeployer addresses
   console.log({
     GTC: GTC.address,
+    SupCoin: SupCoin.address,
     orgFactory: orgFactory.address,
   });
 
-  // if (chainId !== "31337") {
-  //   await run("verify:verify", {
-  //     address: orgFactory.address,
-  //     constructorArguments: [owner],
-  //     contract: "contracts/OrgFactoryDeployer.sol:OrgFactoryDeployer",
-  //   });
-  // }
+  if (chainId !== "31337") {
+    await run("verify:verify", {
+      address: orgFactory.address,
+      constructorArguments: [owner],
+      contract: "contracts/OrganizationStreamsDeployer.sol:OrganizationStreamsDeployer",
+    });
+  }
 };
 
-module.exports.tags = ["GTC", "StreamDeployer"];
+module.exports.tags = ["GTC", "SupCoin", "OrganizationStreamsDeployer"];

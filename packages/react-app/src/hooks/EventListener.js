@@ -29,7 +29,11 @@ export default function useEventListener() {
       try {
         contracts[contractName].on(eventName, (...args) => {
           const blockNumber = args[args.length - 1].blockNumber;
-          setUpdates(messages => [{ blockNumber, ...args.pop().args }, ...messages]);
+          const getBlockData = async () => {
+            const bd = await args[args.length - 1].getBlock();
+            setUpdates(messages => [{ blockNumber, timestamp: bd.timestamp, ...args.pop().args }, ...messages]);
+          };
+          getBlockData();
         });
         return () => {
           contracts[contractName].removeListener(eventName);

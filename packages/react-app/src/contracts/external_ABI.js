@@ -1,285 +1,59 @@
-export const SimpleStreamABI = [
+export const OrganizationStreamsDeployerABI = [
   {
-    inputs: [
+    "inputs": [
       {
-        internalType: "address payable",
-        name: "_toAddress",
-        type: "address",
-      },
-      {
-        internalType: "uint256",
-        name: "_cap",
-        type: "uint256",
-      },
-      {
-        internalType: "uint256",
-        name: "_frequency",
-        type: "uint256",
-      },
-      {
-        internalType: "bool",
-        name: "_startsFull",
-        type: "bool",
-      },
-      {
-        internalType: "contract IERC20",
-        name: "_gtc",
-        type: "address",
-      },
+        "internalType": "address",
+        "name": "_owner",
+        "type": "address"
+      }
     ],
-    stateMutability: "nonpayable",
-    type: "constructor",
+    "stateMutability": "nonpayable",
+    "type": "constructor"
   },
   {
-    anonymous: false,
-    inputs: [
+    "anonymous": false,
+    "inputs": [
       {
-        indexed: true,
-        internalType: "address",
-        name: "from",
-        type: "address",
+        "indexed": true,
+        "internalType": "address",
+        "name": "orgAddress",
+        "type": "address"
       },
       {
-        indexed: false,
-        internalType: "uint256",
-        name: "amount",
-        type: "uint256",
+        "indexed": true,
+        "internalType": "address",
+        "name": "ownerAddress",
+        "type": "address"
       },
       {
-        indexed: false,
-        internalType: "string",
-        name: "reason",
-        type: "string",
-      },
+        "indexed": false,
+        "internalType": "string",
+        "name": "organizationName",
+        "type": "string"
+      }
     ],
-    name: "Deposit",
-    type: "event",
+    "name": "OrganizationsDeployed",
+    "type": "event"
   },
   {
-    anonymous: false,
-    inputs: [
+    "anonymous": false,
+    "inputs": [
       {
-        indexed: true,
-        internalType: "address",
-        name: "previousOwner",
-        type: "address",
+        "indexed": true,
+        "internalType": "address",
+        "name": "previousOwner",
+        "type": "address"
       },
       {
-        indexed: true,
-        internalType: "address",
-        name: "newOwner",
-        type: "address",
-      },
+        "indexed": true,
+        "internalType": "address",
+        "name": "newOwner",
+        "type": "address"
+      }
     ],
-    name: "OwnershipTransferred",
-    type: "event",
+    "name": "OwnershipTransferred",
+    "type": "event"
   },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: true,
-        internalType: "address",
-        name: "to",
-        type: "address",
-      },
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "amount",
-        type: "uint256",
-      },
-      {
-        indexed: false,
-        internalType: "string",
-        name: "reason",
-        type: "string",
-      },
-    ],
-    name: "Withdraw",
-    type: "event",
-  },
-  {
-    inputs: [],
-    name: "cap",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "frequency",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "gtc",
-    outputs: [
-      {
-        internalType: "contract IERC20",
-        name: "",
-        type: "address",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "_increase",
-        type: "uint256",
-      },
-    ],
-    name: "increaseCap",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "last",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "owner",
-    outputs: [
-      {
-        internalType: "address",
-        name: "",
-        type: "address",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "purpose",
-    outputs: [
-      {
-        internalType: "string",
-        name: "",
-        type: "string",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "renounceOwnership",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "streamBalance",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "string",
-        name: "reason",
-        type: "string",
-      },
-      {
-        internalType: "uint256",
-        name: "value",
-        type: "uint256",
-      },
-    ],
-    name: "streamDeposit",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "amount",
-        type: "uint256",
-      },
-      {
-        internalType: "string",
-        name: "reason",
-        type: "string",
-      },
-      {
-        internalType: "address",
-        name: "beneficiary",
-        type: "address",
-      },
-    ],
-    name: "streamWithdraw",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "toAddress",
-    outputs: [
-      {
-        internalType: "address payable",
-        name: "",
-        type: "address",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "newOwner",
-        type: "address",
-      },
-    ],
-    name: "transferOwnership",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-];
-
-export const StreamFactoryABI = [
   {
     "inputs": [
       {
@@ -289,7 +63,7 @@ export const StreamFactoryABI = [
       },
       {
         "internalType": "string",
-        "name": "_logoURI",
+        "name": "_orgLogoURI",
         "type": "string"
       },
       {
@@ -299,17 +73,240 @@ export const StreamFactoryABI = [
       },
       {
         "internalType": "address",
-        "name": "owner",
+        "name": "_owner",
         "type": "address"
       },
       {
         "internalType": "address[]",
-        "name": "admins",
+        "name": "_addresses",
         "type": "address[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "_caps",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "_frequency",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "bool[]",
+        "name": "_startsFull",
+        "type": "bool[]"
+      },
+      {
+        "internalType": "contract IERC20",
+        "name": "_tokenAddress",
+        "type": "address"
+      }
+    ],
+    "name": "deployOrganization",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_page",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_resultsPerPage",
+        "type": "uint256"
+      }
+    ],
+    "name": "getOrganizations",
+    "outputs": [
+      {
+        "internalType": "address[]",
+        "name": "",
+        "type": "address[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "organizations",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "owner",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "renounceOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "newOwner",
+        "type": "address"
+      }
+    ],
+    "name": "transferOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  }
+];
+
+export const OrganizationStreamsABI = [
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "_orgName",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_orgLogoURI",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_orgDescription",
+        "type": "string"
+      },
+      {
+        "internalType": "address",
+        "name": "_owner",
+        "type": "address"
+      },
+      {
+        "internalType": "address[]",
+        "name": "_addresses",
+        "type": "address[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "_caps",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "_frequency",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "bool[]",
+        "name": "_startsFull",
+        "type": "bool[]"
+      },
+      {
+        "internalType": "address",
+        "name": "_tokenAddress",
+        "type": "address"
       }
     ],
     "stateMutability": "nonpayable",
     "type": "constructor"
+  },
+  {
+    "inputs": [],
+    "name": "CantDepositFromBurnAddress",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "CantWithdrawToBurnAddress",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "IncreaseByMore",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "IncreasedByTooMuch",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "NotEnoughBalance",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "NotEnoughPledged",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "StreamDisabled",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "TransferFailed",
+    "type": "error"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "stream",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "from",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "reason",
+        "type": "string"
+      }
+    ],
+    "name": "Deposit",
+    "type": "event"
   },
   {
     "anonymous": false,
@@ -419,15 +416,34 @@ export const StreamFactoryABI = [
         "internalType": "address",
         "name": "user",
         "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "stream",
-        "type": "address"
       }
     ],
     "name": "StreamAdded",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "to",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "reason",
+        "type": "string"
+      }
+    ],
+    "name": "Withdraw",
     "type": "event"
   },
   {
@@ -445,7 +461,20 @@ export const StreamFactoryABI = [
   },
   {
     "inputs": [],
-    "name": "FACTORY_MANAGER",
+    "name": "MANAGER_ROLE",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "OPERATOR_ROLE",
     "outputs": [
       {
         "internalType": "bytes32",
@@ -460,11 +489,11 @@ export const StreamFactoryABI = [
     "inputs": [
       {
         "internalType": "address",
-        "name": "_newFactoryManager",
+        "name": "_manager",
         "type": "address"
       }
     ],
-    "name": "addFactoryManager",
+    "name": "addManager",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -472,12 +501,12 @@ export const StreamFactoryABI = [
   {
     "inputs": [
       {
-        "internalType": "contract SimpleStream",
-        "name": "stream",
+        "internalType": "address",
+        "name": "_operator",
         "type": "address"
       }
     ],
-    "name": "addStreamForUser",
+    "name": "addOperator",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -485,8 +514,8 @@ export const StreamFactoryABI = [
   {
     "inputs": [
       {
-        "internalType": "address payable",
-        "name": "_toAddress",
+        "internalType": "address",
+        "name": "_beneficiary",
         "type": "address"
       },
       {
@@ -503,21 +532,64 @@ export const StreamFactoryABI = [
         "internalType": "bool",
         "name": "_startsFull",
         "type": "bool"
-      },
-      {
-        "internalType": "contract IERC20",
-        "name": "_gtc",
-        "type": "address"
       }
     ],
-    "name": "createStreamFor",
-    "outputs": [
+    "name": "addStream",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
       {
         "internalType": "address",
-        "name": "streamAddress",
+        "name": "_beneficiary",
         "type": "address"
       }
     ],
+    "name": "deleteStream",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_beneficiary",
+        "type": "address"
+      }
+    ],
+    "name": "disableStream",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_beneficiary",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_cap",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_frequency",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "_startsFull",
+        "type": "bool"
+      }
+    ],
+    "name": "enableStream",
+    "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
@@ -543,17 +615,105 @@ export const StreamFactoryABI = [
   {
     "inputs": [
       {
-        "internalType": "address payable",
-        "name": "user",
+        "internalType": "address",
+        "name": "_userAddress",
         "type": "address"
       }
     ],
-    "name": "getStreamForUser",
+    "name": "getStreamView",
     "outputs": [
       {
-        "internalType": "address",
-        "name": "streamAddress",
-        "type": "address"
+        "components": [
+          {
+            "internalType": "address",
+            "name": "user",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "cap",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "frequency",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "last",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "balance",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "pledged",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct OrganizationStreams.StreamView",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_page",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_resultsPerPage",
+        "type": "uint256"
+      }
+    ],
+    "name": "getStreams",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "user",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "cap",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "frequency",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "last",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "balance",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "pledged",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct OrganizationStreams.StreamView[]",
+        "name": "",
+        "type": "tuple[]"
       }
     ],
     "stateMutability": "view",
@@ -605,16 +765,35 @@ export const StreamFactoryABI = [
     "inputs": [
       {
         "internalType": "address",
-        "name": "user",
+        "name": "_userAddress",
         "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "increase",
-        "type": "uint256"
       }
     ],
-    "name": "increaseUserStreamCap",
+    "name": "hasStream",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_increase",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "beneficiary",
+        "type": "address"
+      }
+    ],
+    "name": "increaseCap",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -625,32 +804,7 @@ export const StreamFactoryABI = [
     "outputs": [
       {
         "internalType": "string",
-        "name": "orgName",
-        "type": "string"
-      },
-      {
-        "internalType": "string",
-        "name": "orgDescription",
-        "type": "string"
-      },
-      {
-        "internalType": "string",
-        "name": "orgGithubURI",
-        "type": "string"
-      },
-      {
-        "internalType": "string",
-        "name": "orgTwitterURI",
-        "type": "string"
-      },
-      {
-        "internalType": "string",
-        "name": "orgWebURI",
-        "type": "string"
-      },
-      {
-        "internalType": "string",
-        "name": "orgDiscordURI",
+        "name": "name",
         "type": "string"
       },
       {
@@ -659,14 +813,24 @@ export const StreamFactoryABI = [
         "type": "string"
       },
       {
+        "internalType": "string",
+        "name": "description",
+        "type": "string"
+      },
+      {
         "internalType": "uint256",
-        "name": "streamsCount",
+        "name": "totalStreams",
         "type": "uint256"
       },
       {
         "internalType": "uint256",
-        "name": "totalPaidOut",
+        "name": "totalPaid",
         "type": "uint256"
+      },
+      {
+        "internalType": "contract IERC20",
+        "name": "dToken",
+        "type": "address"
       }
     ],
     "stateMutability": "view",
@@ -689,11 +853,24 @@ export const StreamFactoryABI = [
     "inputs": [
       {
         "internalType": "address",
-        "name": "user",
+        "name": "_manager",
         "type": "address"
       }
     ],
-    "name": "releaseUserStream",
+    "name": "removeManager",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_operator",
+        "type": "address"
+      }
+    ],
+    "name": "removeOperator",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -744,6 +921,66 @@ export const StreamFactoryABI = [
   {
     "inputs": [
       {
+        "internalType": "address",
+        "name": "_beneficiary",
+        "type": "address"
+      }
+    ],
+    "name": "streamBalance",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_stream",
+        "type": "address"
+      },
+      {
+        "internalType": "string",
+        "name": "reason",
+        "type": "string"
+      },
+      {
+        "internalType": "uint256",
+        "name": "value",
+        "type": "uint256"
+      }
+    ],
+    "name": "streamDeposit",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "string",
+        "name": "reason",
+        "type": "string"
+      }
+    ],
+    "name": "streamWithdraw",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "bytes4",
         "name": "interfaceId",
         "type": "bytes4"
@@ -776,39 +1013,25 @@ export const StreamFactoryABI = [
   {
     "inputs": [
       {
+        "internalType": "uint256",
+        "name": "_frequency",
+        "type": "uint256"
+      },
+      {
         "internalType": "address",
-        "name": "",
+        "name": "beneficiary",
         "type": "address"
       }
     ],
-    "name": "userStreams",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "name": "users",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "hasStream",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "view",
+    "name": "updateFrequency",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   }
-]
+];
+
+const MANAGER_OPS = ["addStream", "increaseCap", "disableStream", "enableStream", "updateFrequency"];
+const ADMIN_OPS = ["addStream", "increaseCap", "disableStream", "enableStream", "updateFrequency", "grantRole", "addManager", "removeManager", "addOperator", "removeOperator", "revokeRole", "getStreams"];
+
+export const OrganizationStreamsAdminABI = OrganizationStreamsABI.filter(operation => ADMIN_OPS.includes(operation.name));
+export const OrganizationStreamsManagerABI = OrganizationStreamsABI.filter(operation => MANAGER_OPS.includes(operation.name));

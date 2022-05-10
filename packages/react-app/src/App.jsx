@@ -1,28 +1,29 @@
 import Portis from "@portis/web3";
 import WalletConnectProvider from "@walletconnect/web3-provider";
-import { Alert, Button, Col, Menu, Row } from "antd";
+import { Layout, Alert, Button, Col, Row, Menu } from "antd";
 import "antd/dist/antd.css";
 import Authereum from "authereum";
-import { useBalance, useContractLoader, useContractReader, useGasPrice, useOnBlock } from "eth-hooks";
+import { useBalance, useContractLoader, useGasPrice } from "eth-hooks";
 // import useEventListener from "./hooks/oldEventListener";
 import { useExchangeEthPrice } from "eth-hooks/dapps/dex";
 import Fortmatic from "fortmatic";
 import React, { useCallback, useEffect, useState } from "react";
-import { BrowserRouter, Link, Route, Switch } from "react-router-dom";
+import { Link, Route, Switch, useLocation } from "react-router-dom";
 //import Torus from "@toruslabs/torus-embed"
 import WalletLink from "walletlink";
 import { SafeAppWeb3Modal } from "@gnosis.pm/safe-apps-web3modal";
 import "./App.css";
-import { Account, Contract, Faucet, GasGauge, Header, Ramp, ThemeSwitch } from "./components";
+import { Account, Contract, Faucet, GitcoinDAOBadge, TokenStreamLogo, NetworkSwitch } from "./components";
 import { INFURA_ID, NETWORK, NETWORKS } from "./constants";
 import { Transactor } from "./helpers";
-import { useContractConfig, useUserSigner } from "./hooks";
-import { OrganizationHome, UserStream, OrganizationBrowsePage } from "./views";
+import { useContractConfig, useUserSigner, useStaticJsonRPC } from "./hooks";
+import { OrganizationHome, OrganizationBrowsePage } from "./views";
+import { LandingPage } from "./views/LandingPage";
+import { GithubOutlined } from "@ant-design/icons";
+
 
 const { ethers } = require("ethers");
-
-/// 📡 What chain are your contracts deployed to?
-const targetNetwork = (process.env.REACT_APP_NETWORK && NETWORKS[process.env.REACT_APP_NETWORK]) || NETWORKS.mainnet; // <------- select your target frontend network (localhost, rinkeby, xdai, mainnet)
+const { Header, Content, Footer } = Layout;
 
 // 😬 Sorry for all the console logging
 const DEBUG = false;
@@ -30,33 +31,23 @@ const NETWORKCHECK = true;
 
 // 🛰 providers
 if (DEBUG) console.log("📡 Connecting to Mainnet Ethereum");
-// const mainnetProvider = getDefaultProvider("mainnet", { infura: INFURA_ID, etherscan: ETHERSCAN_KEY, quorum: 1 });
-// const mainnetProvider = new InfuraProvider("mainnet",INFURA_ID);
-//
-// attempt to connect to our own scaffold eth rpc and if that fails fall back to infura...
-// Using StaticJsonRpcProvider as the chainId won't change see https://github.com/ethers-io/ethers.js/issues/901
-const scaffoldEthProvider = navigator.onLine
-  ? new ethers.providers.StaticJsonRpcProvider("https://eth-mainnet.alchemyapi.io/v2/4eQGdKbc4zxHaDCEQG1wmi98KPRUht_t")
-  : null;
-const poktMainnetProvider = navigator.onLine
-  ? new ethers.providers.StaticJsonRpcProvider(
-      "https://eth-mainnet.gateway.pokt.network/v1/lb/611156b4a585a20035148406",
-    )
-  : null;
-const mainnetInfura = navigator.onLine
-  ? new ethers.providers.StaticJsonRpcProvider("https://eth-mainnet.alchemyapi.io/v2/4eQGdKbc4zxHaDCEQG1wmi98KPRUht_t")
-  : null;
-// ( ⚠️ Getting "failed to meet quorum" errors? Check your INFURA_ID
 
-// 🏠 Your local provider is usually pointed at your local blockchain
-const localProviderUrl = targetNetwork.rpcUrl;
-// as you deploy to other networks you can set REACT_APP_RINKEBY_PROVIDER=https://dai.poa.network in packages/react-app/.env
-const localProviderUrlFromEnv = process.env.REACT_APP_RINKEBY_PROVIDER ? process.env.REACT_APP_RINKEBY_PROVIDER : localProviderUrl;
-if (DEBUG) console.log("🏠 Connecting to provider:", localProviderUrlFromEnv);
-const localProvider = new ethers.providers.StaticJsonRpcProvider(localProviderUrlFromEnv);
+// 🛰 providers
+const providers = [
+  process.env.REACT_APP_MAINNET_RPC_ENDPOINT,
+  "https://eth-mainnet.alchemyapi.io/v2/4eQGdKbc4zxHaDCEQG1wmi98KPRUht_t",
+  "https://eth-mainnet.gateway.pokt.network/v1/lb/611156b4a585a20035148406",
+];
 
-// 🔭 block explorer URL
-const blockExplorer = targetNetwork.blockExplorer;
+// Supported networks
+const supportedNetworks = ["mainnet", "rinkeby"];
+if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+  supportedNetworks.push("localhost");
+}
+
+const cachedNetwork = supportedNetworks.includes(window.localStorage.getItem("network"))
+    ? window.localStorage.getItem("network")
+    : "rinkeby";
 
 // Coinbase walletLink init
 const walletLink = new WalletLink({
@@ -107,19 +98,6 @@ const web3Modal = new SafeAppWeb3Modal({
         key: "pk_live_5A7C91B2FC585A17", // required
       },
     },
-    // torus: {
-    //   package: Torus,
-    //   options: {
-    //     networkParams: {
-    //       host: "https://localhost:8545", // optional
-    //       chainId: 1337, // optional
-    //       networkId: 1337 // optional
-    //     },
-    //     config: {
-    //       buildEnv: "development" // optional
-    //     },
-    //   },
-    // },
     "custom-walletlink": {
       display: {
         logo: "https://play-lh.googleusercontent.com/PjoJoG27miSglVBXoXrxBSLveV6e3EeBPpNY55aiUUBM9Q1RCETKCOqdOkX2ZydqVf0",
@@ -139,15 +117,24 @@ const web3Modal = new SafeAppWeb3Modal({
 });
 
 function App(props) {
-  const mainnetProvider =
-    scaffoldEthProvider && scaffoldEthProvider._network
-      ? scaffoldEthProvider
-      : poktMainnetProvider && poktMainnetProvider._isProvider
-      ? poktMainnetProvider
-      : mainnetInfura;
-
   const [injectedProvider, setInjectedProvider] = useState();
   const [address, setAddress] = useState("0x0000000000000000000000000000000000000000");
+
+  const [selectedNetwork, setSelectedNetwork] = useState(cachedNetwork || supportedNetworks[1]);
+  if (DEBUG) console.log("📡 Connecting to New Cached Network: ", cachedNetwork);
+
+  let targetNetwork = NETWORKS[selectedNetwork];
+
+  if (DEBUG) console.log(`Connecting to ${selectedNetwork}`);
+  if (DEBUG) console.log(`Network info: ${targetNetwork}`);
+
+  // 🔭 block explorer URL
+  const blockExplorer = targetNetwork.blockExplorer;
+
+  const localProvider = useStaticJsonRPC([
+    targetNetwork.rpcUrl,
+  ]);
+  const mainnetProvider = useStaticJsonRPC(providers);
 
   const logoutOfWeb3Modal = async () => {
     await web3Modal.clearCachedProvider();
@@ -209,16 +196,6 @@ function App(props) {
   //
   // If you want to bring in the mainnet DAI contract it would look like:
   const mainnetContracts = useContractLoader(mainnetProvider, contractConfig);
-
-  // If you want to call a function on a new block
-  useOnBlock(mainnetProvider, () => {
-    console.log(`⛓ A new mainnet block is here: ${mainnetProvider._lastBlockNumber}`);
-  });
-
-  // Then read your DAI balance like:
-  const myMainnetDAIBalance = useContractReader(mainnetContracts, "DAI", "balanceOf", [
-    "0x34aA3F359A9D614239015126635CE7732c18fDF3",
-  ]);
 
   /*
   const addressFromENS = useResolveName(mainnetProvider, "austingriffith.eth");
@@ -286,7 +263,7 @@ function App(props) {
       );
     } else {
       networkDisplay = (
-        <div style={{ zIndex: 2, position: "absolute", right: 0, top: 60, padding: 16 }}>
+        <div style={{ zIndex: 2, padding: 16 }}>
           <Alert
             message="⚠️ Wrong Network"
             description={
@@ -342,7 +319,7 @@ function App(props) {
     }
   } else {
     networkDisplay = (
-      <div style={{ zIndex: -1, position: "absolute", right: 154, top: 28, padding: 16, color: targetNetwork.color }}>
+      <div style={{ zIndex: -1, position: "fixed", right: 154, top: 28, padding: 16, color: targetNetwork.color }}>
         {targetNetwork.name}
       </div>
     );
@@ -410,158 +387,218 @@ function App(props) {
     );
   }
 
+  const location = useLocation();
+
   return (
-    <div className="App">
-      {/* ✏️ Edit the header and change the title to your project name */}
-      <Header />
-      {networkDisplay}
-      <BrowserRouter>
-        <Menu style={{ textAlign: "center" }} selectedKeys={[route]} mode="horizontal">
-          <Menu.Item key="/">
-            <Link
-              onClick={() => {
-                setRoute("/");
-              }}
-              to="/"
+    <Layout className="layout">
+      <div className="App">
+        {/* ✏️ Edit the header and change the title to your project name */}
+        <Header className="main-header">
+          <a href="/" target="_blank" rel="noopener noreferrer" className="navbar-title">
+          <div className="logo">
+            <TokenStreamLogo width="120" height="40" />
+          </div>
+          <span className="logo-name">Tokenstream.Party</span>
+          </a>
+          {location.pathname === "/" && (
+            <Menu
+              theme="dark"
+              mode="horizontal"
+              className="main-menu"
             >
-              App
-            </Link>
-          </Menu.Item>
-          <Menu.Item key="/debug">
-            <Link
-              onClick={() => {
-                setRoute("/debug");
-              }}
-              to="/debug"
-            >
-              Debug
-            </Link>
-          </Menu.Item>
-        </Menu>
-
-
-        <Switch>
-          <Route exact path="/">
-            <OrganizationBrowsePage
-                tx={tx}
-                writeContracts={writeContracts}
+              <Menu.Item>
+                <Link
+                  onClick={() => {
+                    setRoute("/app");
+                  }}
+                  to="/app"
+                >
+                  <Button size="large" type="primary" style={{
+                    color: "#110440"
+                  }}>
+                    <strong>Launch App</strong>
+                  </Button>
+                </Link>
+              </Menu.Item>
+            </Menu>
+          )}
+          {(location.pathname !== "/") && 
+            <div className="account-details">
+            <Account
+                address={address}
+                localProvider={localProvider}
+                userSigner={userSigner}
+                mainnetProvider={mainnetProvider}
+                price={price}
+                web3Modal={web3Modal}
+                loadWeb3Modal={loadWeb3Modal}
+                logoutOfWeb3Modal={logoutOfWeb3Modal}
+                blockExplorer={blockExplorer}
+                isContract={false}
+                networkSelect={
+                  <NetworkSwitch
+                    networkOptions={supportedNetworks}
+                    selectedNetwork={selectedNetwork}
+                    setSelectedNetwork={setSelectedNetwork}
+                    NETWORKS={NETWORKS}
+                    targetNetwork={targetNetwork}
+                  />
+                }
+              />
+              {faucetHint}
+              </div>
+          }
+          {networkDisplay}
+        </Header>
+        <Content style={{ marginTop: '2em', padding: '0 50px' }}>
+          <div className="site-layout-content">
+          <Switch>
+            <Route exact path="/">
+              <LandingPage />
+            </Route>
+            <Route exact path={["/app", "/organizations"]}>
+              <OrganizationBrowsePage
+                  tx={tx}
+                  userAddress={address}
+                  writeContracts={writeContracts}
+                  provider={injectedProvider || localProvider}
+                  readContracts={readContracts}
+                  chainId={selectedChainId}
+                  mainnetProvider={mainnetProvider}
+              />
+            </Route>
+            <Route path="/organizations/:orgaddress">
+              <OrganizationHome
+                mainnetProvider={mainnetProvider}
                 provider={injectedProvider || localProvider}
+                address={address}
+                tx={tx}
+                price={price}
+                userSigner={userSigner}
+                writeContracts={writeContracts}
                 readContracts={readContracts}
-            />
-          </Route>
-          <Route path="/organizations/:orgaddress">
-            <OrganizationHome
-              mainnetProvider={mainnetProvider}
-              provider={injectedProvider || localProvider}
-              address={address}
-              tx={tx}
-              userSigner={userSigner}
-              writeContracts={writeContracts}
-              readContracts={readContracts}
-            />
-          </Route>
-          <Route path="/user/:address">
-            <UserStream
-              address={address}
-              userSigner={userSigner}
-              mainnetProvider={mainnetProvider}
-              localProvider={localProvider}
-              provider={injectedProvider || localProvider}
-              tx={tx}
-              gasPrice={gasPrice}
-              price={price}
-              writeContracts={writeContracts}
-              readContracts={readContracts}
-            />
-          </Route>
-          <Route exact path="/debug">
-            {/*
-                🎛 this scaffolding is full of commonly used components
-                this <Contract/> component will automatically parse your ABI
-                and give you a form to interact with it locally
-            */}
-            <Contract
-              name="OrgFactoryDeployer"
-              signer={userSigner}
-              provider={localProvider}
-              address={address}
-              blockExplorer={blockExplorer}
-              contractConfig={contractConfig}
-            />
-
-            {targetNetwork.name !== "mainnet" && (
+                blockExplorer={blockExplorer}
+              />
+            </Route>
+            <Route exact path="/debug">
+              {/*
+                  🎛 this scaffolding is full of commonly used components
+                  this <Contract/> component will automatically parse your ABI
+                  and give you a form to interact with it locally
+              */}
               <Contract
-                name="GTC"
+                name="OrgFactoryDeployer"
                 signer={userSigner}
                 provider={localProvider}
                 address={address}
                 blockExplorer={blockExplorer}
                 contractConfig={contractConfig}
               />
-            )}
-          </Route>
-        </Switch>
-      </BrowserRouter>
 
-      <ThemeSwitch />
+              {targetNetwork.name !== "mainnet" && (
+                <>
+                  <Contract
+                    name="GTC"
+                    signer={userSigner}
+                    provider={localProvider}
+                    address={address}
+                    blockExplorer={blockExplorer}
+                    contractConfig={contractConfig}
+                  />
+                  <Contract
+                    name="SupCoin"
+                    signer={userSigner}
+                    provider={localProvider}
+                    address={address}
+                    blockExplorer={blockExplorer}
+                    contractConfig={contractConfig}
+                  />
+                </>
+              )}
+            </Route>
+          </Switch>
+          </div>
+        </Content>
 
-      {/* 👨‍💼 Your account is in the top right with a wallet at connect options */}
-      <div style={{ position: "fixed", textAlign: "right", right: 0, top: 0, padding: 10 }}>
-        <Account
-          address={address}
-          localProvider={localProvider}
-          userSigner={userSigner}
-          mainnetProvider={mainnetProvider}
-          price={price}
-          web3Modal={web3Modal}
-          loadWeb3Modal={loadWeb3Modal}
-          logoutOfWeb3Modal={logoutOfWeb3Modal}
-          blockExplorer={blockExplorer}
-          isContract={false}
-        />
-        {faucetHint}
-      </div>
-
-      {/* 🗺 Extra UI like gas price, eth price, faucet, and support: */}
-      <div style={{ position: "fixed", textAlign: "left", left: 0, bottom: 20, padding: 10 }}>
-        <Row align="middle" gutter={[4, 4]}>
-          <Col span={8}>
-            <Ramp price={price} address={address} networks={NETWORKS} />
-          </Col>
-
-          <Col span={8} style={{ textAlign: "center", opacity: 0.8 }}>
-            <GasGauge gasPrice={gasPrice} />
-          </Col>
-          <Col span={8} style={{ textAlign: "center", opacity: 1 }}>
-            <Button
-              onClick={() => {
-                window.open("https://t.me/joinchat/KByvmRe5wkR-8F_zz6AjpA");
-              }}
-              size="large"
-              shape="round"
+        <Footer className="ts-footer">
+          {location.pathname === "/" && (
+          <a href="https://moonshotcollective.space/" target="_blank">
+            Built with 💜 by the Gitcoin community | Moonshot Collective
+          </a>
+          )}
+          {location.pathname !== "/" && (
+            <Menu
+              mode="horizontal"
+              selectable={false}
+              className="footer-menu"
             >
-              <span style={{ marginRight: 8 }} role="img" aria-label="support">
-                💬
-              </span>
-              Support
-            </Button>
-          </Col>
-        </Row>
+              <Menu.Item key="gc-dao">
+                <a href="https://moonshotcollective.space/" target="_blank">
+                  <GitcoinDAOBadge width={128} height={32} />
+                </a>
+              </Menu.Item>
+              <Menu.Item key="gh-link">
+                <a href="https://github.com/moonshotcollective/tokenstream.party" target="_blank">
+                  <GithubOutlined />
+                </a>
+              </Menu.Item>
+              <Menu.Item key="telegram-link">
+                <a href="https://t.me/+KxW7py1dFPA0MWJh" target="_blank">
+                  Join us on Telegram
+                </a>
+              </Menu.Item>
+              <Menu.Item key="feedback-link">
+                <a href="https://docs.google.com/forms/d/e/1FAIpQLScmjCzXSZZXIJAeqZOUB0f5dwhkwgbo5G5WiVakx8keNJ_Tpg/viewform?usp=sf_link" target="_blank">
+                  Share Your Feedback
+                </a>
+              </Menu.Item>
+            </Menu>
+          )}
+        </Footer>
 
-        <Row align="middle" gutter={[4, 4]}>
-          <Col span={24}>
-            {
-              /*  if the local provider has a signer, let's show the faucet:  */
-              faucetAvailable ? (
-                <Faucet localProvider={localProvider} price={price} ensProvider={mainnetProvider} />
-              ) : (
-                ""
-              )
-            }
-          </Col>
-        </Row>
+        {/* 🗺 Extra UI like gas price, eth price, faucet, and support: */}
+        {(location.pathname !== "/" && targetNetwork.name.indexOf("mainnet") === -1) &&
+        <div style={{ position: "fixed", textAlign: "left", left: 0, bottom: 20, padding: 10, zIndex: 9999 }}>
+          {/* <Row align="middle" gutter={[4, 4]}>
+            <Col span={8}>
+              <Ramp price={price} address={address} networks={NETWORKS} />
+            </Col>
+
+            <Col span={8} style={{ textAlign: "center", opacity: 0.8 }}>
+              <GasGauge gasPrice={gasPrice} />
+            </Col>
+            <Col span={8} style={{ textAlign: "center", opacity: 1 }}>
+              <Button
+                onClick={() => {
+                  window.open("https://t.me/joinchat/KByvmRe5wkR-8F_zz6AjpA");
+                }}
+                size="large"
+                shape="round"
+              >
+                <span style={{ marginRight: 8 }} role="img" aria-label="support">
+                  💬
+                </span>
+                Support
+              </Button>
+            </Col>
+          </Row> */}
+
+          <Row align="middle" gutter={[4, 4]}>
+            <Col span={24}>
+              {
+                /*  if the local provider has a signer, let's show the faucet:  */
+                faucetAvailable ? (
+                  <Faucet localProvider={localProvider} price={price} ensProvider={mainnetProvider} />
+                ) : (
+                  ""
+                )
+              }
+            </Col>
+          </Row>
+        </div>
+        }
       </div>
-    </div>
+    </Layout>
   );
 }
 

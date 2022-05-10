@@ -53,12 +53,14 @@ export default function Balance(props) {
     floatBalance = parseFloat(etherBalance);
   }
 
-  let displayBalance = floatBalance.toFixed(4);
+  let displayBalance = floatBalance.toFixed(2);
 
   const price = props.price || props.dollarMultiplier;
 
   if (price && dollarMode) {
     displayBalance = "$" + (floatBalance * price).toFixed(2);
+  } else if (price && props.tokenSymbol) {
+    displayBalance = <span>{displayBalance}{props.breakLine ? <br/> : <>&nbsp;</>}<small>{props.tokenSymbol}</small></span>;
   }
 
   return (
@@ -68,6 +70,7 @@ export default function Balance(props) {
         fontSize: props.size ? props.size : 24,
         padding: 8,
         cursor: "pointer",
+        textAlign: "center",
       }}
       onClick={() => {
         setDollarMode(!dollarMode);

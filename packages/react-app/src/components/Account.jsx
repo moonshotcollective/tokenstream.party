@@ -1,9 +1,8 @@
-import { Button } from "antd";
+import { Button, Menu, Dropdown, Row, Col, Space } from "antd";
 import React from "react";
-import { useThemeSwitcher } from "react-css-theme-switcher";
 import Address from "./Address";
 import Balance from "./Balance";
-import Wallet from "./Wallet";
+import { DownOutlined, LogoutOutlined } from "@ant-design/icons";
 
 /*
   ~ What it does? ~
@@ -45,101 +44,85 @@ export default function Account({
   localProvider,
   mainnetProvider,
   price,
-  minimized,
   web3Modal,
   loadWeb3Modal,
   logoutOfWeb3Modal,
   blockExplorer,
-  isContract,
+  width,
+  networkSelect,
+  networkDisplay,
+  hostToggleSwitch,
 }) {
-  const modalButtons = [];
-
   function isValidAddress(address) {
     return address && address !== "0x0000000000000000000000000000000000000000";
   }
 
+  const menu = (
+    <Menu>
+      <Menu.ItemGroup key="1">
+        {isValidAddress(address) ? <Balance address={address} provider={localProvider} price={price} /> : ""}
+      </Menu.ItemGroup>
+      <Menu.ItemGroup key="2">
+        <a key="logoutbutton" size="medium" onClick={logoutOfWeb3Modal}>
+          <LogoutOutlined />
+          {` Logout`}
+        </a>
+      </Menu.ItemGroup>
+    </Menu>
+  );
+
+  const modalButtons = [];
   if (web3Modal) {
     if (web3Modal.cachedProvider) {
       modalButtons.push(
-        <Button
-          key="logoutbutton"
-          style={{ verticalAlign: "top", marginLeft: 8, marginTop: 4 }}
-          shape="round"
-          size="large"
-          onClick={logoutOfWeb3Modal}
-        >
-          logout
-        </Button>,
+        <div key="first">
+          {isValidAddress(address) ? (
+            <div>
+              {hostToggleSwitch}
+              <Space direction="horizontal">
+                <label>Network</label>
+
+                <div>
+                  {networkSelect}
+                </div>
+
+                <div>
+                  <Dropdown.Button style={{marginTop: '1.5em'}} overlay={menu} icon={<DownOutlined />} trigger="click">
+                    <Address
+                      address={address}
+                      ensProvider={mainnetProvider}
+                      blockExplorer={blockExplorer}
+                      blockieSize={14}
+                      size="tiny"
+                      fontSize="0.8em"
+                      blockiesSize={6}
+                      addressAlignment="top"
+                    />
+                  </Dropdown.Button>
+                  {networkDisplay}
+                </div>
+              </Space>
+            </div>
+          ) : (
+            ""
+          )}
+        </div>,
       );
     } else {
       modalButtons.push(
         <Button
           key="loginbutton"
-          style={{ verticalAlign: "top", marginLeft: 8, marginTop: 4 }}
-          shape="round"
+          style={{ verticalAlign: "top", marginLeft: 8, marginTop: 4, width: width }}
           size="large"
-          /* type={minimized ? "default" : "primary"}     too many people just defaulting to MM and having a bad time */
           onClick={loadWeb3Modal}
+          type="primary"
+          shape="round"
         >
-          connect
+          Connect Wallet
         </Button>,
       );
     }
   }
 
-  const { currentTheme } = useThemeSwitcher();
-
-  const display = minimized ? (
-    ""
-  ) : (
-    <span>
-      {web3Modal && web3Modal.cachedProvider ? (
-        <>
-          <Address address={address} ensProvider={mainnetProvider} blockExplorer={blockExplorer} />
-          <Balance address={address} provider={localProvider} price={price} />
-          <Wallet
-            address={address}
-            provider={localProvider}
-            signer={userSigner}
-            ensProvider={mainnetProvider}
-            price={price}
-            color={currentTheme === "light" ? "#1890ff" : "#2caad9"}
-          />
-        </>
-      ) : false ? (
-        ""
-      ) : isContract ? (
-        <>
-          <Address address={address} ensProvider={mainnetProvider} blockExplorer={blockExplorer} />
-          <Balance address={address} provider={localProvider} price={price} />
-        </>
-      ) : (
-        <></>
-      )}
-      {false ? (
-        <>
-          <Address address={address} ensProvider={mainnetProvider} blockExplorer={blockExplorer} />
-          <Balance address={address} provider={localProvider} price={price} />
-          <Wallet
-            address={address}
-            provider={localProvider}
-            signer={userSigner}
-            ensProvider={mainnetProvider}
-            price={price}
-            color={currentTheme === "light" ? "#1890ff" : "#2caad9"}
-          />
-        </>
-      ) : (
-        <></>
-      )}
-     
-    </span>
-  );
-
-  return (
-    <div>
-      {display}
-      {modalButtons}
-    </div>
-  );
+  return <div>{modalButtons}</div>;
 }
