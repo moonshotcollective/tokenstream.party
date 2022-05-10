@@ -1,45 +1,43 @@
 //SPDX-License-Identifier: MIT
+// solhint-disable not-rely-on-time
 pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 error NotYourStream();
 error NotEnoughBalance();
 error SendMore();
 error IncreaseByMore();
-error IncreasedByTooMuch();
 error CantWithdrawToBurnAddress();
 error StreamDisabled();
 error StreamDoesNotExist();
+error TransferFailed();
 
 /// @title Simple Stream Contract
-/// @author ghostffcode, jaxcoder, nowonder
+/// @author ghostffcode, jaxcoder, nowonder, qedk
 /// @notice the meat and potatoes of the stream
-contract MultiStream is Ownable, AccessControl, ReentrancyGuard {
+contract MultiStream is Ownable, AccessControl {
     bytes32 public constant MANAGER_ROLE = keccak256("MANAGER_ROLE");
-
-    event Withdraw(address indexed to, uint256 amount, string reason);
-    event Deposit(address indexed from, uint256 amount);
-
     bytes32 public constant OPERATOR_ROLE = keccak256("OPERATOR");
 
-    mapping(address => uint256) caps;
-    mapping(address => uint256) frequencies;
-    mapping(address => uint256) last;
-    mapping(address => bool) disabled;
-
-    string orgName;
-
     /// @dev track total payouts for UI
-    uint256 public total_paid;
+    uint256 public totalPaid;
+    IERC20 public dToken;
+
+    string public orgName;
 
     /// @dev So we can return user params for UI
     address[] public users;
 
-    IERC20 public dToken;
+    mapping(address => uint256) public caps;
+    mapping(address => uint256) public frequencies;
+    mapping(address => uint256) public last;
+    mapping(address => bool) public disabled;
+
+    event Withdraw(address indexed to, uint256 indexed amount, string reason);
+    event Deposit(address indexed from, uint256 indexed amount);
 
     constructor(
         string memory _orgName,
@@ -48,18 +46,12 @@ contract MultiStream is Ownable, AccessControl, ReentrancyGuard {
         uint256[] memory _caps,
         uint256[] memory _frequency,
         bool[] memory _startsFull,
-        address _tokenAddress
+        IERC20 _dToken
     ) {
         /* 
         @ note Init Org Details
         */
         orgName = _orgName;
-
-        /* 
-        @ note Init Roles
-        */
-        transferOwnership(_owner);
-        _setupRole(DEFAULT_ADMIN_ROLE, _owner);
 
         /* 
         @ note Init Streams
@@ -75,29 +67,34 @@ contract MultiStream is Ownable, AccessControl, ReentrancyGuard {
                 last[_addresses[i]] = block.timestamp;
             }
         }
-        dToken = IERC20(_tokenAddress);
+        dToken = _dToken;
+        /*
+        @ note Init Roles
+        */
+        transferOwnership(_owner);
+        _setupRole(DEFAULT_ADMIN_ROLE, _owner);
     }
 
-    function addManager(address _manager) public onlyRole(DEFAULT_ADMIN_ROLE) {
+    function addManager(address _manager) external onlyRole(DEFAULT_ADMIN_ROLE) {
         grantRole(MANAGER_ROLE, _manager);
     }
 
-    function addOperator(address _manager) public onlyRole(DEFAULT_ADMIN_ROLE) {
-        grantRole(OPERATOR_ROLE, _manager);
+    function addOperator(address _operator) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        grantRole(OPERATOR_ROLE, _operator);
     }
 
     function removeManager(address _manager)
-        public
+        external
         onlyRole(DEFAULT_ADMIN_ROLE)
     {
         revokeRole(MANAGER_ROLE, _manager);
     }
 
-    function removeOperator(address _manager)
-        public
+    function removeOperator(address _operator)
+        external
         onlyRole(DEFAULT_ADMIN_ROLE)
     {
-        revokeRole(OPERATOR_ROLE, _manager);
+        revokeRole(OPERATOR_ROLE, _operator);
     }
 
     /// @dev add a stream for user
@@ -106,7 +103,7 @@ contract MultiStream is Ownable, AccessControl, ReentrancyGuard {
         uint256 _cap,
         uint256 _frequency,
         bool _startsFull
-    ) public onlyRole(MANAGER_ROLE) {
+    ) external onlyRole(MANAGER_ROLE) {
         caps[_beneficiary] = _cap;
         frequencies[_beneficiary] = _frequency;
         users.push(_beneficiary);
@@ -118,12 +115,8 @@ contract MultiStream is Ownable, AccessControl, ReentrancyGuard {
         }
     }
 
-    function closeStreamAndWithdrawRemaining() public onlyRole(DEFAULT_ADMIN_ROLE) {
-        // todo: 
-    }
-
     /// @dev Transfers remaining balance and disables stream
-    function disableStream(address _beneficiary) public onlyRole(MANAGER_ROLE) {
+    function disableStream(address _beneficiary) external onlyRole(DEFAULT_ADMIN_ROLE) {
         uint256 totalAmount = streamBalance(_beneficiary);
 
         uint256 cappedLast = block.timestamp - frequencies[_beneficiary];
@@ -135,10 +128,32 @@ contract MultiStream is Ownable, AccessControl, ReentrancyGuard {
             (((block.timestamp - last[_beneficiary]) * totalAmount) /
                 totalAmount);
 
-        require(dToken.transfer(_beneficiary, totalAmount), "Transfer failed");
+        disabled[_beneficiary] = true;
+        caps[_beneficiary] = 0;
 
-        disabled[_beneficiary] == true;
-        caps[_beneficiary] == 0;
+        if(!dToken.transfer(msg.sender, totalAmount)) revert TransferFailed();
+    }
+
+    /// @dev Transfers remaining balance and deletes stream
+    function deleteStream(address _beneficiary) external onlyRole(MANAGER_ROLE) {
+        uint256 totalAmount = streamBalance(_beneficiary);
+
+        // Trigger gas refunds
+        delete disabled[_beneficiary];
+        delete caps[_beneficiary];
+        delete last[_beneficiary];
+        delete disabled[_beneficiary];
+
+        for (uint256 i = 0; i < users.length - 1; i++) { // iterate till second last index
+            if (users[i] == _beneficiary) {
+                users[i] = users[users.length - 1]; // copy last to current
+                break;
+            }
+            // if user at last index, we just delete it
+        }
+        delete users[users.length - 1]; // delete last index
+
+        if(!dToken.transfer(msg.sender, totalAmount)) revert TransferFailed();
     }
 
     /// @dev Reactivates a stream for user
@@ -147,7 +162,7 @@ contract MultiStream is Ownable, AccessControl, ReentrancyGuard {
         uint256 _cap,
         uint256 _frequency,
         bool _startsFull
-    ) public onlyRole(MANAGER_ROLE) {
+    ) external onlyRole(MANAGER_ROLE) {
         caps[_beneficiary] = _cap;
         frequencies[_beneficiary] = _frequency;
 
@@ -157,7 +172,7 @@ contract MultiStream is Ownable, AccessControl, ReentrancyGuard {
             last[_beneficiary] = block.timestamp;
         }
 
-        disabled[_beneficiary] == false;
+        disabled[_beneficiary] = false;
     }
 
     /// @dev Get the balance of a stream by address
@@ -173,9 +188,8 @@ contract MultiStream is Ownable, AccessControl, ReentrancyGuard {
 
     /// @dev Withdraw from a stream
     /// @param amount amount of withdraw
-    function streamWithdraw(uint256 amount, string memory reason)
+    function streamWithdraw(uint256 amount, string calldata reason)
         external
-        nonReentrant
     {
         if (msg.sender == address(0)) revert CantWithdrawToBurnAddress();
         if (disabled[msg.sender] == true) revert StreamDisabled();
@@ -191,31 +205,38 @@ contract MultiStream is Ownable, AccessControl, ReentrancyGuard {
             last[msg.sender] +
             (((block.timestamp - last[msg.sender]) * amount) /
                 totalAmountCanWithdraw);
-        emit Withdraw(msg.sender, amount, reason);
-        require(dToken.transfer(msg.sender, amount), "Transfer failed");
+        totalPaid += amount;
 
-        total_paid += amount;
+        if(!dToken.transfer(msg.sender, amount)) revert TransferFailed();
+
+        emit Withdraw(msg.sender, amount, reason);
+    }
+
+    /// @dev Update the cap of the stream
+    /// @param _newCap new cap of the stream
+    function updateCap(uint256 _newCap, address beneficiary)
+        external
+        onlyRole(MANAGER_ROLE)
+    {
+        caps[beneficiary] = _newCap;
     }
 
     /// @dev Increase the cap of the stream
     /// @param _increase how much to increase the cap
     function increaseCap(uint256 _increase, address beneficiary)
-        public
+        external
         onlyRole(MANAGER_ROLE)
     {
         if (_increase == 0) revert IncreaseByMore();
-        if ((caps[beneficiary] + _increase) >= 1 ether)
-            revert IncreasedByTooMuch();
-        caps[beneficiary] = caps[beneficiary] + _increase;
+        caps[beneficiary] += _increase;
     }
 
     /// @dev Update the frequency of a stream
     /// @param _frequency the new frequency
     function updateFrequency(uint256 _frequency, address beneficiary)
-        public
+        external
         onlyRole(MANAGER_ROLE)
     {
-        require(_frequency > 0, "Must be greater than 0");
         if (_frequency == 0) revert IncreaseByMore();
         frequencies[beneficiary] = _frequency;
     }
