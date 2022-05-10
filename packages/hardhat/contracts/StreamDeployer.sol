@@ -27,8 +27,8 @@ contract StreamDeployer is Ownable {
         uint256[] calldata _caps,
         uint256[] calldata _frequency,
         bool[] calldata _startsFull,
-        address _tokenAddress
-    ) public {
+        IERC20 _tokenAddress
+    ) external {
         MultiStream deployedOrganization = new MultiStream(
             _orgName,
             _owner,
@@ -39,11 +39,11 @@ contract StreamDeployer is Ownable {
             _tokenAddress
         );
         
-          organizations.push(address(deployedOrganization));
+        organizations.push(address(deployedOrganization));
 
-         emit OrganizationsDeployed(
+        emit OrganizationsDeployed(
             address(deployedOrganization),
-            _tokenAddress
+            address(_tokenAddress)
         );
 
     }
