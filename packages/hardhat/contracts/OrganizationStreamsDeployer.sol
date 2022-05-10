@@ -46,9 +46,9 @@ contract OrganizationStreamsDeployer is Ownable {
             address(_tokenAddress)
         );
         
-          organizations.push(address(deployedOrganization));
+        organizations.push(address(deployedOrganization));
 
-         emit OrganizationsDeployed(
+        emit OrganizationsDeployed(
             address(deployedOrganization),
             _owner,
             _orgName
