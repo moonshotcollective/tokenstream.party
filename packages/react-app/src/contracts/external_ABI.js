@@ -249,12 +249,32 @@ export const OrganizationStreamsABI = [
   },
   {
     "inputs": [],
+    "name": "DepositAmountTooSmall",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "DepositFailed",
+    "type": "error"
+  },
+  {
+    "inputs": [],
     "name": "IncreaseByMore",
     "type": "error"
   },
   {
     "inputs": [],
     "name": "IncreasedByTooMuch",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "InsufficientPrivileges",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "InvalidFrequency",
     "type": "error"
   },
   {
@@ -655,7 +675,7 @@ export const OrganizationStreamsABI = [
             "type": "uint256"
           }
         ],
-        "internalType": "struct OrganizationStreams.StreamView",
+        "internalType": "struct MultiStream.StreamView",
         "name": "",
         "type": "tuple"
       }
@@ -711,7 +731,7 @@ export const OrganizationStreamsABI = [
             "type": "uint256"
           }
         ],
-        "internalType": "struct OrganizationStreams.StreamView[]",
+        "internalType": "struct MultiStream.StreamView[]",
         "name": "",
         "type": "tuple[]"
       }

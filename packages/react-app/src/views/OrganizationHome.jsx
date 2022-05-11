@@ -206,7 +206,7 @@ export default function OrganizationHome({
     tabBarExtraContent={
       {
         left: <Button type="text" icon={<LeftOutlined />} onClick={history.goBack}>Back</Button>,
-        right: orgInfo.isOperator && (<Button
+        right: canAdminister && (<Button
           type="primary"
           onClick={() => setNewStreamModal(true)}
         >

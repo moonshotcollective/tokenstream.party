@@ -17,6 +17,10 @@ error CantDepositFromBurnAddress();
 error StreamDisabled();
 error StreamDoesNotExist();
 error TransferFailed();
+error DepositAmountTooSmall();
+error DepositFailed();
+error InvalidFrequency();
+error InsufficientPrivileges();
 
 /// @title Organization Streams Contract
 /// @author ghostffcode, jaxcoder, nowonder, qedk, supriyaamisshra
@@ -157,7 +161,13 @@ contract MultiStream is Ownable, AccessControl, ReentrancyGuard {
         uint256 _cap,
         uint256 _frequency,
         bool _startsFull
-    ) external onlyRole(MANAGER_ROLE) {
+    ) external {
+
+        if (!hasRole(MANAGER_ROLE, _msgSender())) {
+            if (!hasRole(DEFAULT_ADMIN_ROLE, _msgSender())) {
+                revert InsufficientPrivileges();
+            }
+        }
 
         userIndex[userCount] = _beneficiary;
         inverseUserIndex[_beneficiary] = userCount;
@@ -280,11 +290,8 @@ contract MultiStream is Ownable, AccessControl, ReentrancyGuard {
     {
         if (_msgSender() == address(0)) revert CantDepositFromBurnAddress();
         if (disabled[_stream] == true) revert StreamDisabled();
-        require(value >= streams[_stream].cap / 10, "Not big enough, sorry.");
-        require(
-            orgInfo.dToken.transferFrom(_msgSender(), address(this), value),
-            "Transfer of tokens is not approved or insufficient funds"
-        );
+        if (value < (streams[_stream].cap / 10)) revert DepositAmountTooSmall();
+        if (!orgInfo.dToken.transferFrom(_msgSender(), address(this), value)) revert DepositFailed();
         streams[_stream].pledged += value;
         emit Deposit(_stream, _msgSender(), value, reason);
     }
@@ -308,7 +315,7 @@ contract MultiStream is Ownable, AccessControl, ReentrancyGuard {
         external
         onlyRole(MANAGER_ROLE)
     {
-        require(_frequency > 0, "Must be greater than 0");
+        if(_frequency < 0) revert InvalidFrequency();
         if (_frequency == 0) revert IncreaseByMore();
         streams[beneficiary].frequency = _frequency;
     }
