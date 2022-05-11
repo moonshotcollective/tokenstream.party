@@ -5,6 +5,10 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./Stream.sol";
 
+/// @title The Stream Deployer Contract for Orgs
+/// @author nowonder, jaxcoder, qedk
+/// @notice Explain to an end user what this does
+/// @dev Explain to a developer any extra details
 contract StreamDeployer is Ownable {
 
     /// @dev emitted when a new org is created.
@@ -20,6 +24,13 @@ contract StreamDeployer is Ownable {
     }
 
     /// @dev deploys a stream factory contract for a specified organization.
+    /// @param _orgName the name of the organization
+    /// @param _owner the owner address for the org
+    /// @param _addresses any addresses you want to have a stream on deploy
+    /// @param _caps the caps for the addresses
+    /// @param _frequency the frequency for the addresses
+    /// @param _startsFull the bool for each address to start full or not
+    /// @param _tokenAddress the stream token address for the org
     function deployOrganization(
         string calldata _orgName,
         address _owner,
@@ -49,6 +60,8 @@ contract StreamDeployer is Ownable {
     }
 
     /// @dev gets a page of organizations
+    /// @param _page page number
+    /// @param _resultsPerPage how many to return per page
     function getOrganizations(
         uint256 _page,
         uint256 _resultsPerPage

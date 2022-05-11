@@ -24,6 +24,8 @@ contract MultiStream is Ownable, AccessControl {
 
     /// @dev track total payouts for UI
     uint256 public totalPaid;
+
+    /// @dev the deposit token
     IERC20 public dToken;
 
     string public orgName;
@@ -75,14 +77,26 @@ contract MultiStream is Ownable, AccessControl {
         _setupRole(DEFAULT_ADMIN_ROLE, _owner);
     }
 
-    function addManager(address _manager) external onlyRole(DEFAULT_ADMIN_ROLE) {
+    /// @dev adds the manager role for an address
+    /// @param _manager the address to be given the role
+    function addManager(address _manager)
+        external
+        onlyRole(DEFAULT_ADMIN_ROLE)
+    {
         grantRole(MANAGER_ROLE, _manager);
     }
 
-    function addOperator(address _operator) external onlyRole(DEFAULT_ADMIN_ROLE) {
+    /// @dev adds the operator role for an address
+    /// @param _operator the address to be given the role
+    function addOperator(address _operator)
+        external
+        onlyRole(DEFAULT_ADMIN_ROLE)
+    {
         grantRole(OPERATOR_ROLE, _operator);
     }
 
+    /// @dev revokes role for an address
+    /// @param _manager the address to revoke
     function removeManager(address _manager)
         external
         onlyRole(DEFAULT_ADMIN_ROLE)
@@ -90,6 +104,8 @@ contract MultiStream is Ownable, AccessControl {
         revokeRole(MANAGER_ROLE, _manager);
     }
 
+    /// @dev revokes role for an address
+    /// @param _operator the address to revoke
     function removeOperator(address _operator)
         external
         onlyRole(DEFAULT_ADMIN_ROLE)
@@ -97,13 +113,20 @@ contract MultiStream is Ownable, AccessControl {
         revokeRole(OPERATOR_ROLE, _operator);
     }
 
-    /// @dev add a stream for user
+    /// @dev add a stream for user/project/entity/address
+    /// @param _beneficiary the receiver of the tokens
+    /// @param _cap the max stream cap
+    /// @param _frequency how often the stream should be filled/drip rate
+    /// @param _startsFull wether to start the stream fully unlocked
     function addStream(
         address _beneficiary,
         uint256 _cap,
         uint256 _frequency,
         bool _startsFull
-    ) external onlyRole(MANAGER_ROLE) {
+    )   
+        external
+        onlyRole(MANAGER_ROLE)
+    {
         caps[_beneficiary] = _cap;
         frequencies[_beneficiary] = _frequency;
         users.push(_beneficiary);
@@ -116,7 +139,11 @@ contract MultiStream is Ownable, AccessControl {
     }
 
     /// @dev Transfers remaining balance and disables stream
-    function disableStream(address _beneficiary) external onlyRole(DEFAULT_ADMIN_ROLE) {
+    /// @param _beneficiary the stream owner
+    function disableStream(address _beneficiary)
+        external
+        onlyRole(DEFAULT_ADMIN_ROLE) 
+    {
         uint256 totalAmount = streamBalance(_beneficiary);
 
         uint256 cappedLast = block.timestamp - frequencies[_beneficiary];
@@ -135,7 +162,11 @@ contract MultiStream is Ownable, AccessControl {
     }
 
     /// @dev Transfers remaining balance and deletes stream
-    function deleteStream(address _beneficiary) external onlyRole(MANAGER_ROLE) {
+    /// @param _beneficiary the stream owner
+    function deleteStream(address _beneficiary)
+        external
+        onlyRole(MANAGER_ROLE)
+    {
         uint256 totalAmount = streamBalance(_beneficiary);
 
         // Trigger gas refunds
@@ -156,7 +187,11 @@ contract MultiStream is Ownable, AccessControl {
         if(!dToken.transfer(msg.sender, totalAmount)) revert TransferFailed();
     }
 
-    /// @dev Reactivates a stream for user
+    /// @dev Reactivates a stream for entity/user/project
+    /// @param _beneficiary the receiver of the tokens
+    /// @param _cap the max stream cap
+    /// @param _frequency how often the stream should be filled/drip rate
+    /// @param _startsFull wether to start the stream fully unlocked
     function enableStream(
         address _beneficiary,
         uint256 _cap,
@@ -176,6 +211,7 @@ contract MultiStream is Ownable, AccessControl {
     }
 
     /// @dev Get the balance of a stream by address
+    /// @param _beneficiary stream owner address
     /// @return balance of the stream by address
     function streamBalance(address _beneficiary) public view returns (uint256) {
         if (block.timestamp - last[_beneficiary] > frequencies[_beneficiary]) {
@@ -188,6 +224,7 @@ contract MultiStream is Ownable, AccessControl {
 
     /// @dev Withdraw from a stream
     /// @param amount amount of withdraw
+    /// @param reason the reason for the withdraw
     function streamWithdraw(uint256 amount, string calldata reason)
         external
     {
@@ -214,30 +251,33 @@ contract MultiStream is Ownable, AccessControl {
 
     /// @dev Update the cap of the stream
     /// @param _newCap new cap of the stream
-    function updateCap(uint256 _newCap, address beneficiary)
+    /// @param _beneficiary the owner of the stream
+    function updateCap(uint256 _newCap, address _beneficiary)
         external
         onlyRole(MANAGER_ROLE)
     {
-        caps[beneficiary] = _newCap;
+        caps[_beneficiary] = _newCap;
     }
 
     /// @dev Increase the cap of the stream
     /// @param _increase how much to increase the cap
-    function increaseCap(uint256 _increase, address beneficiary)
+    /// @param _beneficiary the owner of the stream
+    function increaseCap(uint256 _increase, address _beneficiary)
         external
         onlyRole(MANAGER_ROLE)
     {
         if (_increase == 0) revert IncreaseByMore();
-        caps[beneficiary] += _increase;
+        caps[_beneficiary] += _increase;
     }
 
     /// @dev Update the frequency of a stream
     /// @param _frequency the new frequency
-    function updateFrequency(uint256 _frequency, address beneficiary)
+    /// @param _beneficiary the owner of the stream
+    function updateFrequency(uint256 _frequency, address _beneficiary)
         external
         onlyRole(MANAGER_ROLE)
     {
         if (_frequency == 0) revert IncreaseByMore();
-        frequencies[beneficiary] = _frequency;
+        frequencies[_beneficiary] = _frequency;
     }
 }
