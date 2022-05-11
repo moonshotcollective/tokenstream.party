@@ -1,12 +1,12 @@
 //SPDX-License-Identifier: MIT
-pragma solidity ^0.8.4;
+pragma solidity >=0.8.0 <0.9.0;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 import "./Stream.sol";
 
 /// @title The Stream Deployer Contract for Orgs
-/// @author nowonder, jaxcoder, qedk
+/// @author nowonder, jaxcoder, qedk, supriyaamisshra
 /// @notice Explain to an end user what this does
 /// @dev Explain to a developer any extra details
 contract StreamDeployer is Ownable {
@@ -14,7 +14,8 @@ contract StreamDeployer is Ownable {
     /// @dev emitted when a new org is created.
     event OrganizationDeployed(
         address indexed orgAddress,
-        address indexed tokenAddress
+        address indexed ownerAddress,
+        string organizationName
     );
 
     address[] public organizations;
@@ -32,29 +33,34 @@ contract StreamDeployer is Ownable {
     /// @param _startsFull the bool for each address to start full or not
     /// @param _tokenAddress the stream token address for the org
     function deployOrganization(
-        string calldata _orgName,
+        string memory _orgName,
+        string memory _orgLogoURI,
+        string memory _orgDescription,
         address _owner,
-        address[] calldata _addresses,
-        uint256[] calldata _caps,
-        uint256[] calldata _frequency,
-        bool[] calldata _startsFull,
+        address[] memory _addresses,
+        uint256[] memory _caps,
+        uint256[] memory _frequency,
+        bool[] memory _startsFull,
         IERC20 _tokenAddress
     ) external {
         MultiStream deployedOrganization = new MultiStream(
             _orgName,
+            _orgLogoURI,
+            _orgDescription,
             _owner,
             _addresses,
             _caps,
             _frequency,
             _startsFull,
-            _tokenAddress
+            address(_tokenAddress)
         );
         
         organizations.push(address(deployedOrganization));
 
         emit OrganizationDeployed(
             address(deployedOrganization),
-            address(_tokenAddress)
+            _owner,
+            _orgName
         );
 
     }

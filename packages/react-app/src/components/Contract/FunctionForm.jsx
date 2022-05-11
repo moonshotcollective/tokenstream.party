@@ -11,6 +11,12 @@ const getFunctionInputKey = (functionInfo, input, inputIndex) => {
   return functionInfo.name + "_" + name + "_" + input.type;
 };
 
+const makeHumanReadable = (aName) => {
+  return aName.match(/^[a-z]+|[A-Z][a-z]*/g).map(function(x){
+    return x[0].toUpperCase() + x.substr(1).toLowerCase();
+  }).join(' ');
+};
+
 export default function FunctionForm({ contractFunction, functionInfo, provider, gasPrice, triggerRefresh }) {
   const [form, setForm] = useState({});
   const [txValue, setTxValue] = useState();
@@ -241,7 +247,7 @@ export default function FunctionForm({ contractFunction, functionInfo, provider,
             fontSize: 24,
           }}
         >
-          {functionInfo.name}
+          {makeHumanReadable(functionInfo.name)}
         </Col>
         <Col span={16}>{inputs}</Col>
       </Row>

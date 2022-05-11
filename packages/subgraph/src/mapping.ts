@@ -1,34 +1,83 @@
-import { BigInt, Address } from "@graphprotocol/graph-ts"
 import {
-  YourContract,
-  SetPurpose
-} from "../generated/YourContract/YourContract"
-import { Purpose, Sender } from "../generated/schema"
+  OrganizationDeployed
+} from "../generated/StreamDeployer/StreamDeployer";
+import {
+  MultiStream as MultiStreamTemplate
+} from "../generated/templates";
+import {
+  StreamAdded,
+  Withdraw,
+  Deposit
+} from "../generated/templates/MultiStream/MultiStream";
 
-export function handleSetPurpose(event: SetPurpose): void {
+import { Organization, User, UserOrganization, StreamActivity } from "../generated/schema"
 
-  let senderString = event.params.sender.toHexString()
+export function handleOrganizationDeployed(event: OrganizationDeployed): void {
+  let orgAddress = event.params.orgAddress.toHex();
+  let org = Organization.load(orgAddress);
 
-  let sender = Sender.load(senderString)
-
-  if (sender == null) {
-    sender = new Sender(senderString)
-    sender.address = event.params.sender
-    sender.createdAt = event.block.timestamp
-    sender.purposeCount = BigInt.fromI32(1)
+  if (!org) {
+    org = new Organization(orgAddress);
+    org.createdAt = event.block.timestamp;
+    org.owner = event.params.ownerAddress;
+    org.orgName = event.params.organizationName;
   }
-  else {
-    sender.purposeCount = sender.purposeCount.plus(BigInt.fromI32(1))
+
+  MultiStreamTemplate.create(event.params.orgAddress);
+
+  org.save();
+}
+
+export function handleStreamAdded(event: StreamAdded): void {
+  let orgAddress = event.address.toHex();
+  let userAddress = event.params.user.toHex();
+
+  let user = User.load(userAddress);
+
+  if (!user) {
+    user = new User(userAddress);
+    user.user = event.params.user;
+    user.createdAt = event.block.timestamp;
+    user.save();
   }
 
-  let purpose = new Purpose(event.transaction.hash.toHex() + "-" + event.logIndex.toString())
+  let userOrgAddress = userAddress.concat(orgAddress);
+  let userOrg = UserOrganization.load(userOrgAddress)
+  if (!userOrg) {
+    userOrg = new UserOrganization(userOrgAddress);
+    userOrg.user = userAddress;
+    userOrg.organization = orgAddress;
+    userOrg.creator = event.params.creator;
+    userOrg.save();
+  }
+}
 
-  purpose.purpose = event.params.purpose
-  purpose.sender = senderString
-  purpose.createdAt = event.block.timestamp
-  purpose.transactionHash = event.transaction.hash.toHex()
+export function handleWithdraw(event: Withdraw): void {
+  let orgAddress = event.address.toHex();
+  let id = event.transaction.hash.toHex();
 
-  purpose.save()
-  sender.save()
+  let activity = new StreamActivity(id);
+  activity.user = event.params.to.toHex();
+  activity.eventType = "StreamWithdrawEvent";
+  activity.amount = event.params.amount;
+  activity.organization = orgAddress;
+  activity.actor = event.params.to;
+  activity.info = event.params.reason;
+  activity.createdAt = event.block.timestamp;
+  activity.save();
+}
 
+export function handleDeposit(event: Deposit): void {
+  let orgAddress = event.address.toHex();
+  let id = event.transaction.hash.toHex();
+
+  let activity = new StreamActivity(id);
+  activity.user = event.params.stream.toHex();
+  activity.eventType = "StreamDepositEvent";
+  activity.amount = event.params.amount;
+  activity.organization = orgAddress;
+  activity.actor = event.params.from;
+  activity.info = event.params.reason;
+  activity.createdAt = event.block.timestamp;
+  activity.save();
 }

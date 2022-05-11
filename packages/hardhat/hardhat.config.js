@@ -41,7 +41,7 @@ module.exports = {
       },
     },
     goerli: {
-      url: "https://goerli.alchemyapi.io/v2/4eQGdKbc4zxHaDCEQG1wmi98KPRUht_t",
+      url: "https://eth-goerli.alchemyapi.io/v2/4eQGdKbc4zxHaDCEQG1wmi98KPRUht_t",
       accounts: {
         mnemonic: mnemonic(),
       },
