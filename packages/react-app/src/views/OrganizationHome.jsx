@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { ethers } from "ethers";
 import {
+  Menu,
   Modal,
   Button,
   notification,
@@ -14,7 +15,7 @@ import {
   Typography,
   Avatar,
 } from "antd";
-import { AddressInput, Address, Balance } from "../components";
+import { AddressInput, Address, Balance, OrgStreamsActivityFeed } from "../components";
 import { SimpleStreamABI, StreamFactoryABI } from "../contracts/external_ABI";
 import { useHistory } from "react-router";
 import { Link, useParams } from "react-router-dom";
@@ -81,6 +82,7 @@ export default function OrganizationHome({
   const [streams, setStreams] = useState([]);
   const [sData, setData] = useState([]);
   const [orgInfo, setOrgInfo] = useState({});
+  const [currentView, setCurrentView] = useState("streams");
 
   const orgStreamFactoryReadContract = useMemo(() => {
     if (!organizationAddress) {
@@ -232,8 +234,19 @@ export default function OrganizationHome({
           <Title>{orgInfo.name}</Title>
           <p>{orgInfo.description}</p>
         </Col>
+        <Col span={12} offset={6}>
+          <Menu
+            mode="horizontal"
+            selectedKeys={[currentView]}
+            onSelect={item => setCurrentView(item.key)}
+            style={{ textAlign: "center", border: "none", backgroundColor: "transparent" }}>
+            <Menu.Item key="streams">My Streams</Menu.Item>
+            <Menu.Item key="feed">Activity Feed</Menu.Item>
+          </Menu>
+        </Col>
       </Row>
-      <div
+      {currentView === "streams" &&
+        <div
         style={{
           width: 600,
           margin: "0px auto",
@@ -241,6 +254,7 @@ export default function OrganizationHome({
           paddingBottom: 50,
         }}
       >
+        
         <Button
           type="primary"
           onClick={() => setNewStreamModal(true)}
@@ -369,6 +383,19 @@ export default function OrganizationHome({
           </div>
         )}
       </div>
+      }
+      {currentView === "feed" &&
+      <div
+        style={{
+          width: 600,
+          margin: "0px auto",
+          padding: 20,
+          paddingBottom: 50,
+        }}
+      >
+        <OrgStreamsActivityFeed orgAddress={organizationAddress} price={props.price} mainnetProvider={mainnetProvider} />
+      </div>
+      }
     </>
   );
 }

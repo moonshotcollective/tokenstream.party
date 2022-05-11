@@ -18,6 +18,7 @@ import { INFURA_ID, NETWORK, NETWORKS } from "./constants";
 import { Transactor } from "./helpers";
 import { useContractConfig, useUserSigner } from "./hooks";
 import { OrganizationHome, UserStream, OrganizationBrowsePage } from "./views";
+import { LandingPage } from "./views/LandingPage";
 
 const { ethers } = require("ethers");
 
@@ -30,13 +31,15 @@ const NETWORKCHECK = true;
 
 // 🛰 providers
 if (DEBUG) console.log("📡 Connecting to Mainnet Ethereum");
+
+const alchemyApiEndpoint = process.env.REACT_APP_MAINNET_RPC_ENDPOINT || "https://eth-mainnet.alchemyapi.io/v2/W0XfQJvBYrDk6wxM2F3VEDns10TBTLzs";
 // const mainnetProvider = getDefaultProvider("mainnet", { infura: INFURA_ID, etherscan: ETHERSCAN_KEY, quorum: 1 });
 // const mainnetProvider = new InfuraProvider("mainnet",INFURA_ID);
 //
 // attempt to connect to our own scaffold eth rpc and if that fails fall back to infura...
 // Using StaticJsonRpcProvider as the chainId won't change see https://github.com/ethers-io/ethers.js/issues/901
 const scaffoldEthProvider = navigator.onLine
-  ? new ethers.providers.StaticJsonRpcProvider("https://eth-mainnet.alchemyapi.io/v2/W0XfQJvBYrDk6wxM2F3VEDns10TBTLzs")
+  ? new ethers.providers.StaticJsonRpcProvider(alchemyApiEndpoint)
   : null;
 const poktMainnetProvider = navigator.onLine
   ? new ethers.providers.StaticJsonRpcProvider(
@@ -44,7 +47,7 @@ const poktMainnetProvider = navigator.onLine
     )
   : null;
 const mainnetInfura = navigator.onLine
-  ? new ethers.providers.StaticJsonRpcProvider("https://eth-mainnet.alchemyapi.io/v2/W0XfQJvBYrDk6wxM2F3VEDns10TBTLzs")
+  ? new ethers.providers.StaticJsonRpcProvider(alchemyApiEndpoint)
   : null;
 // ( ⚠️ Getting "failed to meet quorum" errors? Check your INFURA_ID
 
@@ -412,11 +415,29 @@ function App(props) {
 
   return (
     <div className="App">
-      {/* ✏️ Edit the header and change the title to your project name */}
-      <Header />
-      {networkDisplay}
       <BrowserRouter>
-        <Menu style={{ textAlign: "center" }} selectedKeys={[route]} mode="horizontal">
+        {/* ✏️ Edit the header and change the title to your project name */}
+        <Header />
+        {window.location.pathname === "/" &&
+          <Link
+            onClick={() => {
+              setRoute("/app");
+            }}
+            to="/app"
+          >
+            <Button size="large" type="primary" style={{
+              position: "absolute",
+              top: "2em",
+              right: "4em",
+              color: "#110440"
+            }}>
+              <strong>Launch App</strong>
+            </Button>
+          </Link>
+        }
+        {networkDisplay}
+      
+        {/* <Menu style={{ textAlign: "center" }} selectedKeys={[route]} mode="horizontal">
           <Menu.Item key="/">
             <Link
               onClick={() => {
@@ -437,11 +458,14 @@ function App(props) {
               Debug
             </Link>
           </Menu.Item>
-        </Menu>
+        </Menu> */}
 
 
         <Switch>
           <Route exact path="/">
+            <LandingPage />
+          </Route>
+          <Route exact path="/app">
             <OrganizationBrowsePage
                 tx={tx}
                 writeContracts={writeContracts}
@@ -455,6 +479,7 @@ function App(props) {
               provider={injectedProvider || localProvider}
               address={address}
               tx={tx}
+              price={price}
               userSigner={userSigner}
               writeContracts={writeContracts}
               readContracts={readContracts}
@@ -506,6 +531,7 @@ function App(props) {
       <ThemeSwitch />
 
       {/* 👨‍💼 Your account is in the top right with a wallet at connect options */}
+      {(window.location.pathname !== "/") && 
       <div style={{ position: "fixed", textAlign: "right", right: 0, top: 0, padding: 10 }}>
         <Account
           address={address}
@@ -521,8 +547,10 @@ function App(props) {
         />
         {faucetHint}
       </div>
+      }
 
       {/* 🗺 Extra UI like gas price, eth price, faucet, and support: */}
+      {(window.location.pathname !== "/" && targetNetwork.name.indexOf("mainnet") === -1) &&
       <div style={{ position: "fixed", textAlign: "left", left: 0, bottom: 20, padding: 10 }}>
         <Row align="middle" gutter={[4, 4]}>
           <Col span={8}>
@@ -561,6 +589,7 @@ function App(props) {
           </Col>
         </Row>
       </div>
+      }
     </div>
   );
 }

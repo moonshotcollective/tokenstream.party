@@ -11,8 +11,17 @@ import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 contract SimpleStream is Ownable {
     using SafeMath for uint256;
 
-    event Withdraw(address indexed to, uint256 amount, string reason);
-    event Deposit(address indexed from, uint256 amount, string reason);
+    event Withdraw(
+        address indexed to,
+        uint256 amount,
+        string reason
+    );
+
+    event Deposit(
+        address indexed from,
+        uint256 amount,
+        string reason
+    );
 
     address payable public toAddress; // = payable(0xD75b0609ed51307E13bae0F9394b5f63A7f8b6A1);
     uint256 public cap; // = 0.5 ether;

@@ -16,7 +16,6 @@ export default function Header() {
         </a>
         </div>
         }
-        subTitle="Fund the Moonshot Collective Builders"
         style={{ cursor: "pointer" }}
       />
     </a>
