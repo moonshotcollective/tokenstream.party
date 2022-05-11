@@ -110,9 +110,9 @@ export default function OrganizationBrowsePage({ tx, userAddress, writeContracts
 
     const fetchEvents = async () => {
         setOrganizations(null);
-        const contract = readContracts.OrganizationStreamsDeployer;
+        const contract = readContracts.StreamDeployer;
         if (contract) {
-            const eventFilter = contract.filters.OrganizationsDeployed();
+            const eventFilter = contract.filters.OrganizationDeployed();
             const events = await contract.queryFilter(eventFilter);
             const orgs = events.map(eventLog => ({ ...eventLog.args, info: {} }));
             for (const org of orgs) {

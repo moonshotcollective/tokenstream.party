@@ -9,14 +9,14 @@ describe("GTCStream", function () {
   let myGTC;
   const user = "0xbF7877303B90297E7489AA1C067106331DfF7288";
 
-  describe("OrganizationStreamsDeployer", function () {
-    it("Should deploy OrganizationStreamsDeployer", async function () {
-      const OrganizationStreamsDeployer = await ethers.getContractFactory("OrganizationStreamsDeployer");
+  describe("StreamDeployer", function () {
+    it("Should deploy StreamDeployer", async function () {
+      const StreamDeployer = await ethers.getContractFactory("StreamDeployer");
       const GTC = await ethers.getContractFactory("GTC");
 
       const [signer] = await ethers.getSigners();
 
-      myOrganizationStreamsDeployer = await OrganizationStreamsDeployer.deploy(signer.address);
+      myOrganizationStreamsDeployer = await StreamDeployer.deploy(signer.address);
       myGTC = await GTC.deploy(signer.address);
     });
 

@@ -1,18 +1,18 @@
 import {
-  OrganizationsDeployed
-} from "../generated/OrganizationStreamsDeployer/OrganizationStreamsDeployer";
+  OrganizationDeployed
+} from "../generated/StreamDeployer/StreamDeployer";
 import {
-  OrganizationStreams as OrganizationStreamsTemplate
+  MultiStream as MultiStreamTemplate
 } from "../generated/templates";
 import {
   StreamAdded,
   Withdraw,
   Deposit
-} from "../generated/templates/OrganizationStreams/OrganizationStreams";
+} from "../generated/templates/MultiStream/MultiStream";
 
 import { Organization, User, UserOrganization, StreamActivity } from "../generated/schema"
 
-export function handleOrganizationDeployed(event: OrganizationsDeployed): void {
+export function handleOrganizationDeployed(event: OrganizationDeployed): void {
   let orgAddress = event.params.orgAddress.toHex();
   let org = Organization.load(orgAddress);
 
@@ -23,7 +23,7 @@ export function handleOrganizationDeployed(event: OrganizationsDeployed): void {
     org.orgName = event.params.organizationName;
   }
 
-  OrganizationStreamsTemplate.create(event.params.orgAddress);
+  MultiStreamTemplate.create(event.params.orgAddress);
 
   org.save();
 }

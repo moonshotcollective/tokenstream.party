@@ -19,9 +19,9 @@ error StreamDoesNotExist();
 error TransferFailed();
 
 /// @title Organization Streams Contract
-/// @author ghostffcode, jaxcoder, nowonder, supriyaamisshra
+/// @author ghostffcode, jaxcoder, nowonder, qedk, supriyaamisshra
 /// @notice the meat and potatoes of the stream
-contract OrganizationStreams is Ownable, AccessControl, ReentrancyGuard {
+contract MultiStream is Ownable, AccessControl, ReentrancyGuard {
     bytes32 public constant MANAGER_ROLE = keccak256("MANAGER_ROLE");
     bytes32 public constant OPERATOR_ROLE = keccak256("OPERATOR");
 

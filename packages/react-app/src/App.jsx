@@ -1,9 +1,16 @@
+import { SafeAppWeb3Modal } from "@gnosis.pm/safe-apps-web3modal";
 import Portis from "@portis/web3";
 import WalletConnectProvider from "@walletconnect/web3-provider";
 import { Layout, Alert, Button, Col, Row, Menu } from "antd";
 import "antd/dist/antd.css";
 import Authereum from "authereum";
-import { useBalance, useContractLoader, useGasPrice } from "eth-hooks";
+import {
+  useBalance,
+  useContractLoader,
+  useContractReader,
+  useGasPrice,
+  useOnBlock,
+} from "eth-hooks";
 // import useEventListener from "./hooks/oldEventListener";
 import { useExchangeEthPrice } from "eth-hooks/dapps/dex";
 import Fortmatic from "fortmatic";
@@ -11,7 +18,6 @@ import React, { useCallback, useEffect, useState } from "react";
 import { Link, Route, Switch, useLocation } from "react-router-dom";
 //import Torus from "@toruslabs/torus-embed"
 import WalletLink from "walletlink";
-import { SafeAppWeb3Modal } from "@gnosis.pm/safe-apps-web3modal";
 import "./App.css";
 import { Account, Contract, Faucet, GitcoinDAOBadge, TokenStreamLogo, NetworkSwitch } from "./components";
 import { INFURA_ID, NETWORK, NETWORKS } from "./constants";
@@ -57,7 +63,7 @@ const walletLink = new WalletLink({
 // WalletLink provider
 const walletLinkProvider = walletLink.makeWeb3Provider(
   "https://eth-mainnet.alchemyapi.io/v2/4eQGdKbc4zxHaDCEQG1wmi98KPRUht_t",
-  1,
+  1
 );
 
 // Portis ID: 6255fb2b-58c8-433b-a2c9-62098c05ddc9
@@ -118,7 +124,9 @@ const web3Modal = new SafeAppWeb3Modal({
 
 function App(props) {
   const [injectedProvider, setInjectedProvider] = useState();
-  const [address, setAddress] = useState("0x0000000000000000000000000000000000000000");
+  const [address, setAddress] = useState(
+    "0x0000000000000000000000000000000000000000"
+  );
 
   const [selectedNetwork, setSelectedNetwork] = useState(cachedNetwork || supportedNetworks[1]);
   if (DEBUG) console.log("📡 Connecting to New Cached Network: ", cachedNetwork);
@@ -138,7 +146,11 @@ function App(props) {
 
   const logoutOfWeb3Modal = async () => {
     await web3Modal.clearCachedProvider();
-    if (injectedProvider && injectedProvider.provider && typeof injectedProvider.provider.disconnect == "function") {
+    if (
+      injectedProvider &&
+      injectedProvider.provider &&
+      typeof injectedProvider.provider.disconnect == "function"
+    ) {
       await injectedProvider.provider.disconnect();
     }
     setTimeout(() => {
@@ -166,9 +178,13 @@ function App(props) {
   }, [userSigner]);
 
   // You can warn the user if you would like them to be on a specific network
-  const localChainId = localProvider && localProvider._network && localProvider._network.chainId;
+  const localChainId =
+    localProvider && localProvider._network && localProvider._network.chainId;
   const selectedChainId =
-    userSigner && userSigner.provider && userSigner.provider._network && userSigner.provider._network.chainId;
+    userSigner &&
+    userSigner.provider &&
+    userSigner.provider._network &&
+    userSigner.provider._network.chainId;
 
   // For more hooks, check out 🔗eth-hooks at: https://www.npmjs.com/package/eth-hooks
 
@@ -197,6 +213,21 @@ function App(props) {
   // If you want to bring in the mainnet DAI contract it would look like:
   const mainnetContracts = useContractLoader(mainnetProvider, contractConfig);
 
+  // If you want to call a function on a new block
+  useOnBlock(mainnetProvider, () => {
+    console.log(
+      `⛓ A new mainnet block is here: ${mainnetProvider._lastBlockNumber}`
+    );
+  });
+
+  // Then read your DAI balance like:
+  const myMainnetDAIBalance = useContractReader(
+    mainnetContracts,
+    "DAI",
+    "balanceOf",
+    ["0x34aA3F359A9D614239015126635CE7732c18fDF3"]
+  );
+
   /*
   const addressFromENS = useResolveName(mainnetProvider, "austingriffith.eth");
   console.log("🏷 Resolved austingriffith.eth as:",addressFromENS)
@@ -217,13 +248,23 @@ function App(props) {
       writeContracts &&
       mainnetContracts
     ) {
-      console.log("_____________________________________ 🏗 scaffold-eth _____________________________________");
+      console.log(
+        "_____________________________________ 🏗 scaffold-eth _____________________________________"
+      );
       console.log("🌎 mainnetProvider", mainnetProvider);
       console.log("🏠 localChainId", localChainId);
       console.log("👩‍💼 selected address:", address);
       console.log("🕵🏻‍♂️ selectedChainId:", selectedChainId);
-      console.log("💵 yourLocalBalance", yourLocalBalance ? ethers.utils.formatEther(yourLocalBalance) : "...");
-      console.log("💵 yourMainnetBalance", yourMainnetBalance ? ethers.utils.formatEther(yourMainnetBalance) : "...");
+      console.log(
+        "💵 yourLocalBalance",
+        yourLocalBalance ? ethers.utils.formatEther(yourLocalBalance) : "..."
+      );
+      console.log(
+        "💵 yourMainnetBalance",
+        yourMainnetBalance
+          ? ethers.utils.formatEther(yourMainnetBalance)
+          : "..."
+      );
       console.log("📝 readContracts", readContracts);
       console.log("🌍 DAI contract on mainnet:", mainnetContracts);
       console.log("💵 yourMainnetDAIBalance", myMainnetDAIBalance);
@@ -241,19 +282,35 @@ function App(props) {
   ]);
 
   let networkDisplay = "";
-  if (NETWORKCHECK && localChainId && selectedChainId && localChainId !== selectedChainId) {
+  if (
+    NETWORKCHECK &&
+    localChainId &&
+    selectedChainId &&
+    localChainId !== selectedChainId
+  ) {
     const networkSelected = NETWORK(selectedChainId);
     const networkLocal = NETWORK(localChainId);
     if (selectedChainId === 1337 && localChainId === 31337) {
       networkDisplay = (
-        <div style={{ zIndex: 2, position: "absolute", right: 0, top: 60, padding: 16 }}>
+        <div
+          style={{
+            zIndex: 2,
+            position: "absolute",
+            right: 0,
+            top: 60,
+            padding: 16,
+          }}
+        >
           <Alert
             message="⚠️ Wrong Network ID"
             description={
               <div>
-                You have <b>chain id 1337</b> for localhost and you need to change it to <b>31337</b> to work with
-                HardHat.
-                <div>(MetaMask -&gt; Settings -&gt; Networks -&gt; Chain ID -&gt; 31337)</div>
+                You have <b>chain id 1337</b> for localhost and you need to
+                change it to <b>31337</b> to work with HardHat.
+                <div>
+                  (MetaMask -&gt; Settings -&gt; Networks -&gt; Chain ID -&gt;
+                  31337)
+                </div>
               </div>
             }
             type="error"
@@ -268,7 +325,8 @@ function App(props) {
             message="⚠️ Wrong Network"
             description={
               <div>
-                You have <b>{networkSelected && networkSelected.name}</b> selected and you need to be on{" "}
+                You have <b>{networkSelected && networkSelected.name}</b>{" "}
+                selected and you need to be on{" "}
                 <Button
                   onClick={async () => {
                     const ethereum = window.ethereum;
@@ -329,7 +387,7 @@ function App(props) {
     const provider = await web3Modal.requestProvider();
     setInjectedProvider(new ethers.providers.Web3Provider(provider));
 
-    provider.on("chainChanged", chainId => {
+    provider.on("chainChanged", (chainId) => {
       console.log(`chain changed to ${chainId}! updating providers`);
       setInjectedProvider(new ethers.providers.Web3Provider(provider));
     });
@@ -358,7 +416,10 @@ function App(props) {
   }, [setRoute]);
 
   let faucetHint = "";
-  const faucetAvailable = localProvider && localProvider.connection && targetNetwork.name.indexOf("local") !== -1;
+  const faucetAvailable =
+    localProvider &&
+    localProvider.connection &&
+    targetNetwork.name.indexOf("local") !== -1;
 
   const [faucetClicked, setFaucetClicked] = useState(false);
   if (
@@ -486,17 +547,16 @@ function App(props) {
                   this <Contract/> component will automatically parse your ABI
                   and give you a form to interact with it locally
               */}
-              <Contract
-                name="OrgFactoryDeployer"
-                signer={userSigner}
-                provider={localProvider}
-                address={address}
-                blockExplorer={blockExplorer}
-                contractConfig={contractConfig}
-              />
-
-              {targetNetwork.name !== "mainnet" && (
+            {targetNetwork.name !== "mainnet" && (
                 <>
+                  <Contract
+                    name="StreamDeployer"
+                    signer={userSigner}
+                    provider={localProvider}
+                    address={address}
+                    blockExplorer={blockExplorer}
+                    contractConfig={contractConfig}
+                  />
                   <Contract
                     name="GTC"
                     signer={userSigner}

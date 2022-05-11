@@ -5,7 +5,7 @@ import "support/CheatCodes.sol";
 import "forge-std/Vm.sol";
 import "forge-std/Test.sol";
 import "../../../contracts/GTC.sol";
-import "../../../contracts/OrganizationStreams.sol";
+import "../../../contracts/Stream.sol";
 
 contract OrganizationStreamsTest is Test {
     CheatCodes cheats = CheatCodes(HEVM_ADDRESS);
@@ -22,7 +22,7 @@ contract OrganizationStreamsTest is Test {
 
     address payable me = payable(0xa8B3478A436e8B909B5E9636090F2B15f9B311e7);
 
-    OrganizationStreams internal stream;
+    MultiStream internal stream;
     GTC token;
     address deployer = HEVM_ADDRESS;
 
@@ -34,7 +34,7 @@ contract OrganizationStreamsTest is Test {
         cheats.warp(1641070800);
 
         token = new GTC(deployer);
-        stream = new OrganizationStreams(
+        stream = new MultiStream(
             _orgName,
             _logoURI,
             _orgDescription,

@@ -3,14 +3,16 @@ pragma solidity >=0.8.0 <0.9.0;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "./OrganizationStreams.sol";
+import "./Stream.sol";
 
-/// @title Organization Streams Deployer
-/// @author ghostffcode, jaxcoder, nowonder, supriyaamisshra
-contract OrganizationStreamsDeployer is Ownable {
+/// @title The Stream Deployer Contract for Orgs
+/// @author nowonder, jaxcoder, qedk, supriyaamisshra
+/// @notice Explain to an end user what this does
+/// @dev Explain to a developer any extra details
+contract StreamDeployer is Ownable {
 
     /// @dev emitted when a new org is created.
-    event OrganizationsDeployed(
+    event OrganizationDeployed(
         address indexed orgAddress,
         address indexed ownerAddress,
         string organizationName
@@ -23,6 +25,13 @@ contract OrganizationStreamsDeployer is Ownable {
     }
 
     /// @dev deploys a stream factory contract for a specified organization.
+    /// @param _orgName the name of the organization
+    /// @param _owner the owner address for the org
+    /// @param _addresses any addresses you want to have a stream on deploy
+    /// @param _caps the caps for the addresses
+    /// @param _frequency the frequency for the addresses
+    /// @param _startsFull the bool for each address to start full or not
+    /// @param _tokenAddress the stream token address for the org
     function deployOrganization(
         string memory _orgName,
         string memory _orgLogoURI,
@@ -34,7 +43,7 @@ contract OrganizationStreamsDeployer is Ownable {
         bool[] memory _startsFull,
         IERC20 _tokenAddress
     ) external {
-        OrganizationStreams deployedOrganization = new OrganizationStreams(
+        MultiStream deployedOrganization = new MultiStream(
             _orgName,
             _orgLogoURI,
             _orgDescription,
@@ -48,7 +57,7 @@ contract OrganizationStreamsDeployer is Ownable {
         
         organizations.push(address(deployedOrganization));
 
-        emit OrganizationsDeployed(
+        emit OrganizationDeployed(
             address(deployedOrganization),
             _owner,
             _orgName
@@ -57,6 +66,8 @@ contract OrganizationStreamsDeployer is Ownable {
     }
 
     /// @dev gets a page of organizations
+    /// @param _page page number
+    /// @param _resultsPerPage how many to return per page
     function getOrganizations(
         uint256 _page,
         uint256 _resultsPerPage
