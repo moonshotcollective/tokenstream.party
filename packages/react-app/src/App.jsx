@@ -1,9 +1,16 @@
+import { SafeAppWeb3Modal } from "@gnosis.pm/safe-apps-web3modal";
 import Portis from "@portis/web3";
 import WalletConnectProvider from "@walletconnect/web3-provider";
 import { Alert, Button, Col, Menu, Row } from "antd";
 import "antd/dist/antd.css";
 import Authereum from "authereum";
-import { useBalance, useContractLoader, useContractReader, useGasPrice, useOnBlock } from "eth-hooks";
+import {
+  useBalance,
+  useContractLoader,
+  useContractReader,
+  useGasPrice,
+  useOnBlock,
+} from "eth-hooks";
 // import useEventListener from "./hooks/oldEventListener";
 import { useExchangeEthPrice } from "eth-hooks/dapps/dex";
 import Fortmatic from "fortmatic";
@@ -11,18 +18,27 @@ import React, { useCallback, useEffect, useState } from "react";
 import { BrowserRouter, Link, Route, Switch } from "react-router-dom";
 //import Torus from "@toruslabs/torus-embed"
 import WalletLink from "walletlink";
-import { SafeAppWeb3Modal } from "@gnosis.pm/safe-apps-web3modal";
 import "./App.css";
-import { Account, Contract, Faucet, GasGauge, Header, Ramp, ThemeSwitch } from "./components";
+import {
+  Account,
+  Contract,
+  Faucet,
+  GasGauge,
+  Header,
+  Ramp,
+  ThemeSwitch,
+} from "./components";
 import { INFURA_ID, NETWORK, NETWORKS } from "./constants";
 import { Transactor } from "./helpers";
 import { useContractConfig, useUserSigner } from "./hooks";
-import { OrganizationHome, UserStream, OrganizationBrowsePage } from "./views";
+import { OrganizationBrowsePage, OrganizationHome, UserStream } from "./views";
 
 const { ethers } = require("ethers");
 
 /// 📡 What chain are your contracts deployed to?
-const targetNetwork = (process.env.REACT_APP_NETWORK && NETWORKS[process.env.REACT_APP_NETWORK]) || NETWORKS.mainnet; // <------- select your target frontend network (localhost, rinkeby, xdai, mainnet)
+const targetNetwork =
+  (process.env.REACT_APP_NETWORK && NETWORKS[process.env.REACT_APP_NETWORK]) ||
+  NETWORKS.mainnet; // <------- select your target frontend network (localhost, rinkeby, xdai, mainnet)
 
 // 😬 Sorry for all the console logging
 const DEBUG = false;
@@ -36,24 +52,32 @@ if (DEBUG) console.log("📡 Connecting to Mainnet Ethereum");
 // attempt to connect to our own scaffold eth rpc and if that fails fall back to infura...
 // Using StaticJsonRpcProvider as the chainId won't change see https://github.com/ethers-io/ethers.js/issues/901
 const scaffoldEthProvider = navigator.onLine
-  ? new ethers.providers.StaticJsonRpcProvider("https://eth-mainnet.alchemyapi.io/v2/4eQGdKbc4zxHaDCEQG1wmi98KPRUht_t")
+  ? new ethers.providers.StaticJsonRpcProvider(
+      "https://eth-mainnet.alchemyapi.io/v2/4eQGdKbc4zxHaDCEQG1wmi98KPRUht_t"
+    )
   : null;
 const poktMainnetProvider = navigator.onLine
   ? new ethers.providers.StaticJsonRpcProvider(
-      "https://eth-mainnet.gateway.pokt.network/v1/lb/611156b4a585a20035148406",
+      "https://eth-mainnet.gateway.pokt.network/v1/lb/611156b4a585a20035148406"
     )
   : null;
 const mainnetInfura = navigator.onLine
-  ? new ethers.providers.StaticJsonRpcProvider("https://eth-mainnet.alchemyapi.io/v2/4eQGdKbc4zxHaDCEQG1wmi98KPRUht_t")
+  ? new ethers.providers.StaticJsonRpcProvider(
+      "https://eth-mainnet.alchemyapi.io/v2/4eQGdKbc4zxHaDCEQG1wmi98KPRUht_t"
+    )
   : null;
 // ( ⚠️ Getting "failed to meet quorum" errors? Check your INFURA_ID
 
 // 🏠 Your local provider is usually pointed at your local blockchain
 const localProviderUrl = targetNetwork.rpcUrl;
 // as you deploy to other networks you can set REACT_APP_RINKEBY_PROVIDER=https://dai.poa.network in packages/react-app/.env
-const localProviderUrlFromEnv = process.env.REACT_APP_RINKEBY_PROVIDER ? process.env.REACT_APP_RINKEBY_PROVIDER : localProviderUrl;
+const localProviderUrlFromEnv = process.env.REACT_APP_RINKEBY_PROVIDER
+  ? process.env.REACT_APP_RINKEBY_PROVIDER
+  : localProviderUrl;
 if (DEBUG) console.log("🏠 Connecting to provider:", localProviderUrlFromEnv);
-const localProvider = new ethers.providers.StaticJsonRpcProvider(localProviderUrlFromEnv);
+const localProvider = new ethers.providers.StaticJsonRpcProvider(
+  localProviderUrlFromEnv
+);
 
 // 🔭 block explorer URL
 const blockExplorer = targetNetwork.blockExplorer;
@@ -66,7 +90,7 @@ const walletLink = new WalletLink({
 // WalletLink provider
 const walletLinkProvider = walletLink.makeWeb3Provider(
   "https://eth-mainnet.alchemyapi.io/v2/4eQGdKbc4zxHaDCEQG1wmi98KPRUht_t",
-  1,
+  1
 );
 
 // Portis ID: 6255fb2b-58c8-433b-a2c9-62098c05ddc9
@@ -147,11 +171,17 @@ function App(props) {
       : mainnetInfura;
 
   const [injectedProvider, setInjectedProvider] = useState();
-  const [address, setAddress] = useState("0x0000000000000000000000000000000000000000");
+  const [address, setAddress] = useState(
+    "0x0000000000000000000000000000000000000000"
+  );
 
   const logoutOfWeb3Modal = async () => {
     await web3Modal.clearCachedProvider();
-    if (injectedProvider && injectedProvider.provider && typeof injectedProvider.provider.disconnect == "function") {
+    if (
+      injectedProvider &&
+      injectedProvider.provider &&
+      typeof injectedProvider.provider.disconnect == "function"
+    ) {
       await injectedProvider.provider.disconnect();
     }
     setTimeout(() => {
@@ -179,9 +209,13 @@ function App(props) {
   }, [userSigner]);
 
   // You can warn the user if you would like them to be on a specific network
-  const localChainId = localProvider && localProvider._network && localProvider._network.chainId;
+  const localChainId =
+    localProvider && localProvider._network && localProvider._network.chainId;
   const selectedChainId =
-    userSigner && userSigner.provider && userSigner.provider._network && userSigner.provider._network.chainId;
+    userSigner &&
+    userSigner.provider &&
+    userSigner.provider._network &&
+    userSigner.provider._network.chainId;
 
   // For more hooks, check out 🔗eth-hooks at: https://www.npmjs.com/package/eth-hooks
 
@@ -212,13 +246,18 @@ function App(props) {
 
   // If you want to call a function on a new block
   useOnBlock(mainnetProvider, () => {
-    console.log(`⛓ A new mainnet block is here: ${mainnetProvider._lastBlockNumber}`);
+    console.log(
+      `⛓ A new mainnet block is here: ${mainnetProvider._lastBlockNumber}`
+    );
   });
 
   // Then read your DAI balance like:
-  const myMainnetDAIBalance = useContractReader(mainnetContracts, "DAI", "balanceOf", [
-    "0x34aA3F359A9D614239015126635CE7732c18fDF3",
-  ]);
+  const myMainnetDAIBalance = useContractReader(
+    mainnetContracts,
+    "DAI",
+    "balanceOf",
+    ["0x34aA3F359A9D614239015126635CE7732c18fDF3"]
+  );
 
   /*
   const addressFromENS = useResolveName(mainnetProvider, "austingriffith.eth");
@@ -240,13 +279,23 @@ function App(props) {
       writeContracts &&
       mainnetContracts
     ) {
-      console.log("_____________________________________ 🏗 scaffold-eth _____________________________________");
+      console.log(
+        "_____________________________________ 🏗 scaffold-eth _____________________________________"
+      );
       console.log("🌎 mainnetProvider", mainnetProvider);
       console.log("🏠 localChainId", localChainId);
       console.log("👩‍💼 selected address:", address);
       console.log("🕵🏻‍♂️ selectedChainId:", selectedChainId);
-      console.log("💵 yourLocalBalance", yourLocalBalance ? ethers.utils.formatEther(yourLocalBalance) : "...");
-      console.log("💵 yourMainnetBalance", yourMainnetBalance ? ethers.utils.formatEther(yourMainnetBalance) : "...");
+      console.log(
+        "💵 yourLocalBalance",
+        yourLocalBalance ? ethers.utils.formatEther(yourLocalBalance) : "..."
+      );
+      console.log(
+        "💵 yourMainnetBalance",
+        yourMainnetBalance
+          ? ethers.utils.formatEther(yourMainnetBalance)
+          : "..."
+      );
       console.log("📝 readContracts", readContracts);
       console.log("🌍 DAI contract on mainnet:", mainnetContracts);
       console.log("💵 yourMainnetDAIBalance", myMainnetDAIBalance);
@@ -264,19 +313,35 @@ function App(props) {
   ]);
 
   let networkDisplay = "";
-  if (NETWORKCHECK && localChainId && selectedChainId && localChainId !== selectedChainId) {
+  if (
+    NETWORKCHECK &&
+    localChainId &&
+    selectedChainId &&
+    localChainId !== selectedChainId
+  ) {
     const networkSelected = NETWORK(selectedChainId);
     const networkLocal = NETWORK(localChainId);
     if (selectedChainId === 1337 && localChainId === 31337) {
       networkDisplay = (
-        <div style={{ zIndex: 2, position: "absolute", right: 0, top: 60, padding: 16 }}>
+        <div
+          style={{
+            zIndex: 2,
+            position: "absolute",
+            right: 0,
+            top: 60,
+            padding: 16,
+          }}
+        >
           <Alert
             message="⚠️ Wrong Network ID"
             description={
               <div>
-                You have <b>chain id 1337</b> for localhost and you need to change it to <b>31337</b> to work with
-                HardHat.
-                <div>(MetaMask -&gt; Settings -&gt; Networks -&gt; Chain ID -&gt; 31337)</div>
+                You have <b>chain id 1337</b> for localhost and you need to
+                change it to <b>31337</b> to work with HardHat.
+                <div>
+                  (MetaMask -&gt; Settings -&gt; Networks -&gt; Chain ID -&gt;
+                  31337)
+                </div>
               </div>
             }
             type="error"
@@ -286,12 +351,21 @@ function App(props) {
       );
     } else {
       networkDisplay = (
-        <div style={{ zIndex: 2, position: "absolute", right: 0, top: 60, padding: 16 }}>
+        <div
+          style={{
+            zIndex: 2,
+            position: "absolute",
+            right: 0,
+            top: 60,
+            padding: 16,
+          }}
+        >
           <Alert
             message="⚠️ Wrong Network"
             description={
               <div>
-                You have <b>{networkSelected && networkSelected.name}</b> selected and you need to be on{" "}
+                You have <b>{networkSelected && networkSelected.name}</b>{" "}
+                selected and you need to be on{" "}
                 <Button
                   onClick={async () => {
                     const ethereum = window.ethereum;
@@ -342,7 +416,16 @@ function App(props) {
     }
   } else {
     networkDisplay = (
-      <div style={{ zIndex: -1, position: "absolute", right: 154, top: 28, padding: 16, color: targetNetwork.color }}>
+      <div
+        style={{
+          zIndex: -1,
+          position: "absolute",
+          right: 154,
+          top: 28,
+          padding: 16,
+          color: targetNetwork.color,
+        }}
+      >
         {targetNetwork.name}
       </div>
     );
@@ -352,7 +435,7 @@ function App(props) {
     const provider = await web3Modal.requestProvider();
     setInjectedProvider(new ethers.providers.Web3Provider(provider));
 
-    provider.on("chainChanged", chainId => {
+    provider.on("chainChanged", (chainId) => {
       console.log(`chain changed to ${chainId}! updating providers`);
       setInjectedProvider(new ethers.providers.Web3Provider(provider));
     });
@@ -381,7 +464,10 @@ function App(props) {
   }, [setRoute]);
 
   let faucetHint = "";
-  const faucetAvailable = localProvider && localProvider.connection && targetNetwork.name.indexOf("local") !== -1;
+  const faucetAvailable =
+    localProvider &&
+    localProvider.connection &&
+    targetNetwork.name.indexOf("local") !== -1;
 
   const [faucetClicked, setFaucetClicked] = useState(false);
   if (
@@ -416,7 +502,11 @@ function App(props) {
       <Header />
       {networkDisplay}
       <BrowserRouter>
-        <Menu style={{ textAlign: "center" }} selectedKeys={[route]} mode="horizontal">
+        <Menu
+          style={{ textAlign: "center" }}
+          selectedKeys={[route]}
+          mode="horizontal"
+        >
           <Menu.Item key="/">
             <Link
               onClick={() => {
@@ -439,14 +529,13 @@ function App(props) {
           </Menu.Item>
         </Menu>
 
-
         <Switch>
           <Route exact path="/">
             <OrganizationBrowsePage
-                tx={tx}
-                writeContracts={writeContracts}
-                provider={injectedProvider || localProvider}
-                readContracts={readContracts}
+              tx={tx}
+              writeContracts={writeContracts}
+              provider={injectedProvider || localProvider}
+              readContracts={readContracts}
             />
           </Route>
           <Route path="/organizations/:orgaddress">
@@ -506,7 +595,15 @@ function App(props) {
       <ThemeSwitch />
 
       {/* 👨‍💼 Your account is in the top right with a wallet at connect options */}
-      <div style={{ position: "fixed", textAlign: "right", right: 0, top: 0, padding: 10 }}>
+      <div
+        style={{
+          position: "fixed",
+          textAlign: "right",
+          right: 0,
+          top: 0,
+          padding: 10,
+        }}
+      >
         <Account
           address={address}
           localProvider={localProvider}
@@ -523,7 +620,15 @@ function App(props) {
       </div>
 
       {/* 🗺 Extra UI like gas price, eth price, faucet, and support: */}
-      <div style={{ position: "fixed", textAlign: "left", left: 0, bottom: 20, padding: 10 }}>
+      <div
+        style={{
+          position: "fixed",
+          textAlign: "left",
+          left: 0,
+          bottom: 20,
+          padding: 10,
+        }}
+      >
         <Row align="middle" gutter={[4, 4]}>
           <Col span={8}>
             <Ramp price={price} address={address} networks={NETWORKS} />
@@ -553,7 +658,11 @@ function App(props) {
             {
               /*  if the local provider has a signer, let's show the faucet:  */
               faucetAvailable ? (
-                <Faucet localProvider={localProvider} price={price} ensProvider={mainnetProvider} />
+                <Faucet
+                  localProvider={localProvider}
+                  price={price}
+                  ensProvider={mainnetProvider}
+                />
               ) : (
                 ""
               )

@@ -1,22 +1,22 @@
 module.exports = {
-  env: {
-    mocha: true,
-  },
-  extends: ["airbnb"],
-  plugins: ["babel"],
-  rules: {
-    "import/extensions": [
-      "error",
-      "ignorePackages",
-      {
-        js: "never",
-        ts: "never",
-      },
-    ],
-    "import/prefer-default-export": "off",
-    "prefer-destructuring": "off",
-    "prefer-template": "off",
-    "no-console": "off",
-    "func-names": "off",
-  },
+    env: {
+        mocha: true,
+    },
+    extends: ["airbnb"],
+    plugins: ["babel"],
+    rules: {
+        "import/extensions": [
+            "error",
+            "ignorePackages",
+            {
+                js: "never",
+                ts: "never",
+            },
+        ],
+        "import/prefer-default-export": "off",
+        "prefer-destructuring": "off",
+        "prefer-template": "off",
+        "no-console": "off",
+        "func-names": "off",
+    },
 };
