@@ -1,7 +1,8 @@
+import { GithubOutlined } from "@ant-design/icons";
 import { SafeAppWeb3Modal } from "@gnosis.pm/safe-apps-web3modal";
 import Portis from "@portis/web3";
 import WalletConnectProvider from "@walletconnect/web3-provider";
-import { Layout, Alert, Button, Col, Row, Menu } from "antd";
+import { Alert, Button, Col, Layout, Menu, Row } from "antd";
 import "antd/dist/antd.css";
 import Authereum from "authereum";
 import {
@@ -9,7 +10,7 @@ import {
   useContractLoader,
   useContractReader,
   useGasPrice,
-  useOnBlock,
+  useOnBlock
 } from "eth-hooks";
 // import useEventListener from "./hooks/oldEventListener";
 import { useExchangeEthPrice } from "eth-hooks/dapps/dex";
@@ -19,13 +20,12 @@ import { Link, Route, Switch, useLocation } from "react-router-dom";
 //import Torus from "@toruslabs/torus-embed"
 import WalletLink from "walletlink";
 import "./App.css";
-import { Account, Contract, Faucet, GitcoinDAOBadge, TokenStreamLogo, NetworkSwitch } from "./components";
+import { Account, Contract, Faucet, GitcoinDAOBadge, NetworkSwitch, TokenStreamLogo } from "./components";
 import { INFURA_ID, NETWORK, NETWORKS } from "./constants";
 import { Transactor } from "./helpers";
-import { useContractConfig, useUserSigner, useStaticJsonRPC } from "./hooks";
-import { OrganizationHome, OrganizationBrowsePage } from "./views";
+import { useContractConfig, useStaticJsonRPC, useUserSigner } from "./hooks";
+import { OrganizationBrowsePage, OrganizationHome } from "./views";
 import { LandingPage } from "./views/LandingPage";
-import { GithubOutlined } from "@ant-design/icons";
 
 
 const { ethers } = require("ethers");
