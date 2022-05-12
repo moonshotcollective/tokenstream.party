@@ -100,6 +100,7 @@
     "lint": "eslint --config ./.eslintrc.js --ignore-path ./.eslintignore ./src/**/*",
     "ipfs": "node ./scripts/ipfs.js",
     "surge": "cp build/index.html build/200.html && surge ./build --domain tokenstream.party",
+    "dao:surge": "cp build/index.html build/200.html && surge ./build --domain dao.tokenstream.party",
     "staging:surge": "cp build/index.html build/200.html && surge ./build --domain tokenstream-rinkeby-customtokens.surge.sh",
     "goerli:surge": "cp build/index.html build/200.html && surge ./build --domain tokenstream-goerli.surge.sh",
     "s3": "node ./scripts/s3.js",

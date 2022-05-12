@@ -486,6 +486,7 @@ function App(props) {
           {(location.pathname !== "/") && 
             <div className="account-details">
             <Account
+                useBurner={false}
                 address={address}
                 localProvider={localProvider}
                 userSigner={userSigner}
