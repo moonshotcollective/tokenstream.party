@@ -203,13 +203,13 @@ export default function UserStream({
                     <Col key="user-stream-go-back" span={4}>
                         <Button type="text" icon={<LeftOutlined />} onClick={history.goBack}>Back</Button>
                     </Col>
-                    <Col key="stream-actions" span={4} offset={16}>
+                    <Col key="stream-actions" span={12} offset={8} style={{textAlign: "right"}}>
                         {isOwnStream() && 
                             <Tooltip title={isBalanceUnavailable() ? `No tokens available: deposit required!`: `Withdraw tokens`}>
-                                <Button disabled={isBalanceUnavailable()} type="primary" onClick={toggleWithdrawFormModal}>Withdraw</Button>
+                                <Button disabled={isBalanceUnavailable()} type="primary" onClick={toggleWithdrawFormModal} style={{marginRight: "2em"}}>Withdraw</Button>
                             </Tooltip>
                         }
-                        {!isOwnStream() && <Button type="primary" onClick={toggleDepositFormModal}>Deposit</Button>}
+                        <Button type="primary" onClick={toggleDepositFormModal}>Deposit</Button>
                     </Col>
                 </Row>
                 <Row key="user-stream-view" gutter={[24, 16]} style={{ marginTop: "1em", border: "solid 1px rgba(254,254,254,0.2)", padding: "2em 0" }}>
