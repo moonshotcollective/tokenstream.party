@@ -154,7 +154,7 @@ export default function OrganizationBrowsePage({ tx, userAddress, writeContracts
                     style={{ marginTop: "1.6em", marginBottom: "1em", width: '80%'}}
                 />
                 <Divider orientation="right">
-                    <Button type="primary" onClick={() => setShowWizard(true)}>Launch DAO Streams</Button>
+                    <Button type="primary" onClick={() => setShowWizard(true)}>Launch A DAO</Button>
                 </Divider>
             </div>
             {organizations &&
@@ -206,8 +206,8 @@ export default function OrganizationBrowsePage({ tx, userAddress, writeContracts
             }
             {organizations && organizations.length === 0 && (
                 <div >
-                    <p>No streams deployed yet..</p>
-                    <p>Click "Launch DAO Streams", and be the first!</p>
+                    <p>No DAO's deployed yet..</p>
+                    <p>Click "Launch A DAO", and be the first!</p>
                 </div>
             )}
             {!organizations && (

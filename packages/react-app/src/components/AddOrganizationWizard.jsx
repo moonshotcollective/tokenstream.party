@@ -41,7 +41,7 @@ export default function AddOrganizationWizard({ tx, writeContracts, showWizard, 
         let calldata = [orgName, orgLogoURI, orgDescription, ownerAddress, [], [], [], [], token];
 
         try {
-            const result = tx(writeContracts.StreamDeployer.deployOrganization(...calldata), update => {
+            const result = tx(writeContracts?.StreamDeployer?.deployOrganization(...calldata), update => {
                 console.log("📡 Transaction Update:", update);
                 if (update && (update.status === "confirmed" || update.status === 1)) {
                     onDeployHandler();
@@ -58,7 +58,7 @@ export default function AddOrganizationWizard({ tx, writeContracts, showWizard, 
                     setIsDeploying(false);
                     notification.success({
                         message: "Launched DAO successfully!",
-                        description: `Tokenstreams are now configured for ${orgName}`,
+                        description: `Tokenstreams are now ready to be configured for ${orgName}`,
                         placement: "topRight",
                     });
                 }
