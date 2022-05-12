@@ -27,7 +27,7 @@ error InsufficientPrivileges();
 /// @notice the meat and potatoes of the stream
 contract MultiStream is Ownable, AccessControl, ReentrancyGuard {
     bytes32 public constant MANAGER_ROLE = keccak256("MANAGER_ROLE");
-    bytes32 public constant OPERATOR_ROLE = keccak256("OPERATOR");
+    // bytes32 public constant OPERATOR_ROLE = keccak256("OPERATOR");
 
     /// @dev Describe a stream 
     struct Stream {
@@ -85,6 +85,15 @@ contract MultiStream is Ownable, AccessControl, ReentrancyGuard {
     /// @dev StreamAdded event to track the streams after creation
     event StreamAdded(address creator, address user);
 
+    modifier hasCorrectRole() {
+        if (!hasRole(MANAGER_ROLE, _msgSender())) {
+            if (!hasRole(DEFAULT_ADMIN_ROLE, _msgSender())) {
+                revert InsufficientPrivileges();
+            }
+        }
+        _;
+    }
+
     constructor(
         string memory _orgName,
         string memory _orgLogoURI,
@@ -137,9 +146,9 @@ contract MultiStream is Ownable, AccessControl, ReentrancyGuard {
         grantRole(MANAGER_ROLE, _manager);
     }
 
-    function addOperator(address _operator) external onlyRole(DEFAULT_ADMIN_ROLE) {
-        grantRole(OPERATOR_ROLE, _operator);
-    }
+    // function addOperator(address _operator) external onlyRole(DEFAULT_ADMIN_ROLE) {
+    //     grantRole(OPERATOR_ROLE, _operator);
+    // }
 
     function removeManager(address _manager)
         external
@@ -148,12 +157,12 @@ contract MultiStream is Ownable, AccessControl, ReentrancyGuard {
         revokeRole(MANAGER_ROLE, _manager);
     }
 
-    function removeOperator(address _operator)
-        external
-        onlyRole(DEFAULT_ADMIN_ROLE)
-    {
-        revokeRole(OPERATOR_ROLE, _operator);
-    }
+    // function removeOperator(address _operator)
+    //     external
+    //     onlyRole(DEFAULT_ADMIN_ROLE)
+    // {
+    //     revokeRole(OPERATOR_ROLE, _operator);
+    // }
 
     /// @dev add a stream for user
     function addStream(
@@ -161,14 +170,7 @@ contract MultiStream is Ownable, AccessControl, ReentrancyGuard {
         uint256 _cap,
         uint256 _frequency,
         bool _startsFull
-    ) external {
-
-        if (!hasRole(MANAGER_ROLE, _msgSender())) {
-            if (!hasRole(DEFAULT_ADMIN_ROLE, _msgSender())) {
-                revert InsufficientPrivileges();
-            }
-        }
-
+    ) external hasCorrectRole {
         userIndex[userCount] = _beneficiary;
         inverseUserIndex[_beneficiary] = userCount;
         userCount += 1;
@@ -185,7 +187,7 @@ contract MultiStream is Ownable, AccessControl, ReentrancyGuard {
     }
 
     /// @dev Transfers remaining balance and disables stream
-    function disableStream(address _beneficiary) external onlyRole(DEFAULT_ADMIN_ROLE) {
+    function disableStream(address _beneficiary) external hasCorrectRole {
         uint256 totalAmount = streamBalance(_beneficiary);
 
         uint256 cappedLast = block.timestamp - streams[_beneficiary].frequency;
@@ -205,7 +207,7 @@ contract MultiStream is Ownable, AccessControl, ReentrancyGuard {
     }
 
     /// @dev Transfers remaining balance and deletes stream
-    function deleteStream(address _beneficiary) external onlyRole(MANAGER_ROLE) {
+    function deleteStream(address _beneficiary) external hasCorrectRole {
         uint256 totalAmount = streamBalance(_beneficiary);
 
         if(!orgInfo.dToken.transfer(msg.sender, totalAmount)) revert TransferFailed();
@@ -224,7 +226,7 @@ contract MultiStream is Ownable, AccessControl, ReentrancyGuard {
         uint256 _cap,
         uint256 _frequency,
         bool _startsFull
-    ) external onlyRole(MANAGER_ROLE) {
+    ) external hasCorrectRole {
 
         streams[_beneficiary].cap = _cap;
         streams[_beneficiary].frequency = _frequency;
@@ -300,7 +302,7 @@ contract MultiStream is Ownable, AccessControl, ReentrancyGuard {
     /// @param _increase how much to increase the cap
     function increaseCap(uint256 _increase, address beneficiary)
         external
-        onlyRole(MANAGER_ROLE)
+        hasCorrectRole
     {
         if (_increase == 0) revert IncreaseByMore();
 
@@ -313,7 +315,7 @@ contract MultiStream is Ownable, AccessControl, ReentrancyGuard {
     /// @param _frequency the new frequency
     function updateFrequency(uint256 _frequency, address beneficiary)
         external
-        onlyRole(MANAGER_ROLE)
+        hasCorrectRole
     {
         if(_frequency < 0) revert InvalidFrequency();
         if (_frequency == 0) revert IncreaseByMore();
