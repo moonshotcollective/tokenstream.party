@@ -12,7 +12,8 @@ const themes = {
   light: `${process.env.PUBLIC_URL}/light-theme.css`,
 };
 
-const subgraphUri = process.env.REACT_APP_SUBGRAPH_ENDPOINT || "http://localhost:8000/subgraphs/name/tokenstreams/org-factory";
+const subgraphUri = process.env.REACT_APP_SUBGRAPH_ENDPOINT || "https://thegraph.com/hosted-service/subgraph/supriyaamisshra/tokenstreams-goerli/";
+//"http://localhost:8000/subgraphs/name/tokenstreams/org-factory";
 
 const client = new ApolloClient({
   uri: subgraphUri,
