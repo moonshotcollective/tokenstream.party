@@ -30,6 +30,7 @@
     "send": "yarn workspace @scaffold-eth/hardhat send",
     "ipfs": "yarn workspace @scaffold-eth/react-app ipfs",
     "surge": "yarn workspace @scaffold-eth/react-app surge",
+    "dao:surge": "yarn workspace @scaffold-eth/react-app dao:surge",
     "staging:surge": "yarn workspace @scaffold-eth/react-app staging:surge",
     "goerli:surge": "yarn workspace @scaffold-eth/react-app goerli:surge",
     "s3": "yarn workspace @scaffold-eth/react-app s3",
