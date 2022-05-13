@@ -21,6 +21,7 @@ error DepositAmountTooSmall();
 error DepositFailed();
 error InvalidFrequency();
 error InsufficientPrivileges();
+error StreamAlreadyExists();
 
 /// @title Organization Streams Contract
 /// @author ghostffcode, jaxcoder, nowonder, qedk, supriyaamisshra
@@ -171,6 +172,9 @@ contract MultiStream is Ownable, AccessControl, ReentrancyGuard {
         uint256 _frequency,
         bool _startsFull
     ) external hasCorrectRole {
+        if (streams[_beneficiary].last > 0) {
+            revert StreamAlreadyExists();
+        }
         userIndex[userCount] = _beneficiary;
         inverseUserIndex[_beneficiary] = userCount;
         userCount += 1;
