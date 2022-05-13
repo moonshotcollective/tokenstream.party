@@ -11,7 +11,7 @@ require("hardhat-gas-reporter");
 require("@nomiclabs/hardhat-etherscan");
 
 const { isAddress, getAddress, formatUnits, parseUnits } = utils;
-const defaultNetwork = "localhost";
+const defaultNetwork = "goerli";
 const mainnetGwei = 115;
 
 function mnemonic() {
