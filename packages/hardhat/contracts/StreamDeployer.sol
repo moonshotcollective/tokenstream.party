@@ -32,6 +32,7 @@ contract StreamDeployer is Ownable {
     /// @param _frequency the frequency for the addresses
     /// @param _startsFull the bool for each address to start full or not
     /// @param _tokenAddress the stream token address for the org
+    /// @param _name the stream name for the org
     function deployOrganization(
         string memory _orgName,
         string memory _orgLogoURI,
@@ -41,6 +42,7 @@ contract StreamDeployer is Ownable {
         uint256[] memory _caps,
         uint256[] memory _frequency,
         bool[] memory _startsFull,
+        string[] memory _name,
         IERC20 _tokenAddress
     ) external {
         MultiStream deployedOrganization = new MultiStream(
@@ -52,6 +54,7 @@ contract StreamDeployer is Ownable {
             _caps,
             _frequency,
             _startsFull,
+            _name,
             address(_tokenAddress)
         );
         

@@ -38,7 +38,7 @@ export default function AddOrganizationWizard({ tx, writeContracts, showWizard, 
         }
         console.log("Launching!");
         const { orgName, orgLogoURI, orgDescription, ownerAddress, token } = organizationDetails;
-        let calldata = [orgName, orgLogoURI, orgDescription, ownerAddress, [], [], [], [], token];
+        let calldata = [orgName, orgLogoURI, orgDescription, ownerAddress, [], [], [], [], [], token];
 
         try {
             const result = tx(writeContracts?.StreamDeployer?.deployOrganization(...calldata), update => {

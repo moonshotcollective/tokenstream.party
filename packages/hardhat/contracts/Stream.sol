@@ -28,7 +28,6 @@ error StreamAlreadyExists();
 /// @notice the meat and potatoes of the stream
 contract MultiStream is Ownable, AccessControl, ReentrancyGuard {
     bytes32 public constant MANAGER_ROLE = keccak256("MANAGER_ROLE");
-    // bytes32 public constant OPERATOR_ROLE = keccak256("OPERATOR");
 
     /// @dev Describe a stream 
     struct Stream {
@@ -40,12 +39,14 @@ contract MultiStream is Ownable, AccessControl, ReentrancyGuard {
         uint256 last;
         /// @dev tokens pledged to this stream
         uint256 pledged;
+        ///@dev stream name 
+        string name;
     }
 
     /// @dev Describe a stream for view purposes
     struct StreamView {
-        /// @dev user address
-        address user;
+        /// @dev owner address
+        address owner;
         /// @dev stream cap
         uint256 cap;
         /// @dev stream frequency
@@ -56,6 +57,8 @@ contract MultiStream is Ownable, AccessControl, ReentrancyGuard {
         uint256 balance;
         /// @dev pledged/eligible balance
         uint256 pledged;
+        ///@dev stream name 
+        string name;
     }
 
     /// @dev organization info
@@ -75,16 +78,16 @@ contract MultiStream is Ownable, AccessControl, ReentrancyGuard {
     }
 
     OrgInfo public orgInfo;
-    uint256 userCount;
-    mapping(address => uint256) inverseUserIndex;
-    mapping(uint256 => address) userIndex;
+    uint256 streamCount;
+    mapping(address => uint256) inverseOwnerIndex;
+    mapping(uint256 => address) ownerIndex;
     mapping(address => Stream) streams;
     mapping(address => bool) disabled;
 
     event Withdraw(address indexed to, uint256 amount, string reason);
     event Deposit(address indexed stream, address indexed from, uint256 amount, string reason);
     /// @dev StreamAdded event to track the streams after creation
-    event StreamAdded(address creator, address user);
+    event StreamAdded(address creator, address user, string name);
 
     modifier hasCorrectRole() {
         if (!hasRole(MANAGER_ROLE, _msgSender())) {
@@ -104,6 +107,7 @@ contract MultiStream is Ownable, AccessControl, ReentrancyGuard {
         uint256[] memory _caps,
         uint256[] memory _frequency,
         bool[] memory _startsFull,
+        string[] memory _name,
         address _tokenAddress
     ) {
         /* 
@@ -122,18 +126,18 @@ contract MultiStream is Ownable, AccessControl, ReentrancyGuard {
         @ note Init Streams
         */
         for (uint256 i = 0; i < _addresses.length; ++i) {
-            userIndex[userCount] = _addresses[i];
-            inverseUserIndex[_addresses[i]] = userCount;
-            userCount += 1;
+            ownerIndex[streamCount] = _addresses[i];
+            inverseOwnerIndex[_addresses[i]] = streamCount;
+            streamCount += 1;
             uint256 last;
             if (_startsFull[i] == true) {
                 last = block.timestamp - _frequency[i];
             } else {
                 last = block.timestamp;
             }
-            Stream memory stream = Stream(_caps[i], _frequency[i], last, 0);
+            Stream memory stream = Stream(_caps[i], _frequency[i], last, 0, _name[i]);
             streams[_addresses[i]] = stream;
-            emit StreamAdded(_msgSender(), _addresses[i]);
+            emit StreamAdded(_msgSender(), _addresses[i], _name[i]);
         }
 
         /* 
@@ -147,10 +151,6 @@ contract MultiStream is Ownable, AccessControl, ReentrancyGuard {
         grantRole(MANAGER_ROLE, _manager);
     }
 
-    // function addOperator(address _operator) external onlyRole(DEFAULT_ADMIN_ROLE) {
-    //     grantRole(OPERATOR_ROLE, _operator);
-    // }
-
     function removeManager(address _manager)
         external
         onlyRole(DEFAULT_ADMIN_ROLE)
@@ -158,36 +158,30 @@ contract MultiStream is Ownable, AccessControl, ReentrancyGuard {
         revokeRole(MANAGER_ROLE, _manager);
     }
 
-    // function removeOperator(address _operator)
-    //     external
-    //     onlyRole(DEFAULT_ADMIN_ROLE)
-    // {
-    //     revokeRole(OPERATOR_ROLE, _operator);
-    // }
-
     /// @dev add a stream for user
     function addStream(
         address _beneficiary,
         uint256 _cap,
         uint256 _frequency,
-        bool _startsFull
+        bool _startsFull,
+        string calldata _name
     ) external hasCorrectRole {
         if (streams[_beneficiary].last > 0) {
             revert StreamAlreadyExists();
         }
-        userIndex[userCount] = _beneficiary;
-        inverseUserIndex[_beneficiary] = userCount;
-        userCount += 1;
+        ownerIndex[streamCount] = _beneficiary;
+        inverseOwnerIndex[_beneficiary] = streamCount;
+        streamCount += 1;
         uint256 last;
         if (_startsFull == true) {
             last = block.timestamp - _frequency;
         } else {
             last = block.timestamp;
         }
-        Stream memory stream = Stream(_cap, _frequency, last, 0);
+        Stream memory stream = Stream(_cap, _frequency, last, 0, _name);
         streams[_beneficiary] = stream;
         orgInfo.totalStreams += 1;
-        emit StreamAdded(_msgSender(), _beneficiary);
+        emit StreamAdded(_msgSender(), _beneficiary, _name);
     }
 
     /// @dev Transfers remaining balance and disables stream
@@ -216,11 +210,11 @@ contract MultiStream is Ownable, AccessControl, ReentrancyGuard {
 
         if(!orgInfo.dToken.transfer(msg.sender, totalAmount)) revert TransferFailed();
 
-        userCount -= 1;
+        streamCount -= 1;
         // Trigger gas refunds
         delete streams[_beneficiary];
-        delete userIndex[inverseUserIndex[_beneficiary]];
-        delete inverseUserIndex[_beneficiary];
+        delete ownerIndex[inverseOwnerIndex[_beneficiary]];
+        delete inverseOwnerIndex[_beneficiary];
         delete disabled[_beneficiary];
     }
 
@@ -258,11 +252,13 @@ contract MultiStream is Ownable, AccessControl, ReentrancyGuard {
     }
 
     /// @dev Withdraw from a stream
+    /// @param payoutAddress account to withdraw into
     /// @param amount amount of withdraw
-    function streamWithdraw(uint256 amount, string calldata reason)
+    /// @param reason a reason
+    function streamWithdraw(address payoutAddress, uint256 amount, string calldata reason)
         external
     {
-        if (msg.sender == address(0)) revert CantWithdrawToBurnAddress();
+        if (payoutAddress == address(0)) revert CantWithdrawToBurnAddress();
         if (disabled[msg.sender] == true) revert StreamDisabled();
 
         uint256 totalAmountCanWithdraw = streamBalance(msg.sender);
@@ -278,11 +274,11 @@ contract MultiStream is Ownable, AccessControl, ReentrancyGuard {
             (((block.timestamp - streams[msg.sender].last) * amount) /
                 totalAmountCanWithdraw);
 
-        if (!orgInfo.dToken.transfer(msg.sender, amount)) revert TransferFailed();
+        if (!orgInfo.dToken.transfer(payoutAddress, amount)) revert TransferFailed();
 
         orgInfo.totalPaid += amount;
         streams[msg.sender].pledged -= amount;
-        emit Withdraw(msg.sender, amount, reason);
+        emit Withdraw(payoutAddress, amount, reason);
     }
 
     /// @notice Deposits tokens into a specified stream
@@ -345,7 +341,7 @@ contract MultiStream is Ownable, AccessControl, ReentrancyGuard {
     {
         return StreamView(_userAddress, streams[_userAddress].cap,
                     streams[_userAddress].frequency, streams[_userAddress].last,
-                    streamBalance(_userAddress), streams[_userAddress].pledged);
+                    streamBalance(_userAddress), streams[_userAddress].pledged, streams[_userAddress].name);
     }
 
     /// @dev gets a page of streams
@@ -359,11 +355,11 @@ contract MultiStream is Ownable, AccessControl, ReentrancyGuard {
         view
         returns (StreamView[] memory)
     {
-        uint256 _userIndex = _resultsPerPage * _page - _resultsPerPage;
+        uint256 _ownerIndex = _resultsPerPage * _page - _resultsPerPage;
 
         if (
-            userCount == 0 ||
-            _userIndex > userCount - 1
+            streamCount == 0 ||
+            _ownerIndex > streamCount - 1
         ) {
             return new StreamView[](0);
         }
@@ -371,24 +367,24 @@ contract MultiStream is Ownable, AccessControl, ReentrancyGuard {
         StreamView[] memory _streams = new StreamView[](_resultsPerPage);
         uint256 _returnCounter = 0;
         uint256 _skipped = 0;
-        address currentUser = address(0);
+        address currentOwner = address(0);
         
         for (
-            _userIndex;
-            _userIndex < ((_resultsPerPage * _page) + _skipped);
-            _userIndex++
+            _ownerIndex;
+            _ownerIndex < ((_resultsPerPage * _page) + _skipped);
+            _ownerIndex++
         ) {
-            if (_userIndex <= userCount - 1) {
-                currentUser = userIndex[_userIndex];
-                if (disabled[currentUser]) {
+            if (_ownerIndex <= streamCount - 1) {
+                currentOwner = ownerIndex[_ownerIndex];
+                if (disabled[currentOwner]) {
                     _skipped++;
                     continue;
                 }
-                _streams[_returnCounter] = StreamView(currentUser, streams[currentUser].cap,
-                    streams[currentUser].frequency, streams[currentUser].last,
-                    streamBalance(currentUser), streams[currentUser].pledged);
+                _streams[_returnCounter] = StreamView(currentOwner, streams[currentOwner].cap,
+                    streams[currentOwner].frequency, streams[currentOwner].last,
+                    streamBalance(currentOwner), streams[currentOwner].pledged, streams[currentOwner].name);
             } else {
-                _streams[_returnCounter] = StreamView(address(0), 0,0,0,0,0);
+                _streams[_returnCounter] = StreamView(address(0), 0,0,0,0,0, "");
             }
             _returnCounter++;
         }

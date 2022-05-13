@@ -39,7 +39,7 @@ templates:
         - name: MultiStream
           file: ./abis/MultiStream.json
       eventHandlers:
-        - event: StreamAdded(address,address)
+        - event: StreamAdded(address,address,string)
           handler: handleStreamAdded
         - event: Withdraw(indexed address,uint256,string)
           handler: handleWithdraw

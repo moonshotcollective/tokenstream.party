@@ -13,6 +13,7 @@ import {
   Typography,
   Avatar,
   Tabs,
+  Input,
 } from "antd";
 import { AddressInput, Contract, OrgStreamsActivityFeed, UserStreamList } from "../components";
 import { OrganizationStreamsABI, OrganizationStreamsAdminABI, OrganizationStreamsManagerABI } from "../contracts/external_ABI";
@@ -45,6 +46,7 @@ export default function OrganizationHome({
   const { orgaddress: organizationAddress } = useParams();
   const [amount, setAmount] = useState(1);
   const [userAddress, setUserAddress] = useState("");
+  const [streamName, setStreamName] = useState("");
   const [duration, setDuration] = useState(4);
   const [startFull, setStartFull] = useState(0);
   const [newStreamModal, setNewStreamModal] = useState(false);
@@ -154,14 +156,16 @@ export default function OrganizationHome({
       "604800"
     );
     const _startFull = startFull === 1;
+    const calldata = [
+      userAddress,
+      capFormatted,
+      frequencyFormatted,
+      _startFull,
+      streamName
+    ];
     const result = tx(
       orgStreamFactoryWriteContract &&
-      orgStreamFactoryWriteContract.addStream(
-        userAddress,
-        capFormatted,
-        frequencyFormatted,
-        _startFull
-      ),
+      orgStreamFactoryWriteContract.addStream(...calldata),
       async (update) => {
         console.log("📡 Transaction Update:", update);
         if (update && (update.status === "confirmed" || update.status === 1)) {
@@ -177,6 +181,7 @@ export default function OrganizationHome({
           );
           // reset form to default values
           setUserAddress("");
+          setStreamName("");
           setAmount(1);
           setDuration(4);
           setStartFull(0);
@@ -288,6 +293,14 @@ export default function OrganizationHome({
           onOk={createNewStream}
           onCancel={() => setNewStreamModal(false)}
         >
+          <div style={{ marginBottom: 5 }}>Name:</div>
+          <Input
+            value={streamName}
+            onChange={(e) => setStreamName(e.target.value)}
+            placeholder="Name of the stream"
+          />
+          <div style={{ marginBottom: 25 }} />
+
           <div style={{ marginBottom: 5 }}>Recipient:</div>
           <AddressInput
             ensProvider={mainnetProvider}

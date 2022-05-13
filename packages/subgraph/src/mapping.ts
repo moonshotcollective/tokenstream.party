@@ -48,6 +48,7 @@ export function handleStreamAdded(event: StreamAdded): void {
     userOrg.user = userAddress;
     userOrg.organization = orgAddress;
     userOrg.creator = event.params.creator;
+    userOrg.streamName = event.params.name;
     userOrg.save();
   }
 }

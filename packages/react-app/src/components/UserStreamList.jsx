@@ -27,7 +27,8 @@ export const UserStreamList = ({orgStreamsContract, totalStreamCount, mainnetPro
                             frequency: e[2],
                             last: e[3],
                             balance: e[4],
-                            percent: e[4].mul(100).div(e[1]).toNumber()
+                            percent: e[4].mul(100).div(e[1]).toNumber(),
+                            name: e[6]
                         };
                     });
                 setData([...data, ...streams]);
@@ -80,12 +81,15 @@ export const UserStreamList = ({orgStreamsContract, totalStreamCount, mainnetPro
                             alignItems: "center",
                             }}
                         >{"  "}
-                            <Col span={10} >
+                            <Col span={5}>
+                                <h2>{item.name}</h2>
+                            </Col>
+                            <Col span={5} >
                             <div
                                 style={{
                                 display: "flex",
                                 }}
-                            >
+                            > 
                                 <Address
                                 value={item.user}
                                 ensProvider={mainnetProvider}

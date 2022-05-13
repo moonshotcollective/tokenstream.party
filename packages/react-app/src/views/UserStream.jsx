@@ -10,6 +10,7 @@ import pretty from "pretty-time";
 import { ethers } from "ethers";
 import { TokensContext } from "../context";
 import StreamProgress from "../components/StreamProgress";
+import Title from "antd/lib/skeleton/Title";
 
 const GET_USER_STREAMS_ACTIVITIES = gql`
   query GetActivitiesForStream($streamAddress: String!, $orgAddress: String!) {
@@ -95,7 +96,8 @@ export default function UserStream({
             frequency: infoResult[2],
             last: infoResult[3],
             balance: infoResult[4],
-            pledged: infoResult[5]
+            pledged: infoResult[5],
+            name: infoResult[6]
         });
         setReady(true);
     };
@@ -147,7 +149,6 @@ export default function UserStream({
             }
         });
         if (expectedEventCount && expectedEventCount != events.length) {
-            console.log(["SHITZU", streamActivityResult.data?.streamActivities?.length, expectedEventCount, events.length]);
             events.splice(0, 0, {type: "loading"});
         }
         return events;
@@ -199,7 +200,12 @@ export default function UserStream({
         <>
             {!ready && <Spin tip="Loading stream details..." />}
             {displayStreamDetails && <>
-                <Row key="user-stream-navigation" gutter={[8, 16]} style={{ marginTop: "1em" }}>
+                <Row key="user-stream-info" gutter={[8, 16]} style={{ marginTop: "1em" }}>
+                    <Col key="user-stream-name" span={24}>
+                        <h2>{info.name}</h2>
+                    </Col>
+                </Row>
+                <Row key="user-stream-navigation" gutter={[8, 16]}>
                     <Col key="user-stream-go-back" span={4}>
                         <Button type="text" icon={<LeftOutlined />} onClick={history.goBack}>Back</Button>
                     </Col>
@@ -254,7 +260,10 @@ export default function UserStream({
                             } else if (event.type === "withdraw") {
                                 return (<Timeline.Item key={event.key} dot={<WithdrawDot value={event.amount} />} color="yellow">
                                             <div className="event-prefix">
-                                                <small>withdrew {pretty(instantToDeltaNsFromNow(event.timestamp))} ago</small>
+                                                <small>pay out {pretty(instantToDeltaNsFromNow(event.timestamp))} ago to:</small>
+                                            </div>
+                                            <div className="event-prefix">
+                                                <Address value={event.from} fontSize="1em" blockiesSize={4} ensProvider={mainnetProvider} />
                                             </div>
                                             <p className="reason">
                                                 {event.reason}
@@ -300,6 +309,7 @@ export default function UserStream({
                     quoteRate={quoteRate}
                     tokenSymbol={tokenSymbol}
                     tx={tx}
+                    mainnetProvider={mainnetProvider}
                     orgStreamsWriteContract={orgStreamsWriteContract}
                     handleStreamWithMessage={handleStreamWithMessage}
                     onSuccess={() => {

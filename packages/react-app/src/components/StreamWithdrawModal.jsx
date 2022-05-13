@@ -1,5 +1,6 @@
 import { Button, Form, Input, Modal } from "antd";
 import { ethers } from "ethers";
+import AddressInput from "./AddressInput";
 
 const { TextArea } = Input;
 
@@ -10,13 +11,14 @@ export default function StreamWithdrawModal({
     onSuccess,
     quoteRate,
     tokenSymbol,
+    mainnetProvider,
     handleStreamWithMessage,
 }) {
 
     const withdrawFromStream = async (values) => {
-        const { reason, amount } = values;
+        const { payout, reason, amount } = values;
         tx(
-            orgStreamsWriteContract.streamWithdraw(ethers.utils.parseEther("" + amount), reason),
+            orgStreamsWriteContract.streamWithdraw(payout, ethers.utils.parseEther("" + amount), reason),
             handleStreamWithMessage(
                 {
                     message: "Withdrawal successful",
@@ -36,6 +38,15 @@ export default function StreamWithdrawModal({
                 autoComplete="off"
                 onFinish={withdrawFromStream}
             >
+                <Form.Item
+                    label="Payout Address"
+                    name="payout"
+                    rules={[
+                        { required: true, message: 'Please specify a payout address' }
+                    ]}
+                >
+                    <AddressInput ensProvider={mainnetProvider} />
+                </Form.Item>
                 <Form.Item
                     label="Reason"
                     name="reason"
