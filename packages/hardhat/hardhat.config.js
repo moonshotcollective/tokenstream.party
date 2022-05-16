@@ -11,7 +11,7 @@ require("hardhat-gas-reporter");
 require("@nomiclabs/hardhat-etherscan");
 
 const { isAddress, getAddress, formatUnits, parseUnits } = utils;
-const defaultNetwork = "goerli";
+const defaultNetwork = "mainnet";
 const mainnetGwei = 115;
 
 function mnemonic() {
@@ -71,7 +71,7 @@ module.exports = {
   solidity: {
     compilers: [
       {
-        version: "0.8.4",
+        version: "0.8.13",
         settings: {
           optimizer: {
             enabled: true,

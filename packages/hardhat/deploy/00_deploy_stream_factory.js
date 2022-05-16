@@ -40,13 +40,13 @@ module.exports = async ({ getNamedAccounts, getChainId, deployments }) => {
     StreamDeployer: orgFactory.address,
   });
 
-  // if (chainId !== "31337") {
-  //   await run("verify:verify", {
-  //     address: orgFactory.address,
-  //     constructorArguments: [owner],
-  //     contract: "contracts/StreamDeployer.sol:StreamDeployer",
-  //   });
-  // }
+  if (chainId !== "31337") {
+    await run("verify:verify", {
+      address: orgFactory.address,
+      constructorArguments: [owner],
+      contract: "contracts/StreamDeployer.sol:StreamDeployer",
+    });
+  }
 };
 
 module.exports.tags = ["GTC", "SupCoin", "StreamDeployer"];
