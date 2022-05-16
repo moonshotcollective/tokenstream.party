@@ -7,7 +7,7 @@ module.exports = async ({ getNamedAccounts, getChainId, deployments }) => {
   const chainId = await getChainId();
 
   // Mainnet GTC
-  let GTC = { address: "0x3f15B8c6F9939879Cb030D6dd935348E57109637" };
+  let GTC = { address: "0xDe30da39c46104798bB5aA3fe8B9e0e1F348163F" };
   // Custom token test
   let SupCoin = { address: "dummy" };
 
