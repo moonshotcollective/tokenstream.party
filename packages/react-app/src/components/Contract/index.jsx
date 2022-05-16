@@ -1,6 +1,6 @@
 import { Card } from "antd";
-import React, { useMemo, useState } from "react";
 import { useContractExistsAtAddress, useContractLoader } from "eth-hooks";
+import React, { useMemo, useState } from "react";
 import Account from "../Account";
 import DisplayVariable from "./DisplayVariable";
 import FunctionForm from "./FunctionForm";
@@ -12,14 +12,24 @@ const noContractDisplay = (
       You need to run{" "}
       <span
         className="highlight"
-        style={{ marginLeft: 4, /* backgroundColor: "#f1f1f1", */ padding: 4, borderRadius: 4, fontWeight: "bolder" }}
+        style={{
+          marginLeft: 4,
+          /* backgroundColor: "#f1f1f1", */ padding: 4,
+          borderRadius: 4,
+          fontWeight: "bolder",
+        }}
       >
         yarn run chain
       </span>{" "}
       and{" "}
       <span
         className="highlight"
-        style={{ marginLeft: 4, /* backgroundColor: "#f1f1f1", */ padding: 4, borderRadius: 4, fontWeight: "bolder" }}
+        style={{
+          marginLeft: 4,
+          /* backgroundColor: "#f1f1f1", */ padding: 4,
+          borderRadius: 4,
+          fontWeight: "bolder",
+        }}
       >
         yarn run deploy
       </span>{" "}
@@ -32,7 +42,12 @@ const noContractDisplay = (
       Warning: You might need to run
       <span
         className="highlight"
-        style={{ marginLeft: 4, /* backgroundColor: "#f1f1f1", */ padding: 4, borderRadius: 4, fontWeight: "bolder" }}
+        style={{
+          marginLeft: 4,
+          /* backgroundColor: "#f1f1f1", */ padding: 4,
+          borderRadius: 4,
+          fontWeight: "bolder",
+        }}
       >
         yarn run deploy
       </span>{" "}
@@ -41,7 +56,9 @@ const noContractDisplay = (
   </div>
 );
 
-const isQueryable = fn => (fn.stateMutability === "view" || fn.stateMutability === "pure") && fn.inputs.length === 0;
+const isQueryable = (fn) =>
+  (fn.stateMutability === "view" || fn.stateMutability === "pure") &&
+  fn.inputs.length === 0;
 
 export default function Contract({
   customContract,
@@ -70,16 +87,17 @@ export default function Contract({
   const displayedContractFunctions = useMemo(() => {
     const results = contract
       ? Object.values(contract.interface.functions).filter(
-          fn => fn.type === "function" && !(show && show.indexOf(fn.name) < 0),
+          (fn) => fn.type === "function" && !(show && show.indexOf(fn.name) < 0)
         )
       : [];
     return results;
   }, [contract, show]);
 
   const [refreshRequired, triggerRefresh] = useState(false);
-  const contractDisplay = displayedContractFunctions.map(contractFuncInfo => {
+  const contractDisplay = displayedContractFunctions.map((contractFuncInfo) => {
     const contractFunc =
-      contractFuncInfo.stateMutability === "view" || contractFuncInfo.stateMutability === "pure"
+      contractFuncInfo.stateMutability === "view" ||
+      contractFuncInfo.stateMutability === "pure"
         ? contract[contractFuncInfo.name]
         : contract.connect(signer)[contractFuncInfo.name];
 
@@ -126,6 +144,7 @@ export default function Contract({
                 mainnetProvider={provider}
                 price={price}
                 blockExplorer={blockExplorer}
+                isContract={true}
               />
               {account}
             </div>
