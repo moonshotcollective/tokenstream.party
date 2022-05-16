@@ -301,7 +301,7 @@ export default function OrganizationHome({
           />
           <div style={{ marginBottom: 25 }} />
 
-          <div style={{ marginBottom: 5 }}>Recipient:</div>
+          <div style={{ marginBottom: 5 }}>Owner:</div>
           <AddressInput
             ensProvider={mainnetProvider}
             value={userAddress}
