@@ -56,6 +56,8 @@
     "graph-ship-staging": "yarn graph-prepare && yarn graph-codegen && yarn graph-deploy-staging",
     "graph-deploy-goerli": "yarn workspace @scaffold-eth/subgraph deploy:goerli",
     "graph-ship-goerli": "yarn graph-prepare && yarn graph-codegen && yarn graph-deploy-goerli",
+    "graph-deploy-mainnet": "yarn workspace @scaffold-eth/subgraph deploy:mainnet",
+    "graph-ship-mainnet": "yarn graph-prepare && yarn graph-codegen && yarn graph-deploy-mainnet",
     "deploy-and-graph": "yarn deploy && yarn graph-ship-local",
     "theme": "yarn workspace @scaffold-eth/react-app theme",
     "watch-theme": "yarn workspace @scaffold-eth/react-app watch"

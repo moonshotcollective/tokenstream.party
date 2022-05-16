@@ -46,14 +46,14 @@ const providers = [
 ];
 
 // Supported networks
-const supportedNetworks = ["goerli"];
+const supportedNetworks = ["mainnet"];
 if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
   supportedNetworks.push("localhost");
 }
 
 const cachedNetwork = supportedNetworks.includes(window.localStorage.getItem("network"))
     ? window.localStorage.getItem("network")
-    : "goerli";
+    : "mainnet";
 
 // Coinbase walletLink init
 const walletLink = new WalletLink({

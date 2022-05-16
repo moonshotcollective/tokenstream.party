@@ -6,7 +6,7 @@ dataSources:
     name: StreamDeployer
     network: {{network}}
     source:
-      address: "{{localhost_StreamDeployerAddress}}"
+      address: "{{mainnet_StreamDeployerAddress}}"
       abi: StreamDeployer
       startBlock: 1
     mapping:
