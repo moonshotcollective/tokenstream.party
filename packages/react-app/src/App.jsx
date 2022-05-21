@@ -583,7 +583,7 @@ function App(props) {
 
         <Footer className="ts-footer">
           {location.pathname === "/" && (
-          <a href="https://moonshotcollective.space/" target="_blank">
+          <a href="https://moonshotcollective.space/" target="_self">
             Built with 💜 by the Gitcoin community | Moonshot Collective
           </a>
           )}
@@ -603,9 +603,9 @@ function App(props) {
                   <GithubOutlined />
                 </a>
               </Menu.Item>
-              <Menu.Item key="telegram-link">
-                <a href="https://t.me/+KxW7py1dFPA0MWJh" target="_blank">
-                  Join us on Telegram
+              <Menu.Item key="discord-link">
+                <a href="https://discord.gg/HbHBBpaMds" target="_blank">
+                  Join us on Disord
                 </a>
               </Menu.Item>
               <Menu.Item key="feedback-link">
