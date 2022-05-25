@@ -46,7 +46,7 @@ const providers = [
 ];
 
 // Supported networks
-const supportedNetworks = ["mainnet"];
+const supportedNetworks = ["goerli"];
 if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
   supportedNetworks.push("localhost");
 }

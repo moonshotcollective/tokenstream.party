@@ -7,6 +7,7 @@ const { TextArea } = Input;
 export default function StreamWithdrawModal({
     tx,
     show,
+    stream,
     orgStreamsWriteContract,
     onSuccess,
     quoteRate,
@@ -18,7 +19,7 @@ export default function StreamWithdrawModal({
     const withdrawFromStream = async (values) => {
         const { payout, reason, amount } = values;
         tx(
-            orgStreamsWriteContract.streamWithdraw(payout, ethers.utils.parseEther("" + amount), reason),
+            orgStreamsWriteContract.streamWithdraw(stream, payout, ethers.utils.parseEther("" + amount), reason),
             handleStreamWithMessage(
                 {
                     message: "Withdrawal successful",

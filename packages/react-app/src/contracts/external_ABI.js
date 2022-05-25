@@ -309,6 +309,11 @@ export const OrganizationStreamsABI = [
   },
   {
     "inputs": [],
+    "name": "StreamDoesNotExist",
+    "type": "error"
+  },
+  {
+    "inputs": [],
     "name": "TransferFailed",
     "type": "error"
   },
@@ -562,9 +567,9 @@ export const OrganizationStreamsABI = [
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "_beneficiary",
-        "type": "address"
+        "internalType": "bytes32",
+        "name": "_name",
+        "type": "bytes32"
       }
     ],
     "name": "deleteStream",
@@ -574,6 +579,11 @@ export const OrganizationStreamsABI = [
   },
   {
     "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "_name",
+        "type": "bytes32"
+      },
       {
         "internalType": "address",
         "name": "_beneficiary",
@@ -588,9 +598,9 @@ export const OrganizationStreamsABI = [
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "_beneficiary",
-        "type": "address"
+        "internalType": "bytes32",
+        "name": "_name",
+        "type": "bytes32"
       },
       {
         "internalType": "uint256",
@@ -635,9 +645,9 @@ export const OrganizationStreamsABI = [
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "_userAddress",
-        "type": "address"
+        "internalType": "bytes32",
+        "name": "_name",
+        "type": "bytes32"
       }
     ],
     "name": "getStreamView",
@@ -678,6 +688,11 @@ export const OrganizationStreamsABI = [
             "internalType": "string",
             "name": "name",
             "type": "string"
+          },
+          {
+            "internalType": "bool",
+            "name": "disabled",
+            "type": "bool"
           }
         ],
         "internalType": "struct MultiStream.StreamView",
@@ -739,6 +754,11 @@ export const OrganizationStreamsABI = [
             "internalType": "string",
             "name": "name",
             "type": "string"
+          },
+          {
+            "internalType": "bool",
+            "name": "disabled",
+            "type": "bool"
           }
         ],
         "internalType": "struct MultiStream.StreamView[]",
@@ -818,9 +838,9 @@ export const OrganizationStreamsABI = [
         "type": "uint256"
       },
       {
-        "internalType": "address",
-        "name": "beneficiary",
-        "type": "address"
+        "internalType": "bytes32",
+        "name": "_name",
+        "type": "bytes32"
       }
     ],
     "name": "increaseCap",
@@ -938,9 +958,9 @@ export const OrganizationStreamsABI = [
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "_beneficiary",
-        "type": "address"
+        "internalType": "bytes32",
+        "name": "_name",
+        "type": "bytes32"
       }
     ],
     "name": "streamBalance",
@@ -957,9 +977,9 @@ export const OrganizationStreamsABI = [
   {
     "inputs": [
       {
-        "internalType": "address",
+        "internalType": "bytes32",
         "name": "_stream",
-        "type": "address"
+        "type": "bytes32"
       },
       {
         "internalType": "string",
@@ -979,6 +999,11 @@ export const OrganizationStreamsABI = [
   },
   {
     "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "_name",
+        "type": "bytes32"
+      },
       {
         "internalType": "address",
         "name": "payoutAddress",
@@ -1040,9 +1065,9 @@ export const OrganizationStreamsABI = [
         "type": "uint256"
       },
       {
-        "internalType": "address",
-        "name": "beneficiary",
-        "type": "address"
+        "internalType": "bytes32",
+        "name": "_name",
+        "type": "bytes32"
       }
     ],
     "name": "updateFrequency",

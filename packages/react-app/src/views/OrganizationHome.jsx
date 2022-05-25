@@ -266,7 +266,7 @@ export default function OrganizationHome({
           xxl={{ span: 16, offset: 4 }}
         >
           <Switch>
-            <Route exact path="/organizations/:orgaddress/user/:address">
+            <Route exact path="/organizations/:orgaddress/streams/:name">
                 <UserStream
                   orgInfo={orgInfo}
                   tokenInfo={tokenInfo}

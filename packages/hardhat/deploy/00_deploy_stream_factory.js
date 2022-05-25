@@ -11,13 +11,20 @@ module.exports = async ({ getNamedAccounts, getChainId, deployments }) => {
   // Mainnet GTC
   let GTC = { address: "0xDe30da39c46104798bB5aA3fe8B9e0e1F348163F" };
   const owner = process.env.DEVELOPER;
+  if (chainId !== "1") {
+    GTC = await deploy("GTC", {
+      from: deployer,
+      log: true,
+      args: [owner],
+    });
+  }
  
   // deploy the Org
-  // const orgFactory = await deploy("StreamDeployer", {
-  //   from: deployer,
-  //   log: true,
-  //   args: [owner],
-  // });
+  const orgFactory = await deploy("StreamDeployer", {
+    from: deployer,
+    log: true,
+    args: [owner],
+  });
 
   const OrgContract = await ethers.getContract("StreamDeployer", deployer);
 

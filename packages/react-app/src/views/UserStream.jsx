@@ -36,7 +36,7 @@ export default function UserStream({
 }) {
 
     const history = useHistory();
-    const { orgaddress: organizationAddress, address: userAddress } = useParams();
+    const { orgaddress: organizationAddress, name: streamName } = useParams();
     const [info, setInfo] = useState({});
     const [quoteRate, setQuoteRate] = useState(0);
     const [ready, setReady] = useState(false);
@@ -61,7 +61,7 @@ export default function UserStream({
 
     const streamActivityResult = useQuery(GET_USER_STREAMS_ACTIVITIES, {
         variables: {
-            streamAddress: userAddress.toLowerCase(),
+            streamAddress: streamName,
             orgAddress: organizationAddress.toLowerCase()
         },
         onCompleted: (data) => {
@@ -77,19 +77,11 @@ export default function UserStream({
         setTimeout(streamActivityResult.stopPolling, 30000);
     };
 
-    const getHasStream = async () => {
-        const hasStream = await orgStreamsReadContract.hasStream(userAddress);
-        if (!hasStream) {
-            setReady(true);
-            setError("User stream has been disabled or does not exist!");
-        }
-    };
-
     const getStreamBalanceAndInfo = async () => {
         if (!orgStreamsReadContract) {
             return;
         }
-        const infoResult = await orgStreamsReadContract.getStreamView(userAddress);
+        const infoResult = await orgStreamsReadContract.getStreamView(streamName);
         setInfo({
             address: infoResult[0],
             cap: infoResult[1],
@@ -97,15 +89,15 @@ export default function UserStream({
             last: infoResult[3],
             balance: infoResult[4],
             pledged: infoResult[5],
-            name: infoResult[6]
+            name: infoResult[6],
+            disabled: infoResult[7],
         });
-        setReady(true);
+        if (infoResult[7]) {
+            setError("User stream has been disabled or does not exist!");
+        } else {
+            setReady(true);
+        }
     };
-
-    useEffect(() => {
-        getHasStream()
-            .catch(console.error);
-    });
 
     useEffect(() => {
         if (!error) {
@@ -221,10 +213,10 @@ export default function UserStream({
                 <Row key="user-stream-view" gutter={[24, 16]} style={{ marginTop: "1em", border: "solid 1px rgba(254,254,254,0.2)", padding: "2em 0" }}>
                     <Col key="user-stream-summary-section" span={6}>
                         <div>
-                            <Blockie scale={5} size={24} address={userAddress} />
+                            <Blockie scale={5} size={24} address={info.address} />
                         </div>
                         <Space direction="vertical" />
-                        <Address value={userAddress} fontSize="1.3em" hideBlockies={true} ensProvider={mainnetProvider} />
+                        <Address value={info.address} fontSize="1.3em" hideBlockies={true} ensProvider={mainnetProvider} />
                         <Divider className="user-stream-divider" />
                         <h5>Earned Balance</h5>
                         <div>
@@ -293,7 +285,7 @@ export default function UserStream({
                     tokenSymbol={tokenSymbol}
                     tokenInfo={tokenInfo}
                     orgAddress={organizationAddress}
-                    stream={userAddress}
+                    stream={streamName}
                     tx={tx}
                     callerAddress={account}
                     orgStreamsWriteContract={orgStreamsWriteContract}
@@ -309,6 +301,7 @@ export default function UserStream({
                     quoteRate={quoteRate}
                     tokenSymbol={tokenSymbol}
                     tx={tx}
+                    stream={streamName}
                     mainnetProvider={mainnetProvider}
                     orgStreamsWriteContract={orgStreamsWriteContract}
                     handleStreamWithMessage={handleStreamWithMessage}

@@ -28,7 +28,8 @@ export const UserStreamList = ({orgStreamsContract, totalStreamCount, mainnetPro
                             last: e[3],
                             balance: e[4],
                             percent: e[4].mul(100).div(e[1]).toNumber(),
-                            name: e[6]
+                            name: e[6],
+                            nameHash: ethers.utils.solidityKeccak256([ 'string' ], [ e[6] ])
                         };
                     });
                 setData([...data, ...streams]);
@@ -99,7 +100,7 @@ export const UserStreamList = ({orgStreamsContract, totalStreamCount, mainnetPro
                             </div>
                             </Col>
                             <Col span={4}>
-                            <Link to={`/organizations/${orgStreamsContract.address}/user/${item.user}`}>View Stream</Link>{"  "}
+                            <Link to={`/organizations/${orgStreamsContract.address}/streams/${item.nameHash}`}>View Stream</Link>{"  "}
                             </Col>
                             <Col span={8}>
                             <Progress

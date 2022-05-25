@@ -31,6 +31,8 @@ contract MultiStream is Ownable, AccessControl, ReentrancyGuard {
 
     /// @dev Describe a stream 
     struct Stream {
+        /// @dev stream owner
+        address owner;
         /// @dev stream cap
         uint256 cap;
         /// @dev stream frequency
@@ -39,13 +41,15 @@ contract MultiStream is Ownable, AccessControl, ReentrancyGuard {
         uint256 last;
         /// @dev tokens pledged to this stream
         uint256 pledged;
-        ///@dev stream name 
+        /// @dev stream name 
         string name;
+        /// @dev stream enablement status
+        bool disabled;
     }
 
     /// @dev Describe a stream for view purposes
     struct StreamView {
-        /// @dev owner address
+        /// @dev stream owner
         address owner;
         /// @dev stream cap
         uint256 cap;
@@ -59,6 +63,8 @@ contract MultiStream is Ownable, AccessControl, ReentrancyGuard {
         uint256 pledged;
         ///@dev stream name 
         string name;
+        /// @dev whether the stream is disabled
+        bool disabled;
     }
 
     /// @dev organization info
@@ -78,11 +84,10 @@ contract MultiStream is Ownable, AccessControl, ReentrancyGuard {
     }
 
     OrgInfo public orgInfo;
-    uint256 streamCount;
-    mapping(address => uint256) inverseOwnerIndex;
-    mapping(uint256 => address) ownerIndex;
-    mapping(address => Stream) streams;
-    mapping(address => bool) disabled;
+    Stream[] streams;
+    mapping(bytes32 => uint256) streamIndex;
+    mapping(address => string[]) userStreams;
+    mapping(bytes32 => bool) streamExistenceMap;
 
     event Withdraw(address indexed to, uint256 amount, string reason);
     event Deposit(address indexed stream, address indexed from, uint256 amount, string reason);
@@ -126,17 +131,18 @@ contract MultiStream is Ownable, AccessControl, ReentrancyGuard {
         @ note Init Streams
         */
         for (uint256 i = 0; i < _addresses.length; ++i) {
-            ownerIndex[streamCount] = _addresses[i];
-            inverseOwnerIndex[_addresses[i]] = streamCount;
-            streamCount += 1;
             uint256 last;
             if (_startsFull[i] == true) {
                 last = block.timestamp - _frequency[i];
             } else {
                 last = block.timestamp;
             }
-            Stream memory stream = Stream(_caps[i], _frequency[i], last, 0, _name[i]);
-            streams[_addresses[i]] = stream;
+            bytes32 nameHash = keccak256(abi.encodePacked(_name[i]));
+            Stream memory stream = Stream(_addresses[i], _caps[i], _frequency[i], last, 0, _name[i], false);
+            streams.push(stream);
+            streamIndex[nameHash] = streams.length - 1;
+            userStreams[_addresses[i]].push(_name[i]);
+            streamExistenceMap[nameHash] = true;
             emit StreamAdded(_msgSender(), _addresses[i], _name[i]);
         }
 
@@ -166,160 +172,179 @@ contract MultiStream is Ownable, AccessControl, ReentrancyGuard {
         bool _startsFull,
         string calldata _name
     ) external hasCorrectRole {
-        if (streams[_beneficiary].last > 0) {
+        bytes32 nameHash = keccak256(abi.encodePacked(_name));
+        if (streamExistenceMap[nameHash] == true) {
             revert StreamAlreadyExists();
         }
-        ownerIndex[streamCount] = _beneficiary;
-        inverseOwnerIndex[_beneficiary] = streamCount;
-        streamCount += 1;
         uint256 last;
         if (_startsFull == true) {
             last = block.timestamp - _frequency;
         } else {
             last = block.timestamp;
         }
-        Stream memory stream = Stream(_cap, _frequency, last, 0, _name);
-        streams[_beneficiary] = stream;
+
+        Stream memory stream = Stream(_beneficiary, _cap, _frequency, last, 0, _name, false);
+        streams.push(stream);
+        streamIndex[nameHash] = streams.length - 1;
+        userStreams[_beneficiary].push(_name);
+        streamExistenceMap[nameHash] = true;
         orgInfo.totalStreams += 1;
         emit StreamAdded(_msgSender(), _beneficiary, _name);
     }
 
     /// @dev Transfers remaining balance and disables stream
-    function disableStream(address _beneficiary) external hasCorrectRole {
-        uint256 totalAmount = streamBalance(_beneficiary);
+    function disableStream(bytes32 _name, address _beneficiary) external hasCorrectRole {
+        uint256 totalAmount = streamBalance(_name);
 
-        uint256 cappedLast = block.timestamp - streams[_beneficiary].frequency;
-        if (streams[_beneficiary].last < cappedLast) {
-            streams[_beneficiary].last = cappedLast;
+        uint256 cappedLast = block.timestamp - streams[streamIndex[_name]].frequency;
+        if (streams[streamIndex[_name]].last < cappedLast) {
+            streams[streamIndex[_name]].last = cappedLast;
         }
-        streams[_beneficiary].last =
-            streams[_beneficiary].last +
-            (((block.timestamp - streams[_beneficiary].last) * totalAmount) /
+        streams[streamIndex[_name]].last =
+            streams[streamIndex[_name]].last +
+            (((block.timestamp - streams[streamIndex[_name]].last) * totalAmount) /
                 totalAmount);
 
         if (!orgInfo.dToken.transfer(_beneficiary, totalAmount)) revert TransferFailed();
 
-        disabled[_beneficiary] = true;
-        streams[_beneficiary].cap = 0;
+        streams[streamIndex[_name]].disabled = true;
+        streams[streamIndex[_name]].cap = 0;
         orgInfo.totalStreams -= 1;
     }
 
     /// @dev Transfers remaining balance and deletes stream
-    function deleteStream(address _beneficiary) external hasCorrectRole {
-        uint256 totalAmount = streamBalance(_beneficiary);
+    function deleteStream(bytes32 _name) external hasCorrectRole {
+        uint256 totalAmount = streamBalance(_name);
 
         if(!orgInfo.dToken.transfer(msg.sender, totalAmount)) revert TransferFailed();
 
-        streamCount -= 1;
+        orgInfo.totalStreams -= 1;
         // Trigger gas refunds
-        delete streams[_beneficiary];
-        delete ownerIndex[inverseOwnerIndex[_beneficiary]];
-        delete inverseOwnerIndex[_beneficiary];
-        delete disabled[_beneficiary];
+        uint256 userStreamLength = userStreams[streams[streamIndex[_name]].owner].length;
+        for (uint256 i = userStreamLength - 1; i >= 0; --i) {
+            if (keccak256(abi.encodePacked(_name)) == keccak256(abi.encodePacked(userStreams[streams[streamIndex[_name]].owner][i]))) {
+                userStreams[streams[streamIndex[_name]].owner][i] = userStreams[streams[streamIndex[_name]].owner][userStreamLength - 1];
+                userStreams[streams[streamIndex[_name]].owner].pop();
+                break;
+            }
+        }
+
+        streams[streamIndex[_name]] = streams[streams.length - 1];
+        streamIndex[keccak256(abi.encodePacked(streams[streamIndex[_name]].name))] = streamIndex[_name];
+        streams.pop();
+        delete streamExistenceMap[_name];
+        delete streamIndex[_name];
     }
 
     /// @dev Reactivates a stream for user
     function enableStream(
-        address _beneficiary,
+        bytes32 _name,
         uint256 _cap,
         uint256 _frequency,
         bool _startsFull
     ) external hasCorrectRole {
 
-        streams[_beneficiary].cap = _cap;
-        streams[_beneficiary].frequency = _frequency;
+        streams[streamIndex[_name]].cap = _cap;
+        streams[streamIndex[_name]].frequency = _frequency;
 
         if (_startsFull == true) {
-            streams[_beneficiary].last = block.timestamp - _frequency;
+            streams[streamIndex[_name]].last = block.timestamp - _frequency;
         } else {
-            streams[_beneficiary].last = block.timestamp;
+            streams[streamIndex[_name]].last = block.timestamp;
         }
 
-        disabled[_beneficiary] = false;
+        streams[streamIndex[_name]].disabled = false;
         orgInfo.totalStreams += 1;
     }
 
-    /// @dev Get the balance of a stream by address
-    /// @return balance of the stream by address
-    function streamBalance(address _beneficiary) public view returns (uint256) {
+    /// @dev Get the balance of a stream by its name
+    /// @return balance of the stream
+    function streamBalance(bytes32 _name) public view returns (uint256) {
 
-        if (block.timestamp - streams[_beneficiary].last > streams[_beneficiary].frequency) {
-            return streams[_beneficiary].cap;
+        if (block.timestamp - streams[streamIndex[_name]].last > streams[streamIndex[_name]].frequency) {
+            return streams[streamIndex[_name]].cap;
         }
         return
-            (streams[_beneficiary].cap * (block.timestamp - streams[_beneficiary].last)) /
-            streams[_beneficiary].frequency;
+            (streams[streamIndex[_name]].cap * (block.timestamp - streams[streamIndex[_name]].last)) /
+            streams[streamIndex[_name]].frequency;
     }
 
     /// @dev Withdraw from a stream
+    /// @param _name stream name sha3 hash
     /// @param payoutAddress account to withdraw into
     /// @param amount amount of withdraw
     /// @param reason a reason
-    function streamWithdraw(address payoutAddress, uint256 amount, string calldata reason)
+    function streamWithdraw(bytes32 _name, address payoutAddress, uint256 amount, string calldata reason)
         external
     {
         if (payoutAddress == address(0)) revert CantWithdrawToBurnAddress();
-        if (disabled[msg.sender] == true) revert StreamDisabled();
+        if (streamExistenceMap[_name] == false) revert StreamDoesNotExist();
+        if (streams[streamIndex[_name]].disabled == true) revert StreamDisabled();
 
-        uint256 totalAmountCanWithdraw = streamBalance(msg.sender);
+        uint256 totalAmountCanWithdraw = streamBalance(_name);
         if (totalAmountCanWithdraw < amount) revert NotEnoughBalance();
-        if (amount > streams[msg.sender].pledged) revert NotEnoughPledged();
+        if (amount > streams[streamIndex[_name]].pledged) revert NotEnoughPledged();
 
-        uint256 cappedLast = block.timestamp - streams[msg.sender].frequency;
-        if (streams[msg.sender].last < cappedLast) {
-            streams[msg.sender].last = cappedLast;
+        uint256 cappedLast = block.timestamp - streams[streamIndex[_name]].frequency;
+        if (streams[streamIndex[_name]].last < cappedLast) {
+            streams[streamIndex[_name]].last = cappedLast;
         }
-        streams[msg.sender].last =
-            streams[msg.sender].last +
-            (((block.timestamp - streams[msg.sender].last) * amount) /
+        streams[streamIndex[_name]].last =
+            streams[streamIndex[_name]].last +
+            (((block.timestamp - streams[streamIndex[_name]].last) * amount) /
                 totalAmountCanWithdraw);
 
         if (!orgInfo.dToken.transfer(payoutAddress, amount)) revert TransferFailed();
 
         orgInfo.totalPaid += amount;
-        streams[msg.sender].pledged -= amount;
+        streams[streamIndex[_name]].pledged -= amount;
         emit Withdraw(payoutAddress, amount, reason);
     }
 
     /// @notice Deposits tokens into a specified stream
     /// @dev Deposit into stream
-    /// @param _stream a user stream
+    /// @param _stream a user stream name sha3 hash
     /// @param reason reason for deposit
     /// @param  value the amount of the deposit
-    function streamDeposit(address _stream, string memory reason, uint256 value)
+    function streamDeposit(bytes32 _stream, string calldata reason, uint256 value)
         external
         nonReentrant
     {
         if (_msgSender() == address(0)) revert CantDepositFromBurnAddress();
-        if (disabled[_stream] == true) revert StreamDisabled();
-        if (value < (streams[_stream].cap / 10)) revert DepositAmountTooSmall();
+        if (streamExistenceMap[_stream] == false) revert StreamDoesNotExist();
+        if (streams[streamIndex[_stream]].disabled == true) revert StreamDisabled();
+        if (value < (streams[streamIndex[_stream]].cap / 10)) revert DepositAmountTooSmall();
         if (!orgInfo.dToken.transferFrom(_msgSender(), address(this), value)) revert DepositFailed();
-        streams[_stream].pledged += value;
-        emit Deposit(_stream, _msgSender(), value, reason);
+        streams[streamIndex[_stream]].pledged += value;
+        emit Deposit(streams[streamIndex[_stream]].owner, _msgSender(), value, reason);
     }
 
     /// @dev Increase the cap of the stream
     /// @param _increase how much to increase the cap
-    function increaseCap(uint256 _increase, address beneficiary)
+    /// @param _name stream name sha3 hash
+    function increaseCap(uint256 _increase, bytes32 _name)
         external
         hasCorrectRole
     {
         if (_increase == 0) revert IncreaseByMore();
+        if (streamExistenceMap[_name] == false) revert StreamDoesNotExist();
 
-        if ((streams[beneficiary].cap + _increase) >= 1 ether)
+        if ((streams[streamIndex[_name]].cap + _increase) >= 1 ether)
             revert IncreasedByTooMuch();
-        streams[beneficiary].cap = streams[beneficiary].cap + _increase;
+        streams[streamIndex[_name]].cap = streams[streamIndex[_name]].cap + _increase;
     }
 
     /// @dev Update the frequency of a stream
     /// @param _frequency the new frequency
-    function updateFrequency(uint256 _frequency, address beneficiary)
+    /// @param _name stream name sha3 hash
+    function updateFrequency(uint256 _frequency, bytes32 _name)
         external
         hasCorrectRole
     {
         if(_frequency < 0) revert InvalidFrequency();
         if (_frequency == 0) revert IncreaseByMore();
-        streams[beneficiary].frequency = _frequency;
+        if (streamExistenceMap[_name] == false) revert StreamDoesNotExist();
+        streams[streamIndex[_name]].frequency = _frequency;
     }
 
     /// @dev checks whether org has an active stream for user
@@ -329,19 +354,19 @@ contract MultiStream is Ownable, AccessControl, ReentrancyGuard {
         view
         returns (bool)
     {
-        return streams[_userAddress].frequency != 0 && disabled[_userAddress] != true;
+        return userStreams[_userAddress].length > 0;
     }
 
     /// @dev gets stream details
-    /// @param _userAddress a users address
-    function getStreamView(address _userAddress)
+    /// @param _name stream name sha3 hash
+    function getStreamView(bytes32 _name)
         public
         view
         returns (StreamView memory)
     {
-        return StreamView(_userAddress, streams[_userAddress].cap,
-                    streams[_userAddress].frequency, streams[_userAddress].last,
-                    streamBalance(_userAddress), streams[_userAddress].pledged, streams[_userAddress].name);
+        return StreamView(streams[streamIndex[_name]].owner, streams[streamIndex[_name]].cap,
+                    streams[streamIndex[_name]].frequency, streams[streamIndex[_name]].last,
+                    streamBalance(_name), streams[streamIndex[_name]].pledged, streams[streamIndex[_name]].name, streams[streamIndex[_name]].disabled);
     }
 
     /// @dev gets a page of streams
@@ -355,11 +380,11 @@ contract MultiStream is Ownable, AccessControl, ReentrancyGuard {
         view
         returns (StreamView[] memory)
     {
-        uint256 _ownerIndex = _resultsPerPage * _page - _resultsPerPage;
+        uint256 _streamsIndex = _resultsPerPage * _page - _resultsPerPage;
 
         if (
-            streamCount == 0 ||
-            _ownerIndex > streamCount - 1
+            streams.length == 0 ||
+            _streamsIndex > streams.length - 1
         ) {
             return new StreamView[](0);
         }
@@ -367,24 +392,23 @@ contract MultiStream is Ownable, AccessControl, ReentrancyGuard {
         StreamView[] memory _streams = new StreamView[](_resultsPerPage);
         uint256 _returnCounter = 0;
         uint256 _skipped = 0;
-        address currentOwner = address(0);
         
         for (
-            _ownerIndex;
-            _ownerIndex < ((_resultsPerPage * _page) + _skipped);
-            _ownerIndex++
+            _streamsIndex;
+            _streamsIndex < ((_resultsPerPage * _page) + _skipped);
+            _streamsIndex++
         ) {
-            if (_ownerIndex <= streamCount - 1) {
-                currentOwner = ownerIndex[_ownerIndex];
-                if (disabled[currentOwner]) {
+            if (_streamsIndex <= streams.length - 1) {
+                if (streams[_streamsIndex].disabled == true) {
                     _skipped++;
                     continue;
                 }
-                _streams[_returnCounter] = StreamView(currentOwner, streams[currentOwner].cap,
-                    streams[currentOwner].frequency, streams[currentOwner].last,
-                    streamBalance(currentOwner), streams[currentOwner].pledged, streams[currentOwner].name);
+                _streams[_returnCounter] = StreamView(streams[_streamsIndex].owner, streams[_streamsIndex].cap,
+                    streams[_streamsIndex].frequency, streams[_streamsIndex].last,
+                    streamBalance(keccak256(abi.encodePacked(streams[_streamsIndex].name))), streams[_streamsIndex].pledged, streams[_streamsIndex].name,
+                    streams[_streamsIndex].disabled);
             } else {
-                _streams[_returnCounter] = StreamView(address(0), 0,0,0,0,0, "");
+                _streams[_returnCounter] = StreamView(address(0), 0,0,0,0,0, "", false);
             }
             _returnCounter++;
         }
