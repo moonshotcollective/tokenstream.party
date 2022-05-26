@@ -15,7 +15,7 @@ import Title from "antd/lib/skeleton/Title";
 const GET_USER_STREAMS_ACTIVITIES = gql`
   query GetActivitiesForStream($streamAddress: String!, $orgAddress: String!) {
     
-    streamActivities(where: {organization_in: [$orgAddress], user_in: [$streamAddress]}, orderBy: createdAt, orderDirection: desc) {
+    streamActivities(where: {organization_in: [$orgAddress], stream_in: [$streamAddress]}, orderBy: createdAt, orderDirection: desc) {
         actor
         amount
         eventType
@@ -133,7 +133,7 @@ export default function UserStream({
         const events = !streamEvents ? [] : streamEvents.map(item => {
             return {
                 type: item.eventType === 'StreamWithdrawEvent' ? 'withdraw' : 'deposit',
-                key: `${item.eventType === 'StreamWithdrawEvent' ? 'w' : 'd'}-${item.createdAt}-${item.user}`,
+                key: `${item.eventType === 'StreamWithdrawEvent' ? 'w' : 'd'}-${item.createdAt}-${item.stream}`,
                 timestamp: item.createdAt,
                 from: item.actor,
                 amount: item.amount,

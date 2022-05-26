@@ -5,7 +5,7 @@
       "chainId": "5",
       "contracts": {
         "GTC": {
-          "address": "0xfC3871cdB186996c6cad6629EEb4439DF8ebBbA6",
+          "address": "0xe5Ad3F04a1C21648E8d52f4E2ee3bE7bdf2b8edD",
           "abi": [
             {
               "inputs": [
@@ -396,6 +396,200 @@
                   "internalType": "bool[]",
                   "name": "_startsFull",
                   "type": "bool[]"
+                },
+                {
+                  "internalType": "contract IERC20",
+                  "name": "_tokenAddress",
+                  "type": "address"
+                }
+              ],
+              "name": "deployOrganization",
+              "outputs": [],
+              "stateMutability": "nonpayable",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "uint256",
+                  "name": "_page",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "_resultsPerPage",
+                  "type": "uint256"
+                }
+              ],
+              "name": "getOrganizations",
+              "outputs": [
+                {
+                  "internalType": "address[]",
+                  "name": "",
+                  "type": "address[]"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "uint256",
+                  "name": "",
+                  "type": "uint256"
+                }
+              ],
+              "name": "organizations",
+              "outputs": [
+                {
+                  "internalType": "address",
+                  "name": "",
+                  "type": "address"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [],
+              "name": "owner",
+              "outputs": [
+                {
+                  "internalType": "address",
+                  "name": "",
+                  "type": "address"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [],
+              "name": "renounceOwnership",
+              "outputs": [],
+              "stateMutability": "nonpayable",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "address",
+                  "name": "newOwner",
+                  "type": "address"
+                }
+              ],
+              "name": "transferOwnership",
+              "outputs": [],
+              "stateMutability": "nonpayable",
+              "type": "function"
+            }
+          ]
+        },
+        "StreamDeployer": {
+          "address": "0xD385D257486Be3Dec2F09512E00b45ee5BdC7b2e",
+          "abi": [
+            {
+              "inputs": [
+                {
+                  "internalType": "address",
+                  "name": "_owner",
+                  "type": "address"
+                }
+              ],
+              "stateMutability": "nonpayable",
+              "type": "constructor"
+            },
+            {
+              "anonymous": false,
+              "inputs": [
+                {
+                  "indexed": true,
+                  "internalType": "address",
+                  "name": "orgAddress",
+                  "type": "address"
+                },
+                {
+                  "indexed": true,
+                  "internalType": "address",
+                  "name": "ownerAddress",
+                  "type": "address"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "string",
+                  "name": "organizationName",
+                  "type": "string"
+                }
+              ],
+              "name": "OrganizationDeployed",
+              "type": "event"
+            },
+            {
+              "anonymous": false,
+              "inputs": [
+                {
+                  "indexed": true,
+                  "internalType": "address",
+                  "name": "previousOwner",
+                  "type": "address"
+                },
+                {
+                  "indexed": true,
+                  "internalType": "address",
+                  "name": "newOwner",
+                  "type": "address"
+                }
+              ],
+              "name": "OwnershipTransferred",
+              "type": "event"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "string",
+                  "name": "_orgName",
+                  "type": "string"
+                },
+                {
+                  "internalType": "string",
+                  "name": "_orgLogoURI",
+                  "type": "string"
+                },
+                {
+                  "internalType": "string",
+                  "name": "_orgDescription",
+                  "type": "string"
+                },
+                {
+                  "internalType": "address",
+                  "name": "_owner",
+                  "type": "address"
+                },
+                {
+                  "internalType": "address[]",
+                  "name": "_addresses",
+                  "type": "address[]"
+                },
+                {
+                  "internalType": "uint256[]",
+                  "name": "_caps",
+                  "type": "uint256[]"
+                },
+                {
+                  "internalType": "uint256[]",
+                  "name": "_frequency",
+                  "type": "uint256[]"
+                },
+                {
+                  "internalType": "bool[]",
+                  "name": "_startsFull",
+                  "type": "bool[]"
+                },
+                {
+                  "internalType": "string[]",
+                  "name": "_name",
+                  "type": "string[]"
                 },
                 {
                   "internalType": "contract IERC20",

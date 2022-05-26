@@ -9,8 +9,9 @@ import {
   Withdraw,
   Deposit
 } from "../generated/templates/MultiStream/MultiStream";
+import { crypto, ByteArray } from '@graphprotocol/graph-ts'
 
-import { Organization, User, UserOrganization, StreamActivity } from "../generated/schema"
+import { Organization, Stream, StreamActivity } from "../generated/schema"
 
 export function handleOrganizationDeployed(event: OrganizationDeployed): void {
   let orgAddress = event.params.orgAddress.toHex();
@@ -30,26 +31,15 @@ export function handleOrganizationDeployed(event: OrganizationDeployed): void {
 
 export function handleStreamAdded(event: StreamAdded): void {
   let orgAddress = event.address.toHex();
-  let userAddress = event.params.user.toHex();
 
-  let user = User.load(userAddress);
-
-  if (!user) {
-    user = new User(userAddress);
-    user.user = event.params.user;
-    user.createdAt = event.block.timestamp;
-    user.save();
-  }
-
-  let userOrgAddress = userAddress.concat(orgAddress);
-  let userOrg = UserOrganization.load(userOrgAddress)
-  if (!userOrg) {
-    userOrg = new UserOrganization(userOrgAddress);
-    userOrg.user = userAddress;
-    userOrg.organization = orgAddress;
-    userOrg.creator = event.params.creator;
-    userOrg.streamName = event.params.name;
-    userOrg.save();
+  let streamId = crypto.keccak256(ByteArray.fromUTF8(event.params.name)).toHexString();
+  let stream = Stream.load(streamId);
+  if (!stream) {
+    stream = new Stream(streamId);
+    stream.name = event.params.name;
+    stream.organization = orgAddress;
+    stream.createdAt = event.block.timestamp;
+    stream.save();
   }
 }
 
@@ -58,7 +48,7 @@ export function handleWithdraw(event: Withdraw): void {
   let id = event.transaction.hash.toHex();
 
   let activity = new StreamActivity(id);
-  activity.user = event.params.to.toHex();
+  activity.stream = event.params.stream.toHexString();
   activity.eventType = "StreamWithdrawEvent";
   activity.amount = event.params.amount;
   activity.organization = orgAddress;
@@ -73,7 +63,7 @@ export function handleDeposit(event: Deposit): void {
   let id = event.transaction.hash.toHex();
 
   let activity = new StreamActivity(id);
-  activity.user = event.params.stream.toHex();
+  activity.stream = event.params.stream.toHexString();
   activity.eventType = "StreamDepositEvent";
   activity.amount = event.params.amount;
   activity.organization = orgAddress;

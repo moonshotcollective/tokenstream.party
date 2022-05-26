@@ -89,8 +89,8 @@ contract MultiStream is Ownable, AccessControl, ReentrancyGuard {
     mapping(address => string[]) userStreams;
     mapping(bytes32 => bool) streamExistenceMap;
 
-    event Withdraw(address indexed to, uint256 amount, string reason);
-    event Deposit(address indexed stream, address indexed from, uint256 amount, string reason);
+    event Withdraw(bytes32 indexed stream, address indexed to, uint256 amount, string reason);
+    event Deposit(bytes32 indexed stream, address indexed from, uint256 amount, string reason);
     /// @dev StreamAdded event to track the streams after creation
     event StreamAdded(address creator, address user, string name);
 
@@ -298,7 +298,7 @@ contract MultiStream is Ownable, AccessControl, ReentrancyGuard {
 
         orgInfo.totalPaid += amount;
         streams[streamIndex[_name]].pledged -= amount;
-        emit Withdraw(payoutAddress, amount, reason);
+        emit Withdraw(_name, payoutAddress, amount, reason);
     }
 
     /// @notice Deposits tokens into a specified stream
@@ -316,7 +316,7 @@ contract MultiStream is Ownable, AccessControl, ReentrancyGuard {
         if (value < (streams[streamIndex[_stream]].cap / 10)) revert DepositAmountTooSmall();
         if (!orgInfo.dToken.transferFrom(_msgSender(), address(this), value)) revert DepositFailed();
         streams[streamIndex[_stream]].pledged += value;
-        emit Deposit(streams[streamIndex[_stream]].owner, _msgSender(), value, reason);
+        emit Deposit(_stream, _msgSender(), value, reason);
     }
 
     /// @dev Increase the cap of the stream

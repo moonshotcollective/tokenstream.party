@@ -322,9 +322,9 @@ export const OrganizationStreamsABI = [
     "inputs": [
       {
         "indexed": true,
-        "internalType": "address",
+        "internalType": "bytes32",
         "name": "stream",
-        "type": "address"
+        "type": "bytes32"
       },
       {
         "indexed": true,
@@ -470,6 +470,12 @@ export const OrganizationStreamsABI = [
   {
     "anonymous": false,
     "inputs": [
+      {
+        "indexed": true,
+        "internalType": "bytes32",
+        "name": "stream",
+        "type": "bytes32"
+      },
       {
         "indexed": true,
         "internalType": "address",
