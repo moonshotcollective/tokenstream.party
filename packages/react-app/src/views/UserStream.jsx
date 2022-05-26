@@ -61,7 +61,7 @@ export default function UserStream({
 
     const streamActivityResult = useQuery(GET_USER_STREAMS_ACTIVITIES, {
         variables: {
-            streamAddress: streamName,
+            streamAddress: organizationAddress.toLowerCase() + streamName,
             orgAddress: organizationAddress.toLowerCase()
         },
         onCompleted: (data) => {

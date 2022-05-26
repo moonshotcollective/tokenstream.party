@@ -32,7 +32,8 @@ export function handleOrganizationDeployed(event: OrganizationDeployed): void {
 export function handleStreamAdded(event: StreamAdded): void {
   let orgAddress = event.address.toHex();
 
-  let streamId = crypto.keccak256(ByteArray.fromUTF8(event.params.name)).toHexString();
+  let nameHash = crypto.keccak256(ByteArray.fromUTF8(event.params.name)).toHexString();
+  let streamId = orgAddress.concat(nameHash);
   let stream = Stream.load(streamId);
   if (!stream) {
     stream = new Stream(streamId);
@@ -48,7 +49,7 @@ export function handleWithdraw(event: Withdraw): void {
   let id = event.transaction.hash.toHex();
 
   let activity = new StreamActivity(id);
-  activity.stream = event.params.stream.toHexString();
+  activity.stream = orgAddress.concat(event.params.stream.toHexString());
   activity.eventType = "StreamWithdrawEvent";
   activity.amount = event.params.amount;
   activity.organization = orgAddress;
@@ -63,7 +64,7 @@ export function handleDeposit(event: Deposit): void {
   let id = event.transaction.hash.toHex();
 
   let activity = new StreamActivity(id);
-  activity.stream = event.params.stream.toHexString();
+  activity.stream = orgAddress.concat(event.params.stream.toHexString());
   activity.eventType = "StreamDepositEvent";
   activity.amount = event.params.amount;
   activity.organization = orgAddress;

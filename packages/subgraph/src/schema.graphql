@@ -13,7 +13,7 @@ type Organization @entity {
 }
 
 type Stream @entity {
-  id: ID!
+  id: ID! # set to Organization.ID + name keccak256 hash
   name: String!
   organization: Organization!
   createdAt: BigInt!
